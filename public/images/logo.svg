@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+  <path d="M30 5L55 30L30 55L5 30L30 5Z" fill="#4f46e5"/>
+  <path d="M30 13L47 30L30 47L13 30L30 13Z" fill="#fff"/>
+  <path d="M30 20L37 27L30 34L23 27L30 20Z" fill="#4f46e5"/>
+  <text x="65" y="32" font-family="system-ui" font-weight="800" font-size="20" fill="#111827" letter-spacing="1">ELEGANT</text>
+  <text x="65" y="48" font-family="system-ui" font-weight="600" font-size="10" fill="#4f46e5" letter-spacing="4">STORE</text>
+</svg>

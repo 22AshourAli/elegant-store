@@ -1,0 +1,137 @@
+@extends('layouts.store')
+
+@section('content')
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ __('global.order_details') }} #{{ $order->id }}</h1>
+            <a href="{{ route('orders.index') }}" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold flex items-center gap-1">
+                <span>&rarr;</span> {{ __('global.back_to_orders') }}
+            </a>
+        </div>
+
+        @if(session('success'))
+            <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-6 shadow-sm border border-green-200">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow-sm border border-red-200">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Order Details (Left 2 cols) -->
+            <div class="md:col-span-2 space-y-6">
+                <!-- Products Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <h2 class="text-lg font-bold mb-4 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.order_items') }}</h2>
+                    <div class="divide-y dark:divide-gray-700">
+                        @foreach($order->items as $item)
+                        <div class="flex items-center py-4 first:pt-0 last:pb-0">
+                            <!-- Variant thumbnail -->
+                            <img src="{{ $item->variant->getFirstMediaUrl('variant_images', 'thumb') ?: ($item->variant->getFirstMediaUrl('variant_images') ?: ($item->variant->product->getFirstMediaUrl('product_images', 'thumb') ?: ($item->variant->product->getFirstMediaUrl('product_images') ?: '/images/placeholder.jpg'))) }}" class="w-16 h-20 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
+
+                            <div class="flex-1 min-w-0 text-start">
+                                <h3 class="font-bold text-gray-900 dark:text-white truncate">{{ $item->product_name }}</h3>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    @if($item->color) {{ __('global.color_label') }} {{ $item->color }} @endif
+                                    @if($item->color && $item->size) | @endif
+                                    @if($item->size) {{ __('global.size_label') }} {{ $item->size }} @endif
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">{{ __('global.qty_label_alt') }} {{ $item->quantity }} × {{ (int) round($item->unit_price) }} {{ __('global.currency') }}</p>
+                            </div>
+
+                            <span class="font-bold text-gray-900 dark:text-white flex-shrink-0 ml-2">{{ (int) round($item->total) }} {{ __('global.currency') }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Shipping Address Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm text-start">
+                    <h2 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">{{ __('global.shipping_address_title') }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{{ $order->shipping_address }}</p>
+                    @if($order->notes)
+                        <div class="mt-4 pt-4 border-t dark:border-gray-700">
+                            <span class="block text-xs font-semibold text-gray-500 mb-1">{{ __('global.customer_notes') }}</span>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 italic">" {{ $order->notes }} "</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Summary Widget (Right 1 col) -->
+            <div class="md:col-span-1 space-y-6">
+                <!-- Status & Costs -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm text-start">
+                    <h2 class="text-lg font-bold mb-4 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.account_summary') }}</h2>
+
+                    <div class="space-y-3 mb-6 text-sm text-gray-600 dark:text-gray-400">
+                        <div class="flex justify-between">
+                            <span>{{ __('global.order_status_label') }}</span>
+                            <span class="font-semibold text-indigo-600 dark:text-indigo-400">
+                                @php
+                                    $k = 'orders.status_' . $order->status;
+                                    $t = __($k);
+                                    echo $t === $k ? ucfirst(str_replace('_', ' ', $order->status)) : $t;
+                                @endphp
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>{{ __('global.payment_method_label') }}</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">
+                                @if($order->payment_method === 'cash') {{ __('global.cash_on_delivery_status') }}
+                                @elseif($order->payment_method === 'card') {{ __('global.credit_card_status') }}
+                                @else {{ __('global.wallet_status') }} @endif
+                            </span>
+                        </div>
+                        <div class="flex justify-between pb-3 border-b dark:border-gray-700">
+                            <span>{{ __('global.payment_status_label') }}</span>
+                            <span class="font-semibold text-gray-900 dark:text-white">
+                                @if($order->payment_status === 'paid') {{ __('global.paid_status') }}
+                                @elseif($order->payment_status === 'unpaid') {{ __('global.unpaid_status') }}
+                                @else {{ __('global.failed_status') }} @endif
+                            </span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span>{{ __('global.products_total_label') }}</span>
+                            <span>{{ (int) round($order->subtotal) }} {{ __('global.currency') }}</span>
+                        </div>
+                        @if($order->discount > 0)
+                        <div class="flex justify-between text-red-500">
+                            <span>{{ __('global.discount_label') }}</span>
+                            <span>-{{ (int) round($order->discount) }} {{ __('global.currency') }}</span>
+                        </div>
+                        @endif
+                        <div class="flex justify-between">
+                            <span>{{ __('global.shipping_cost_label_alt') }}</span>
+                            <span>{{ $order->shipping_cost > 0 ? (int) round($order->shipping_cost) . ' ' . __('global.currency') : __('global.free_status') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-baseline pt-4 border-t dark:border-gray-700">
+                        <span class="font-bold text-gray-900 dark:text-white">{{ __('global.final_total_label') }}</span>
+                        <span class="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{{ (int) round($order->total) }} {{ __('global.currency') }}</span>
+                    </div>
+
+                    @if(in_array($order->status, ['pending', 'confirmed']))
+                    <div class="mt-6 pt-6 border-t dark:border-gray-700">
+                        <form action="{{ route('orders.cancel', $order) }}" method="POST" onsubmit="return confirm('{{ __('global.cancel_order_confirm') }}')">
+                            @csrf
+                            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span>{{ __('global.cancel_order_btn') }}</span>
+                            </button>
+                        </form>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

@@ -1,0 +1,17 @@
+{
+    "Name": "الاسم الكامل",
+    "Email": "البريد الإلكتروني",
+    "Password": "كلمة المرور",
+    "Confirm Password": "تأكيد كلمة المرور",
+    "Already registered?": "لديك حساب بالفعل؟ تسجيل الدخول",
+    "Register": "إنشاء حساب جديد",
+    "Remember me": "تذكرني على هذا الجهاز",
+    "Forgot your password?": "نسيت كلمة المرور؟",
+    "Log in": "تسجيل الدخول",
+    "Create a new account?": "إنشاء حساب جديد؟",
+    "Or register with": "أو سجل الدخول عبر",
+    "Or log in with": "أو سجل الدخول عبر",
+    "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.": "هل نسيت كلمة المرور؟ لا توجد مشكلة. فقط أخبرنا ببريدك الإلكتروني وسنرسل لك رابط إعادة تعيين كلمة المرور لتتمكن من اختيار كلمة مرور جديدة.",
+    "Email Password Reset Link": "إرسال رابط إعادة تعيين كلمة المرور",
+    "Reset Password": "إعادة تعيين كلمة المرور"
+}
