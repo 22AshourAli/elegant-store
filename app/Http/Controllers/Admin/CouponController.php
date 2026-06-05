@@ -32,7 +32,7 @@ class CouponController extends Controller
             'is_active' => 'boolean',
         ]);
         
-        $data['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->boolean('is_active');
         
         Coupon::create($data);
         return redirect()->route('admin.coupons.index')->with('success', 'تم إضافة الكوبون');
@@ -56,7 +56,7 @@ class CouponController extends Controller
             'is_active' => 'boolean',
         ]);
         
-        $data['is_active'] = $request->has('is_active');
+        $data['is_active'] = $request->boolean('is_active');
 
         $coupon->update($data);
         return redirect()->route('admin.coupons.index')->with('success', 'تم التحديث');

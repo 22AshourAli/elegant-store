@@ -20,7 +20,7 @@ class SocialLoginController extends Controller
         $clientSecret = config("services.{$provider}.client_secret");
 
         if (empty($clientId) || empty($clientSecret) || str_contains($clientId, 'أدخل_معرف') || str_contains($clientId, 'placeholder') || $clientId === 'GOOGLE_CLIENT_ID') {
-            return redirect()->route('login')->with('error', "يرجى تهيئة معرفات الدخول الاجتماعي (" . ucfirst($provider) . ") في ملف الإعدادات .env لتفعيل هذه الميزة.");
+            return redirect()->route('login')->with('error', __('Social login credentials not configured for :provider.', ['provider' => ucfirst($provider)]));
         }
 
         return Socialite::driver($provider)->redirect();
@@ -41,12 +41,12 @@ class SocialLoginController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
-            return redirect()->route('login')->with('error', 'حدث خطأ أثناء تسجيل الدخول عبر ' . ucfirst($provider) . ': ' . $e->getMessage());
+            return redirect()->route('login')->with('error', __('Login via :provider failed. Please try again.', ['provider' => ucfirst($provider)]));
         }
 
         $email = $socialUser->getEmail();
         if (!$email) {
-            return redirect()->route('login')->with('error', 'فشل الحصول على البريد الإلكتروني من حساب ' . ucfirst($provider));
+            return redirect()->route('login')->with('error', __('Could not retrieve email from :provider account.', ['provider' => ucfirst($provider)]));
         }
 
         // Find or create user

@@ -8,26 +8,36 @@ use App\Services\CartService;
 use Illuminate\Http\Request;
 use App\Models\Coupon;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class CartController extends Controller
 {
     public function index(CartService $cart)
     {
-        $cartItems = $cart->getCart();
-        $now = Carbon::now();
-        $coupons = Coupon::where('is_active', true)
-            ->where(function($q) use ($now) { $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now); })
-            ->where(function($q) use ($now) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now); })
-            ->get();
+        $cartItems = $cart->getEnrichedCart();
 
-        // Determine shipping for display
-        $shipping = null;
-        if (auth()->check()) {
-            $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
-            $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
+        try {
+            $now = Carbon::now();
+            $coupons = Coupon::whereRaw('"is_active" = true')
+                ->where(function($q) use ($now) { $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now); })
+                ->where(function($q) use ($now) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now); })
+                ->get();
+            Cache::put('available_coupons', $coupons, now()->addMinutes(10));
+
+            $shipping = null;
+            if (auth()->check()) {
+                $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
+                $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
+            }
+
+            $hasActiveCoupons = $coupons->isNotEmpty();
+        } catch (\PDOException $e) {
+            $coupons = Cache::get('available_coupons', collect());
+            $shipping = config('store.default_shipping', 30);
+            $hasActiveCoupons = $coupons->isNotEmpty();
         }
 
-        return view('shop.cart', compact('cartItems', 'cart', 'coupons', 'shipping'));
+        return view('shop.cart', compact('cartItems', 'cart', 'coupons', 'shipping', 'hasActiveCoupons'));
     }
 
     public function add(Request $request, ProductVariant $variant, CartService $cart)
@@ -72,15 +82,15 @@ return response()->json([
     public function applyCoupon(Request $request, CartService $cart)
     {
         $code = $request->input('code');
-        if (!$code) return response()->json(['message' => __('كود الكوبون غير صحيح')], 422);
+        if (!$code) return response()->json(['message' => __('global.coupon_error')], 422);
 
         $coupon = $cart->applyCouponByCode($code);
         if (!$coupon) {
-            return response()->json(['message' => __('الكوبون غير متاح أو غير صالح')], 422);
+            return response()->json(['message' => __('global.coupon_error')], 422);
         }
 
         return response()->json([
-            'message' => __('تم تفعيل الكوبون'),
+            'message' => __('global.coupon_success'),
             'cartCount' => $cart->count(),
             'total' => (int) round($cart->total()),
             'coupon' => ['code' => $coupon->code, 'type' => $coupon->type, 'value' => $coupon->value]
@@ -91,7 +101,7 @@ return response()->json([
     {
         $cart->removeCoupon();
         return response()->json([
-            'message' => __('تم إزالة الكوبون'),
+            'message' => __('global.coupon_removed'),
             'cartCount' => $cart->count(),
             'total' => (int) round($cart->total())
         ]);

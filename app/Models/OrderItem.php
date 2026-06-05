@@ -17,6 +17,11 @@ class OrderItem extends Model
         'total',
     ];
 
+    protected $casts = [
+        'unit_price' => 'decimal:2',
+        'total' => 'decimal:2',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

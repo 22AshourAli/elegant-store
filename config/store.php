@@ -3,7 +3,7 @@
 return [
     // Admin contact details
     'admin_phone' => env('ADMIN_PHONE', '201094022327'),
-    'admin_whatsapp' => env('ADMIN_WHATSAPP', env('ADMIN_PHONE', '201094022327')),
+    'admin_whatsapp' => env('ADMIN_WHATSAPP', env('ADMIN_PHONE', '01094022327')),
     'admin_email' => env('ADMIN_EMAIL', 'ashourali1v@gmail.com'),
 
     // Social media

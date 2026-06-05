@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\OrderDelivered;
 use App\Models\Order;
 use App\Models\Branch;
+use App\Models\ReturnRequest;
 use App\Notifications\OrderStatusChanged;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
@@ -14,14 +17,20 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $query = Order::with('user', 'branch');
+        $user = auth()->user();
+
+        if ($user->isManager() && $user->branch_id) {
+            $query->where('branch_id', $user->branch_id);
+        } elseif ($request->filled('branch_id')) {
+            $query->where('branch_id', $request->branch_id);
+        }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        if ($request->filled('branch_id')) {
-            $query->where('branch_id', $request->branch_id);
-        }
+
         $orders = $query->latest()->paginate(20);
-        $branches = Branch::all();
+        $branches = Cache::remember('admin_branches', 3600, fn() => Branch::all());
         return view('admin.orders.index', compact('orders', 'branches'));
     }
 
@@ -51,10 +60,23 @@ class OrderController extends Controller
         }
 
         DB::transaction(function () use ($order, $newStatus, $oldStatus) {
-            $order->update(['status' => $newStatus]);
+            $updateData = ['status' => $newStatus];
+
+            // Auto-set delivered_at when status changes to delivered
+            if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+                $updateData['delivered_at'] = now();
+            }
+
+            $order->update($updateData);
+
+            // Dispatch event for cashback on first delivered order
+            if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+                event(new OrderDelivered($order));
+            }
 
             // Restore stock if the order is cancelled or returned
             if (in_array($newStatus, ['cancelled', 'returned']) && !in_array($oldStatus, ['cancelled', 'returned'])) {
+                $order->load('items.variant.branches');
                 foreach ($order->items as $item) {
                     $variant = $item->variant;
                     if ($variant) {
@@ -65,6 +87,20 @@ class OrderController extends Controller
                                 'stock' => $pivot->pivot->stock + $item->quantity,
                             ]);
                         }
+                    }
+                }
+
+                // Auto-create ReturnRequest if status is 'returned'
+                if ($newStatus === 'returned') {
+                    $existing = ReturnRequest::where('order_id', $order->id)->first();
+                    if (!$existing) {
+                        ReturnRequest::create([
+                            'order_id' => $order->id,
+                            'user_id' => $order->user_id,
+                            'status' => 'approved',
+                            'reason' => 'تم الإرجاع بواسطة الإدارة',
+                            'approved_at' => now(),
+                        ]);
                     }
                 }
             }

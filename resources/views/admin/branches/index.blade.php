@@ -48,4 +48,10 @@
         </tbody>
     </table>
 </div>
+
+@if(method_exists($branches, 'links'))
+<div class="mt-4">
+    {{ $branches->links() }}
+</div>
+@endif
 @endsection

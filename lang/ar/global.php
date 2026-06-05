@@ -2,6 +2,9 @@
 
 return [
     'home' => 'الرئيسية',
+    'shop' => 'المتجر',
+    'categories' => 'التصنيفات',
+    'search_placeholder' => 'ابحث عن منتجات...',
     'mens_clothing' => 'ملابس رجالي',
     'pants' => 'بناطيل',
     'offers' => 'عروض',
@@ -17,6 +20,37 @@ return [
     'admin_products' => 'المنتجات',
     'admin_coupons' => 'الكوبونات',
     'admin_orders' => 'الطلبات',
+    'return_requests' => 'الإرجاع',
+    'admin_settings' => 'الإعدادات',
+    'admin_exchanges'=> 'الاستبدال',
+    'admin_expenses'=> 'المصاريف',
+    'admin_whatsapp'=> 'تسويق',
+    'admin_users' => 'المستخدمين',
+    'admin_manage_users' => 'إدارة المستخدمين',
+    'admin_user_created' => 'تم إنشاء المستخدم بنجاح',
+    'admin_user_updated' => 'تم تحديث المستخدم بنجاح',
+    'admin_user_deleted' => 'تم حذف المستخدم بنجاح',
+    'unauthorized' => 'غير مصرح بهذا الإجراء',
+    'admin_add_user' => 'إضافة مستخدم',
+    'admin_edit_user' => 'تعديل المستخدم',
+    'admin_edit_customer' => 'تعديل العميل',
+    'admin_super_admin' => 'مشرف عام',
+    'admin_manager' => 'مدير فرع',
+    'admin_customer' => 'عميل',
+    'admin_customers' => 'العملاء',
+    'admin_staff' => 'الموظفين',
+    'admin_add_customer' => 'إضافة عميل',
+    'admin_create_customer' => 'إنشاء العميل',
+    'admin_customer_create_hint' => 'أدخل البريد الإلكتروني للعميل فقط. سيتم إنشاء كلمة مرور تلقائية يمكنك مشاركتها معه بعد الحفظ.',
+    'admin_customer_password_auto' => 'سيتم إنشاء كلمة مرور تلقائية بشكل عشوائي. ستظهر عند الحفظ. شارك البريد الإلكتروني وكلمة المرور مع العميل لتسجيل الدخول.',
+    'admin_customer_created' => 'تم إنشاء العميل بنجاح! البريد: :email | كلمة المرور: :password — يُرجى مشاركتها مع العميل.',
+    'admin_role' => 'الدور',
+    'admin_no_users' => 'لا يوجد مستخدمين',
+    'admin_no_branch' => 'بدون فرع',
+    'admin_branch_hint' => 'اختر الفرع إذا كان المستخدم مدير فرع',
+    'admin_save' => 'حفظ',
+    'admin_update' => 'تحديث',
+    'admin_password_hint' => 'اتركه فارغاً إذا لم ترد تغيير كلمة المرور',
     'admin_logout' => 'خروج',
     'admin_back_to_store' => 'المتجر',
     'admin_all_statuses' => 'كل الحالات',
@@ -113,6 +147,16 @@ return [
     'admin_enabled' => 'تفعيل',
     'admin_custom_price' => 'السعر الخاص',
     'admin_default' => 'افتراضي',
+    'admin_sale_price_info' => 'اتركه فارغاً إذا لم يكن هناك خصم. جميع المتغيرات ترث هذا السعر.',
+    'admin_variants_price_info' => 'جميع المتغيرات ترث السعر الأساسي للمنتج (:price). يمكنك تخصيص السعر لاحقاً من صفحة التعديل.',
+    'admin_color_images' => 'صور الألوان (اختياري — ارفع صورة واحدة لكل لون، والمقاسات المختلفة هتستخدم نفس الصورة)',
+    'add_to_wishlist' => 'أضف إلى المفضلة',
+    'remove_from_wishlist' => 'إزالة من المفضلة',
+    'wishlist_added' => 'تمت الإضافة إلى المفضلة',
+    'wishlist_removed' => 'تمت الإزالة من المفضلة',
+    'wishlist' => 'المفضلة',
+    'empty_wishlist' => 'قائمة المفضلة فارغة حالياً.',
+    'empty_wishlist_desc' => 'تصفح المنتجات وأضف ما يعجبك إلى المفضلة.',
     'admin_no_variants_info' => 'بما أن المنتج لا يحتوي على متغيرات، يرجى تحديد المخزون المتاح في كل فرع:',
     'admin_category_status' => 'التصنيف والحالة',
     'admin_select_category' => 'اختر التصنيف',
@@ -135,7 +179,7 @@ return [
     'select_language' => 'اللغة',
     'arabic' => 'العربية',
     'english' => 'English',
-    
+
     // Product Details
     'color' => 'اللون',
     'size' => 'المقاس',
@@ -147,14 +191,19 @@ return [
     'related_products' => 'منتجات ذات صلة',
     'on_sale' => 'تخفيض',
     'view_details' => 'عرض التفاصيل',
-    'limited_time_offer' => 'عرض لفترة محدودة! ينتهي الخصم خلال :days يوم',
+    'limited_time_offer' => 'عرض لفترة محدودة! ينتهي الخصم خلال',
     'original_price' => 'السعر الأصلي',
     'current_price' => 'السعر الحالي',
-    
+
     // Cart
     'shopping_cart' => 'سلة التسوق',
     'empty_cart' => 'سلة التسوق فارغة حالياً.',
-    'product' => 'المنتج',
+    'product' => 'منتج',
+    'products' => 'منتجات',
+    'showing' => 'عرض',
+    'to' => 'إلى',
+    'of' => 'من',
+    'show' => 'عرض',
     'price' => 'السعر',
     'total' => 'المجموع',
     'actions' => 'العمليات',
@@ -163,7 +212,7 @@ return [
     'checkout' => 'إتمام الشراء',
     'added_to_cart' => 'تم إضافة المنتج إلى السلة بنجاح!',
     'removed_from_cart' => 'تم الحذف من السلة',
-    
+
     // Checkout
     'checkout_title' => 'إتمام الشراء',
     'billing_details' => 'تفاصيل الشحن والفواتير',
@@ -179,7 +228,7 @@ return [
     'shipping_at_checkout' => 'تحسب عند الدفع',
     'place_order' => 'تأكيد الطلب والدفع',
     'order_success' => 'تم تسجيل طلبك بنجاح!',
-    
+
     // Profile
     'edit_profile' => 'تعديل الملف الشخصي',
     'name' => 'الاسم',
@@ -200,7 +249,7 @@ return [
     'delete_account_confirm_desc' => 'يرجى إدخال كلمة المرور للتأكيد على حذف الحساب بشكل نهائي.',
     'cancel' => 'إلغاء',
     'delete_account_btn' => 'حذف الحساب',
-    
+
     // Footer
     'footer_desc' => 'أفضل وأحدث تشكيلة من الملابس الرجالية العصرية في مصر. نحن ملتزمون بتقديم أعلى جودة بأفضل سعر.',
     'quick_links' => 'روابط سريعة',
@@ -220,12 +269,15 @@ return [
     'learn_more' => 'اعرف المزيد',
 
     // Home slider
+    'new_collection' => 'تشكيلة جديدة',
+    'best_sellers' => 'الأكثر مبيعاً',
+    'limited_offer' => 'عرض محدود',
     'slide_1_title' => 'أحدث تشكيلة رجالية',
     'slide_1_desc' => 'اكتشف أحدث صيحات الموضة الرجالية العصرية.',
     'slide_2_title' => 'تخفيضات تصل إلى 50%',
     'slide_2_desc' => 'عروض حصرية لفترة محدودة على تشكيلتنا المختارة.',
-    'slide_3_title' => 'توصيل مجاني لأول طلب',
-    'slide_3_desc' => 'سارع بتجربة التسوق معنا واستفد من خدمة التوصيل المجاني.',
+    'slide_3_title' => 'علامات تجارية أصلية',
+    'slide_3_desc' => 'نوفر لكم أفضل الماركات العالمية بأعلى جودة وأفضل الأسعار.',
     'shop_by_category' => 'تسوق حسب التصنيف',
     'view_all' => 'عرض الكل',
     'sub_categories' => 'أقسام فرعية',
@@ -379,6 +431,7 @@ return [
     'coupon_remove_btn' => 'إزالة الكوبون',
     'coupon_success' => 'تم تطبيق الكوبون :code بنجاح!',
     'coupon_error' => 'كود الخصم غير صالح أو منتهي الصلاحية',
+    'coupon_removed' => 'تم إزالة الكوبون بنجاح.',
     'coupon_discount_label' => 'الخصم',
     'phone_invalid' => 'رقم الهاتف يجب أن يكون 11 رقمًا مصريًا صحيحًا (يبدأ بـ 01).',
 
@@ -403,4 +456,10 @@ return [
     'page_not_found_desc' => 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
     'server_error' => 'خطأ في الخادم',
     'server_error_desc' => 'حدث خطأ ما. برجاء المحاولة مرة أخرى لاحقاً.',
+    'login_required' => 'يجب تسجيل الدخول أولاً',
+
+    // Offline
+    'offline_title' => 'انقطع الاتصال',
+    'offline_desc' => 'تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.',
+    'try_again' => 'حاول مرة أخرى',
 ];

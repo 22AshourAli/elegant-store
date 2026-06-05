@@ -3,16 +3,12 @@
 namespace App\Notifications;
 
 use App\Models\Order;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Http;
 
-class OrderStatusChanged extends Notification implements ShouldQueue
+class OrderStatusChanged extends Notification
 {
-    use Queueable;
-
     public $order;
     public $status;
 
@@ -37,7 +33,6 @@ class OrderStatusChanged extends Notification implements ShouldQueue
         // best-effort WhatsApp notifications (customer + admin)
         try {
             $phone = $this->order->phone ?? $notifiable->phone ?? null;
-            $statusText = __('orders.status_' . $this->status);
             $message = "تم تحديث حالة طلبك #{$this->order->id} إلى {$statusText}. تفاصيل: " . route('orders.show', $this->order->id);
             if ($phone) $this->sendWhatsApp($phone, $message);
             $adminNumber = config('store.admin_whatsapp', env('ADMIN_WHATSAPP', env('ADMIN_PHONE')));
@@ -70,28 +65,6 @@ class OrderStatusChanged extends Notification implements ShouldQueue
                 'status' => __('orders.status_' . $this->status)
             ]),
         ];
-    }
-
-    public function afterSend($notifiable)
-    {
-        // send WhatsApp to customer if phone available
-        try {
-            $phone = $this->order->phone ?? $notifiable->phone ?? null;
-            $statusText = __('orders.status_' . $this->status);
-            $message = "تم تحديث حالة طلبك #{$this->order->id} إلى {$statusText}. تفاصيل: " . route('orders.show', $this->order->id);
-            if ($phone) {
-                $this->sendWhatsApp($phone, $message);
-            }
-
-            // also notify admin via WhatsApp
-            $adminNumber = config('store.admin_whatsapp', env('ADMIN_WHATSAPP', env('ADMIN_PHONE')));
-            if ($adminNumber) {
-                $adminMsg = "تم تحديث حالة الطلب #{$this->order->id} إلى {$statusText}.";
-                $this->sendWhatsApp($adminNumber, $adminMsg);
-            }
-        } catch (\Exception $e) {
-            // ignore
-        }
     }
 
     private function sendWhatsApp($to, $message)

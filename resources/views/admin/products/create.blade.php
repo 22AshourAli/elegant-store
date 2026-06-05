@@ -26,6 +26,7 @@
                     <div>
                         <label class="block text-sm font-medium mb-1">{{ __('global.admin_sale_price') }}</label>
                         <input type="number" step="0.01" name="sale_price" value="{{ old('sale_price') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                        <p class="text-xs text-gray-500 mt-1">{{ __('global.admin_sale_price_info') }}</p>
                     </div>
                 </div>
 
@@ -54,11 +55,38 @@
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div>
                             <label class="block text-sm font-medium mb-1">{{ __('global.admin_colors_available') }}</label>
-                            <input type="text" name="colors" x-model="colors" placeholder="{{ __('global.admin_colors_placeholder') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                            <input type="text" name="colors" x-model="colors" @input="initColorImages" placeholder="{{ __('global.admin_colors_placeholder') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">{{ __('global.admin_sizes_available') }}</label>
                             <input type="text" name="sizes" x-model="sizes" placeholder="S, M, L, XL" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-gray-500 mb-4">{{ __('global.admin_variants_price_info') }} <strong>{{ (int) round(old('base_price', 0)) }} {{ __('global.currency') }}</strong></p>
+
+                    <!-- Color Images Upload -->
+                    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border dark:border-gray-600">
+                        <p class="text-sm font-semibold mb-3">{{ __('global.admin_color_images') }}</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <template x-for="(color, ci) in colorList" :key="color">
+                                <div>
+                                    <label class="block text-xs font-medium mb-1" x-text="'صورة لون ' + color"></label>
+                                    <input type="file" :name="'color_images['+color+']'" accept="image/*" class="w-full text-xs border border-gray-300 dark:border-gray-600 p-1.5 rounded bg-white dark:bg-gray-800">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border dark:border-gray-600">
+                        <p class="text-sm font-semibold mb-3">اختر الفروع لتسجيل المخزون</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <template x-for="branch in branches" :key="branch.id">
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" :value="String(branch.id)" x-model="selectedBranchIds" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                    <span x-text="branch.name"></span>
+                                </label>
+                            </template>
                         </div>
                     </div>
 
@@ -69,33 +97,79 @@
                                     <th class="p-2">{{ __('global.admin_enabled') }}</th>
                                     <th class="p-2">{{ __('global.color') }}</th>
                                     <th class="p-2">{{ __('global.size') }}</th>
-                                    <th class="p-2">{{ __('global.admin_custom_price') }}</th>
-                                    @foreach($branches as $branch)
-                                        <th class="p-2">{{ __('global.admin_stock') }} ({{ $branch->name }})</th>
-                                    @endforeach
+                                    <th class="p-2">SKU</th>
+                                    <th class="p-2">سعر مخصص</th>
+                                    <th class="p-2">سعر التخفيض</th>
+                                    <template x-for="branch in selectedBranches" :key="branch.id">
+                                        <th class="p-2" x-text="'{{ __('global.admin_stock') }} (' + branch.name + ')' "></th>
+                                    </template>
+                                    <th class="p-2">تكلفة الشراء</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <template x-for="color in colorList" :key="color">
-                                    <template x-for="size in sizeList" :key="size">
-                                        <tr class="border-t dark:border-gray-700">
-                                            <td class="p-2"><input type="checkbox" :name="'variants['+color+'_'+size+']'" value="1" checked class="rounded"></td>
-                                            <td class="p-2 font-bold" x-text="color"></td>
-                                            <td class="p-2 font-bold" x-text="size"></td>
-                                            <td class="p-2">
-                                                <input type="number" step="0.01" :name="'variant_prices['+color+'_'+size+']'" placeholder="{{ __('global.admin_default') }}" class="w-24 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600">
-                                            </td>
-                                            @foreach($branches as $branch)
-                                            <td class="p-2">
-                                                <input type="number" :name="'variant_stocks['+color+'_'+size+'][{{ $branch->id }}]'" placeholder="0" value="0" min="0" class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600">
-                                            </td>
-                                            @endforeach
-                                        </tr>
-                                    </template>
+                                <template x-for="(color, ci) in colorList" :key="color">
+                                    <template x-for="(size, si) in sizeList" :key="size" x-init="ensureVariant(color + '_' + size)">
+                                            <tr class="border-t dark:border-gray-700">
+                                                <td class="p-2">
+                                                    <input type="checkbox" :name="'variants['+color+'_'+size+']'" value="1" checked class="rounded" x-model="variantSelections[color+'_'+size]">
+                                                </td>
+                                                <td class="p-2 font-bold" x-text="color"></td>
+                                                <td class="p-2 font-bold" x-text="size"></td>
+                                                <td class="p-2">
+                                                    <input type="text" :name="'variants_data['+color+'_'+size+'][sku]'" placeholder="SKU" class="w-28 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model="variantsData[color+'_'+size].sku">
+                                                </td>
+                                                <td class="p-2">
+                                                    <input type="number" step="0.01" :name="'variants_data['+color+'_'+size+'][price_override]'" placeholder="سعر مخصص" class="w-28 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model.number="variantsData[color+'_'+size].price_override">
+                                                </td>
+                                                <td class="p-2">
+                                                    <input type="number" step="0.01" :name="'variants_data['+color+'_'+size+'][sale_price]'" placeholder="سعر التخفيض" class="w-28 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model.number="variantsData[color+'_'+size].sale_price">
+                                                </td>
+                                                <template x-for="branch in selectedBranches" :key="branch.id">
+                                                    <td class="p-2">
+                                                        <input type="number" :name="'variant_stocks['+color+'_'+size+']['+branch.id+']'" placeholder="0" min="0" class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model.number="variantsData[color+'_'+size].stocks[branch.id]">
+                                                    </td>
+                                                </template>
+                                                <td class="p-2">
+                                                    <input type="number" step="0.01" :name="'cost_prices['+color+'_'+size+']'" placeholder="0" class="w-20 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model.number="variantsData[color+'_'+size].cost_price">
+                                                </td>
+                                            </tr>
+                                        </template>
                                 </template>
                             </tbody>
                         </table>
                     </div>
+                                        <!-- Live Preview -->
+                                        <div class="mt-6 p-4 bg-white dark:bg-gray-800 rounded shadow">
+                                            <h4 class="font-semibold mb-3">معاينة المتغيرات (قبل الحفظ)</h4>
+                                            <template x-if="Object.keys(variantsPreview).length">
+                                                <div class="overflow-x-auto">
+                                                    <table class="w-full text-sm text-right">
+                                                        <thead class="bg-gray-50 dark:bg-gray-700">
+                                                            <tr>
+                                                                <th class="p-2">اللون</th>
+                                                                <th class="p-2">المقاس</th>
+                                                                <th class="p-2">SKU</th>
+                                                                <th class="p-2">سعر مخصص</th>
+                                                                <th class="p-2">سعر تخفيض</th>
+                                                                <th class="p-2">مجموع المخزون</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <template x-for="v in variantsPreview" :key="v.key">
+                                                                <tr class="border-t dark:border-gray-700">
+                                                                    <td class="p-2" x-text="v.color"></td>
+                                                                    <td class="p-2" x-text="v.size"></td>
+                                                                    <td class="p-2" x-text="v.sku || '-' "></td>
+                                                                    <td class="p-2" x-text="v.price_override || '-' "></td>
+                                                                    <td class="p-2" x-text="v.sale_price || '-' "></td>
+                                                                    <td class="p-2" x-text="v.totalStock"></td>
+                                                                </tr>
+                                                            </template>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </template>
+                                        </div>
                 </div>
 
                 <div x-show="!hasVariants" class="mt-4">
@@ -107,6 +181,10 @@
                             <input type="number" name="variant_stocks[default][{{ $branch->id }}]" placeholder="0" value="0" min="0" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
                         </div>
                         @endforeach
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium mb-1">تكلفة الشراء للوحدة ({{ __('global.currency') }})</label>
+                        <input type="number" step="0.01" name="cost_prices[default]" placeholder="مثلاً 150" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
                     </div>
                 </div>
             </div>
@@ -158,11 +236,67 @@
             hasVariants: false,
             colors: '',
             sizes: '',
+            branches: @json($branches->map(fn($b) => ['id' => (string)$b->id, 'name' => $b->name])),
+            selectedBranchIds: @json($branches->pluck('id')->map(fn($id) => (string)$id)->toArray()),
+            variantsData: {},
+            variantSelections: {},
+
             get colorList() {
                 return this.colors.split(',').map(c => c.trim()).filter(c => c);
             },
             get sizeList() {
                 return this.sizes.split(',').map(s => s.trim()).filter(s => s);
+            },
+            get selectedBranches() {
+                return this.branches.filter(branch => this.selectedBranchIds.includes(branch.id));
+            },
+
+            init() {
+                this.initAllVariants();
+                this.$watch('colors', () => this.initAllVariants());
+                this.$watch('sizes', () => this.initAllVariants());
+            },
+
+            initAllVariants() {
+                this.colorList.forEach(color => {
+                    this.sizeList.forEach(size => {
+                        const key = color + '_' + size;
+                        this.ensureVariant(key, color, size);
+                    });
+                });
+            },
+
+            ensureVariant(key, color = null, size = null) {
+                if (!this.variantsData[key]) {
+                    const parts = key.split('_');
+                    color = color || parts[0];
+                    size = size || parts.slice(1).join('_');
+                    this.variantsData[key] = {
+                        sku: '',
+                        price_override: '',
+                        sale_price: '',
+                        cost_price: '',
+                        stocks: {},
+                        color,
+                        size,
+                    };
+                    this.branches.forEach(b => { this.variantsData[key].stocks[b.id] = 0; });
+                    this.variantSelections[key] = true;
+                }
+            },
+
+            get variantsPreview() {
+                return Object.keys(this.variantsData)
+                    .filter(k => this.variantSelections[k])
+                    .map(k => {
+                        const v = this.variantsData[k];
+                        const totalStock = Object.values(v.stocks || {}).reduce((a, b) => a + Number(b || 0), 0);
+                        return { ...v, key: k, totalStock };
+                    });
+            },
+
+            initColorImages() {
+                // placeholder to trigger reactivity for color images
             }
         }
     }

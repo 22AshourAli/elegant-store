@@ -27,3 +27,6 @@ Thumbs.db
 cloudflared.exe
 *.zip
 *.exe
+test_output.txt
+test_output_*.txt
+temp_*.php

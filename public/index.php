@@ -5,16 +5,17 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+// Detect deployment structure:
+// Local: index.php is in public/, Laravel is in ../
+// InfinityFree: index.php is in htdocs/, Laravel is in htdocs/laravel/
+$baseDir = is_dir(__DIR__.'/laravel') ? __DIR__.'/laravel' : __DIR__.'/..';
+
+if (file_exists($maintenance = $baseDir.'/storage/framework/maintenance.php')) {
     require $maintenance;
 }
 
-// Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
+require $baseDir.'/vendor/autoload.php';
 
-// Bootstrap Laravel and handle the request...
-/** @var Application $app */
-$app = require_once __DIR__.'/../bootstrap/app.php';
+$app = require_once $baseDir.'/bootstrap/app.php';
 
 $app->handleRequest(Request::capture());

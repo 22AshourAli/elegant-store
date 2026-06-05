@@ -16,7 +16,7 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.auth');
         }
 
-        $cartItems = $cart->getCart();
+        $cartItems = $cart->getEnrichedCart();
         if (empty($cartItems)) {
             return redirect()->route('cart.index')->with('error', 'السلة فارغة حالياً.');
         }
@@ -31,7 +31,12 @@ class CheckoutController extends Controller
         $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
         $finalTotal = $total + $shipping;
 
-        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal'));
+        $hasActiveCoupons = \App\Models\Coupon::whereRaw('"is_active" = true')
+            ->where(function($q) { $q->whereNull('valid_from')->orWhere('valid_from', '<=', now()); })
+            ->where(function($q) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()); })
+            ->exists();
+
+        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal', 'hasActiveCoupons'));
     }
 
     public function showAuthForm()
@@ -72,7 +77,7 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $cartItems = $cart->getCart();
+        $cartItems = $cart->getEnrichedCart();
         if (empty($cartItems)) {
             return redirect()->route('cart.index')->with('error', 'السلة فارغة.');
         }
@@ -81,9 +86,11 @@ class CheckoutController extends Controller
             $data = $request->all();
             $data['branch_id'] = 1;
 
-            // compute subtotal and discount from cart service
+            // compute subtotal, discount, and shipping from cart service
+            $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
             $data['subtotal'] = $cart->baseTotal();
             $data['discount'] = $cart->getDiscount();
+            $data['shipping_cost'] = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
 
             $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
 
