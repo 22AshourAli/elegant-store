@@ -42,6 +42,7 @@
                                 <th class="p-2">{{ __('global.admin_sku') }}</th>
                                 <th class="p-2">{{ __('global.admin_custom_price') }} ({{ __('global.currency') }})</th>
                                 <th class="p-2">{{ __('global.admin_sale_price') }} ({{ __('global.currency') }})</th>
+                                <th class="p-2">تكلفة الشراء ({{ __('global.currency') }})</th>
                                 <th class="p-2">{{ __('global.admin_stock_branches') }}</th>
                             </tr>
                         </thead>
@@ -71,6 +72,9 @@
                                 </td>
                                 <td class="p-2">
                                     <input type="number" step="0.01" name="variants[{{ $variant->id }}][sale_price]" value="{{ old('variants.'.$variant->id.'.sale_price', $variant->sale_price) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="{{ __('global.admin_no_sale') }}">
+                                </td>
+                                <td class="p-2">
+                                    <input type="number" step="0.01" name="variants[{{ $variant->id }}][cost_price]" value="{{ old('variants.'.$variant->id.'.cost_price', $variant->cost_price) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="مثلاً 150">
                                 </td>
                                 <td class="p-2">
                                     <div class="space-y-1">

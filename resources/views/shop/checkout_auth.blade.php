@@ -21,9 +21,10 @@
                        required 
                        autofocus 
                        placeholder="example@domain.com"
-                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition duration-200 text-start">
+                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl text-sm bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition duration-200 text-start @error('email') border-red-500 dark:border-red-500 @enderror"
+                       @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
                 @error('email')
-                    <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
+                    <p id="email-error" class="text-red-500 text-xs mt-2" role="alert">{{ $message }}</p>
                 @enderror
             </div>
 

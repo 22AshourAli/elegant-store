@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Lang;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -21,6 +22,9 @@ class Product extends Model implements HasMedia
     protected $casts = [
         'discount_start' => 'datetime',
         'discount_end' => 'datetime',
+        'has_variants' => \App\Casts\PostgresBoolean::class,
+        'is_active' => \App\Casts\PostgresBoolean::class,
+        'featured' => \App\Casts\PostgresBoolean::class,
     ];
 
     protected $appends = [
@@ -49,15 +53,15 @@ class Product extends Model implements HasMedia
 
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->whereRaw('"is_active" = true');
     }
 
     // السعر النهائي الحالي مع الأخذ في الاعتبار الخصم الزمني
     public function getCurrentPriceAttribute()
     {
         $now = now();
-        if ($this->sale_price && 
-            (!$this->discount_start || $this->discount_start <= $now) && 
+        if ($this->sale_price &&
+            (!$this->discount_start || $this->discount_start <= $now) &&
             (!$this->discount_end || $this->discount_end >= $now)) {
             return $this->sale_price;
         }
@@ -75,7 +79,7 @@ class Product extends Model implements HasMedia
         if (request()->is('admin*')) {
             return $value;
         }
-        return __($value);
+        return Lang::has($value) ? __($value) : $value;
     }
 
     public function getDescriptionAttribute($value)
@@ -83,14 +87,42 @@ class Product extends Model implements HasMedia
         if (request()->is('admin*')) {
             return $value;
         }
-        return __($value);
+        return Lang::has($value) ? __($value) : $value;
     }
 
-    // تسجيل مجموعة الوسائط (الصور)
+    public function getSkuAttribute()
+    {
+        if ($this->relationLoaded('variants')) {
+            $default = $this->variants->firstWhere('is_default', true);
+            if ($default && $default->sku) {
+                return $default->sku;
+            }
+            $first = $this->variants->first();
+            return $first?->sku;
+        }
+        return $this->variants()->where('is_default', true)->value('sku')
+            ?? $this->variants()->value('sku');
+    }
+
+    public function hasStock(): bool
+    {
+        // If variants are already eager-loaded, avoid a new DB query entirely.
+        if ($this->relationLoaded('variants')) {
+            return $this->variants->contains(function ($variant) {
+                if ($variant->relationLoaded('branches')) {
+                    return $variant->branches->where('pivot.stock', '>', 0)->isNotEmpty();
+                }
+                return $variant->branches()->where('stock', '>', 0)->exists();
+            });
+        }
+
+        return $this->variants()->whereHas('branches', fn($q) => $q->where('stock', '>', 0))->exists();
+    }
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('product_images')
-             ->useFallbackUrl('/images/placeholder.jpg')
+             ->useFallbackUrl('/images/logo.svg')
              ->singleFile(false); // نسمح برفع عدة صور
     }
 

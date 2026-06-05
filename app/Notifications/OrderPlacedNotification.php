@@ -3,15 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\Order;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class OrderPlacedNotification extends Notification implements ShouldQueue
+class OrderPlacedNotification extends Notification
 {
-    use Queueable;
-
     public $order;
 
     public function __construct(Order $order)

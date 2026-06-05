@@ -21,6 +21,6 @@ class Coupon extends Model
     protected $casts = [
         'valid_from' => 'datetime',
         'valid_until' => 'datetime',
-        'is_active' => 'boolean',
+        'is_active' => \App\Casts\PostgresBoolean::class,
     ];
 }

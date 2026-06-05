@@ -6,22 +6,42 @@
 @section('content')
 <div class="space-y-8 text-start">
     <!-- Stat Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Stat: Revenue -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+
+        <!-- Stat: Net Profit (this month) -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between lg:col-span-2">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_revenue') }}</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">
-                    {{ (int) round($totalRevenue) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">صافي الربح (هذا الشهر)</span>
+                <h3 class="text-2xl font-extrabold {{ $monthlyNetProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                    {{ (int) round($monthlyNetProfit) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
+                </h3>
+                <div class="flex items-center gap-4 text-xs text-gray-400 mt-1">
+                    <span>إيراد: <strong class="text-gray-600 dark:text-gray-300">{{ (int) round($monthlyProductRevenue) }}</strong></span>
+                    <span>شحن: <strong class="text-amber-600">{{ (int) round($monthlyShippingCollected) }}</strong></span>
+                    <span>تكلفة: <strong class="text-orange-600">{{ (int) round($monthlyCosts) }}</strong></span>
+                    <span>مصروفات: <strong class="text-red-600">{{ (int) round($monthlyExpenses) }}</strong></span>
+                </div>
+            </div>
+            <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+        </div>
+
+        <!-- Stat: Net Profit (all time) -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+            <div class="space-y-2">
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">صافي الربح (الإجمالي)</span>
+                <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                    {{ (int) round($netProfit) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
                 </h3>
             </div>
-            <div class="p-3.5 bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 rounded-xl">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
 
         <!-- Stat: Orders -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_orders_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalOrders }}</h3>
@@ -32,7 +52,7 @@
         </div>
 
         <!-- Stat: Customers -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_customers_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalCustomers }}</h3>
@@ -42,14 +62,107 @@
             </div>
         </div>
 
+        <!-- Stat: Returns -->
+        <a href="{{ route('admin.returns.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 transition">
+            <div class="space-y-2">
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">طلبات الإرجاع</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $returnRequestCount }}</h3>
+                <div class="text-xs text-gray-400">قيد الانتظار: <span class="text-amber-600 font-bold">{{ $returnRequestPending }}</span></div>
+            </div>
+            <div class="p-3.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-xl">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            </div>
+        </a>
+
+        <!-- Stat: Exchanges -->
+        <a href="{{ route('admin.exchanges.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 transition">
+            <div class="space-y-2">
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">طلبات الاستبدال</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $exchangeCount }}</h3>
+                <div class="text-xs text-gray-400">قيد الانتظار: <span class="text-indigo-600 font-bold">{{ $exchangePending }}</span></div>
+            </div>
+            <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            </div>
+        </a>
+
         <!-- Stat: Low Stock -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_low_stock') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $lowStockCount }}</h3>
             </div>
             <div class="p-3.5 {{ $lowStockCount > 0 ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400' }} rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Report Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+            <h4 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span>التقرير المالي</span>
+            </h4>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400">إجمالي</span>
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 rounded">{{ (int) round($totalProductRevenue + $totalShippingCollected) }} {{ __('global.currency') }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Revenue -->
+            <div class="bg-green-50 dark:bg-green-950/20 rounded-xl p-4 border border-green-100 dark:border-green-900/30">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">إيراد</span>
+                    <span class="text-xs text-gray-400">هذا الشهر: {{ (int) round($monthlyProductRevenue) }}</span>
+                </div>
+                <p class="text-2xl font-extrabold text-green-700 dark:text-green-400">{{ (int) round($totalProductRevenue) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-green-600/70 dark:text-green-500/70 mt-1">إجمالي مبيعات المنتجات (بدون شحن)</p>
+            </div>
+
+            <!-- Shipping -->
+            <div class="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-100 dark:border-amber-900/30">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">مصاريف الشحن</span>
+                    <span class="text-xs text-gray-400">{{ (int) round($monthlyShippingCollected) }}</span>
+                </div>
+                <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">{{ (int) round($totalShippingCollected) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">محصّل من العملاء — يُدفع لشركة الشحن</p>
+            </div>
+
+            <!-- COGS -->
+            <div class="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-4 border border-orange-100 dark:border-orange-900/30">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wide">تكلفة البضاعة</span>
+                    <span class="text-xs text-gray-400">{{ (int) round($monthlyCosts) }}</span>
+                </div>
+                <p class="text-2xl font-extrabold text-orange-700 dark:text-orange-400">{{ (int) round($totalCosts) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-orange-600/70 dark:text-orange-500/70 mt-1">تكلفة شراء المنتجات من الموردين</p>
+            </div>
+
+            <!-- Other Expenses -->
+            <div class="bg-red-50 dark:bg-red-950/20 rounded-xl p-4 border border-red-100 dark:border-red-900/30">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">مصروفات أخرى</span>
+                    <span class="text-xs text-gray-400">{{ (int) round($monthlyManualExpenses) }}</span>
+                </div>
+                <p class="text-2xl font-extrabold text-red-700 dark:text-red-400">{{ (int) round($totalManualExpenses) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-red-600/70 dark:text-red-500/70 mt-1">إيجار، رواتب، فواتير، إلخ</p>
+            </div>
+        </div>
+
+        <!-- Net profit summary -->
+        <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                <span>صافي الربح = إيراد <span class="text-green-600 font-bold">{{ (int) round($totalProductRevenue) }}</span>
+                - تكلفة <span class="text-orange-600 font-bold">{{ (int) round($totalCosts) }}</span>
+                - شحن <span class="text-amber-600 font-bold">{{ (int) round($totalShippingCollected) }}</span>
+                - مصروفات <span class="text-red-600 font-bold">{{ (int) round($totalManualExpenses) }}</span></span>
+            </div>
+            <div class="text-lg font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                = {{ (int) round($netProfit) }} {{ __('global.currency') }}
             </div>
         </div>
     </div>
@@ -129,6 +242,33 @@
             </table>
         </div>
     </div>
+
+    <!-- Recent Expenses -->
+    @if($recentExpenses && $recentExpenses->count() > 0)
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-bold text-gray-900 dark:text-white">آخر المصروفات</h4>
+            <a href="{{ route('admin.expenses.index') }}" class="text-xs text-indigo-600 hover:underline font-semibold">عرض الكل</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400">
+                    <tr><th class="px-6 py-3">التصنيف</th><th class="px-6 py-3">الوصف</th><th class="px-6 py-3">المبلغ</th><th class="px-6 py-3">التاريخ</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    @foreach($recentExpenses as $expense)
+                    <tr>
+                        <td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700">{{ $expense->category }}</span></td>
+                        <td class="px-6 py-4 max-w-xs truncate">{{ $expense->description }}</td>
+                        <td class="px-6 py-4 font-bold text-red-600">{{ (int) round($expense->amount) }} ج.م</td>
+                        <td class="px-6 py-4 text-xs">{{ $expense->expense_date->format('Y-m-d') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 </div>
 @endsection
 

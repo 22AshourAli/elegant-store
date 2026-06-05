@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-extrabold mb-8 text-gray-900 dark:text-white">{{ __('global.checkout_title_page') }}</h1>
+    <h1 class="text-3xl font-extrabold mb-8 text-slate-900 dark:text-white">{{ __('global.checkout_title_page') }}</h1>
 
         @if(session('error'))
         <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 mb-6 shadow-sm" x-data="{ show: true }" x-show="show">
@@ -36,128 +36,148 @@
 
             <!-- Shipping Info Form (Left Side) -->
             <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                    <h2 class="text-xl font-bold mb-6 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.shipping_info') }}</h2>
+                <div class="bg-white/70 dark:bg-surface-dark/60 rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 shadow-sm backdrop-blur-sm">
+                    <h2 class="text-xl font-bold mb-6 pb-2 border-b border-slate-200/40 dark:border-slate-800/60 text-slate-900 dark:text-white">{{ __('global.shipping_info') }}</h2>
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium mb-1">{{ __('global.full_name') }} <span class="text-red-500">*</span></label>
-                            <input type="text" value="{{ auth()->user()->name }}" readonly class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border bg-gray-50">
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.full_name') }} <span class="text-red-500">*</span></label>
+                            <input type="text" value="{{ auth()->user()->name }}" readonly class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm bg-slate-100/60 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 px-4 py-3 text-sm font-semibold cursor-not-allowed opacity-70">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-1">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
-                            <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border @error('phone') border-red-500 dark:border-red-500 @enderror">
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
+                            <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-500 dark:border-red-500 @enderror" @error('phone') aria-invalid="true" aria-describedby="phone-error" @enderror>
                             @error('phone')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p id="phone-error" class="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-1">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
-                            <textarea name="shipping_address" required rows="3" placeholder="{{ __('global.address_placeholder') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border @error('shipping_address') border-red-500 dark:border-red-500 @enderror">{{ old('shipping_address') }}</textarea>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
+                            <textarea name="shipping_address" required rows="3" placeholder="{{ __('global.address_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('shipping_address') border-red-500 dark:border-red-500 @enderror" @error('shipping_address') aria-invalid="true" aria-describedby="shipping_address-error" @enderror>{{ old('shipping_address') }}</textarea>
                             @error('shipping_address')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                <p id="shipping_address-error" class="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-1">{{ __('global.order_notes') }}</label>
-                            <textarea name="notes" rows="2" placeholder="{{ __('global.order_notes_placeholder') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">{{ old('notes') }}</textarea>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.order_notes') }}</label>
+                            <textarea name="notes" rows="2" placeholder="{{ __('global.order_notes_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">{{ old('notes') }}</textarea>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm" x-data="{ selectedMethod: 'cash' }">
-                    <h2 class="text-xl font-bold mb-6 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.payment_method_title') }}</h2>
+                <div class="bg-white/70 dark:bg-surface-dark/60 rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 shadow-sm backdrop-blur-sm @error('payment_method') !border-red-500 dark:!border-red-500 @enderror" x-data="{ selectedMethod: 'cash' }">
+                    <h2 class="text-xl font-bold mb-6 pb-2 border-b border-slate-200/40 dark:border-slate-800/60 text-slate-900 dark:text-white">{{ __('global.payment_method_title') }}</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="payment-method-group" role="radiogroup" aria-label="{{ __('global.payment_method_title') }}">
                         <!-- Cash on Delivery -->
-                        <label class="relative flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
-                               :class="selectedMethod === 'cash' ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 dark:border-indigo-500 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'">
-                            <input type="radio" name="payment_method" value="cash" x-model="selectedMethod" class="sr-only">
-                            <svg class="w-8 h-8 text-gray-600 dark:text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('global.cash_on_delivery_label') }}</span>
+                        <label class="relative flex flex-col items-center justify-center p-5 border-2 rounded-xl cursor-pointer transition-all duration-300"
+                               :class="selectedMethod === 'cash' ? 'border-brand-primary bg-brand-primary/5 dark:bg-accent/10 dark:border-accent shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]' : 'border-slate-200/60 dark:border-slate-800/60 hover:border-brand-primary/40 dark:hover:border-accent/40 hover:shadow-sm bg-white/40 dark:bg-slate-900/30'">
+                            <input type="radio" name="payment_method" value="cash" x-model="selectedMethod" class="sr-only" aria-describedby="payment-method-error">
+                            <svg class="w-8 h-8 mb-2 transition-colors duration-300" :class="selectedMethod === 'cash' ? 'text-brand-primary dark:text-accent' : 'text-slate-400 dark:text-slate-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <span class="font-bold text-sm transition-colors duration-300" :class="selectedMethod === 'cash' ? 'text-brand-primary dark:text-accent' : 'text-slate-700 dark:text-slate-300'">{{ __('global.cash_on_delivery_label') }}</span>
+                            <template x-if="selectedMethod === 'cash'">
+                                <span class="absolute -top-2 -end-2 w-5 h-5 bg-brand-primary dark:bg-accent rounded-full flex items-center justify-center shadow-md animate-scaleIn">
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                            </template>
                         </label>
 
                         <!-- Credit Card -->
-                        <label class="relative flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
-                               :class="selectedMethod === 'card' ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 dark:border-indigo-500 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'">
-                            <input type="radio" name="payment_method" value="card" x-model="selectedMethod" class="sr-only">
-                            <svg class="w-8 h-8 text-gray-600 dark:text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('global.credit_card_label') }}</span>
+                        <label class="relative flex flex-col items-center justify-center p-5 border-2 rounded-xl cursor-pointer transition-all duration-300"
+                               :class="selectedMethod === 'card' ? 'border-brand-primary bg-brand-primary/5 dark:bg-accent/10 dark:border-accent shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]' : 'border-slate-200/60 dark:border-slate-800/60 hover:border-brand-primary/40 dark:hover:border-accent/40 hover:shadow-sm bg-white/40 dark:bg-slate-900/30'">
+                            <input type="radio" name="payment_method" value="card" x-model="selectedMethod" class="sr-only" aria-describedby="payment-method-error">
+                            <svg class="w-8 h-8 mb-2 transition-colors duration-300" :class="selectedMethod === 'card' ? 'text-brand-primary dark:text-accent' : 'text-slate-400 dark:text-slate-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                            <span class="font-bold text-sm transition-colors duration-300" :class="selectedMethod === 'card' ? 'text-brand-primary dark:text-accent' : 'text-slate-700 dark:text-slate-300'">{{ __('global.credit_card_label') }}</span>
+                            <template x-if="selectedMethod === 'card'">
+                                <span class="absolute -top-2 -end-2 w-5 h-5 bg-brand-primary dark:bg-accent rounded-full flex items-center justify-center shadow-md animate-scaleIn">
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                            </template>
                         </label>
 
                         <!-- Wallet -->
-                        <label class="relative flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200"
-                               :class="selectedMethod === 'wallet' ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 dark:border-indigo-500 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'">
-                            <input type="radio" name="payment_method" value="wallet" x-model="selectedMethod" class="sr-only">
-                            <svg class="w-8 h-8 text-gray-600 dark:text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                            <span class="font-bold text-gray-900 dark:text-white text-sm">{{ __('global.wallet_label') }}</span>
+                        <label class="relative flex flex-col items-center justify-center p-5 border-2 rounded-xl cursor-pointer transition-all duration-300"
+                               :class="selectedMethod === 'wallet' ? 'border-brand-primary bg-brand-primary/5 dark:bg-accent/10 dark:border-accent shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]' : 'border-slate-200/60 dark:border-slate-800/60 hover:border-brand-primary/40 dark:hover:border-accent/40 hover:shadow-sm bg-white/40 dark:bg-slate-900/30'">
+                            <input type="radio" name="payment_method" value="wallet" x-model="selectedMethod" class="sr-only" aria-describedby="payment-method-error">
+                            <svg class="w-8 h-8 mb-2 transition-colors duration-300" :class="selectedMethod === 'wallet' ? 'text-brand-primary dark:text-accent' : 'text-slate-400 dark:text-slate-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            <span class="font-bold text-sm transition-colors duration-300" :class="selectedMethod === 'wallet' ? 'text-brand-primary dark:text-accent' : 'text-slate-700 dark:text-slate-300'">{{ __('global.wallet_label') }}</span>
+                            <template x-if="selectedMethod === 'wallet'">
+                                <span class="absolute -top-2 -end-2 w-5 h-5 bg-brand-primary dark:bg-accent rounded-full flex items-center justify-center shadow-md animate-scaleIn">
+                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                            </template>
                         </label>
                     </div>
+                    @error('payment_method')
+                        <p id="payment-method-error" class="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
             <!-- Summary Widget & Submit (Right Side) -->
             <div class="lg:col-span-1">
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm sticky top-24">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 pb-4 border-b dark:border-gray-700">{{ __('global.your_order') }}</h2>
+                <div class="glass-premium rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.4)] sticky top-24">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white mb-6 pb-4 border-b border-slate-200/40 dark:border-slate-800/60">{{ __('global.your_order') }}</h2>
 
-                    <div class="max-h-60 overflow-y-auto mb-6 divide-y dark:divide-gray-700">
+                    <div class="max-h-60 overflow-y-auto mb-6 divide-y divide-slate-200/40 dark:divide-slate-800/60 no-scrollbar">
                         @foreach($cartItems as $item)
                         <div class="flex justify-between py-3">
                             <div class="min-w-0 flex-1 ml-4 text-start">
-                                <p class="font-bold text-sm text-gray-900 dark:text-white truncate">{{ $item['product_name'] }}</p>
-                                <p class="text-xs text-gray-500">{{ __('global.qty_label') }} {{ $item['quantity'] }} | {{ $item['color'] }} / {{ $item['size'] }}</p>
+                                <p class="font-bold text-sm text-slate-900 dark:text-white truncate">{{ $item['product_name'] }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('global.qty_label') }} {{ $item['quantity'] }} | {{ $item['color'] }} / {{ $item['size'] }}</p>
                             </div>
-                            <span class="font-bold text-sm text-gray-900 dark:text-white flex-shrink-0">{{ (int) round($item['price'] * $item['quantity']) }} {{ __('global.currency') }}</span>
+                            <span class="font-extrabold text-sm text-slate-900 dark:text-white flex-shrink-0">{{ (int) round($item['price'] * $item['quantity']) }} {{ __('global.currency') }}</span>
                         </div>
                         @endforeach
                     </div>
 
+                    @if($hasActiveCoupons)
                     <!-- Coupon Section -->
                     <div class="mb-4" x-data="checkoutCoupon()">
                         <div class="flex gap-2">
-                            <input type="text" x-model="couponCode" @keydown.enter="applyCoupon(couponCode)" placeholder="{{ __('global.coupon_enter_placeholder') }}" class="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow">
-                            <button type="button" @click="applyCoupon(couponCode)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm hover:shadow">{{ __('global.coupon_apply_btn') }}</button>
+                            <input type="text" x-model="couponCode" @keydown.enter="applyCoupon(couponCode)" placeholder="{{ __('global.coupon_enter_placeholder') }}" class="flex-1 border border-slate-200/60 dark:border-slate-700/60 rounded-xl px-3 py-2.5 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white text-sm font-semibold focus:ring-2 focus:ring-brand-primary focus:border-brand-primary dark:focus:border-accent outline-none transition-shadow placeholder:text-slate-400 backdrop-blur-sm">
+                            <button type="button" @click="applyCoupon(couponCode)" class="px-4 py-2.5 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white rounded-xl text-sm font-extrabold transition-all shadow-sm hover:shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">{{ __('global.coupon_apply_btn') }}</button>
                         </div>
                         <div class="mt-2" x-show="appliedCoupon" x-cloak>
-                            <div class="flex items-center justify-between bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg px-3 py-2">
-                                <span class="text-green-700 dark:text-green-400 font-medium text-sm" x-text="appliedCouponText"></span>
-                                <button type="button" @click="removeCoupon()" class="text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">{{ __('global.coupon_remove_btn') }}</button>
+                            <div class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl px-3 py-2">
+                                <span class="text-emerald-700 dark:text-emerald-400 font-bold text-sm" x-text="appliedCouponText"></span>
+                                <button type="button" @click="removeCoupon()" class="text-red-500 hover:text-red-700 text-xs font-extrabold px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer">{{ __('global.coupon_remove_btn') }}</button>
                             </div>
                         </div>
-                        <div class="mt-1 text-xs text-red-500" x-show="couponError" x-cloak x-text="couponError"></div>
+                        <div class="mt-1 text-xs text-red-500 font-semibold" x-show="couponError" x-cloak x-text="couponError"></div>
                     </div>
+                    @endif
 
-                    <div class="space-y-4 mb-6 pt-4 border-t dark:border-gray-700">
-                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                            <span>{{ __('global.products_total') }}</span>
-                            <span>{{ (int) round($baseTotal) }} {{ __('global.currency') }}</span>
+                    <div class="space-y-4 mb-6 pt-4 border-t border-slate-200/40 dark:border-slate-800/60">
+                        <div class="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
+                            <span class="font-semibold">{{ __('global.products_total') }}</span>
+                            <span class="font-bold">{{ (int) round($baseTotal) }} {{ __('global.currency') }}</span>
                         </div>
                         @if ($discount > 0 && $appliedCoupon)
-                        <div class="flex justify-between text-green-600 dark:text-green-400">
-                            <span>{{ __('global.coupon_discount_label') }} ({{ $appliedCoupon->code }})</span>
-                            <span>-{{ (int) round($discount) }} {{ __('global.currency') }}</span>
+                        <div class="flex justify-between text-emerald-600 dark:text-emerald-400 text-sm">
+                            <span class="font-semibold">{{ __('global.coupon_discount_label') }} ({{ $appliedCoupon->code }})</span>
+                            <span class="font-bold">-{{ (int) round($discount) }} {{ __('global.currency') }}</span>
                         </div>
                         @endif
-                        <div class="flex justify-between text-gray-600 dark:text-gray-400">
-                            <span>{{ __('global.shipping_cost_label') }}</span>
+                        <div class="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
+                            <span class="font-semibold">{{ __('global.shipping_cost_label') }}</span>
                             @if ($shipping === 0)
-                            <span class="text-green-500 font-semibold">{{ __('global.free') }}</span>
+                            <span class="text-emerald-500 font-extrabold">{{ __('global.free') }}</span>
                             @else
-                            <span class="font-semibold">{{ $shipping }} {{ __('global.currency') }}</span>
+                            <span class="font-bold">{{ $shipping }} {{ __('global.currency') }}</span>
                             @endif
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-baseline pt-4 border-t dark:border-gray-700 mb-8">
-                        <span class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.final_total') }}</span>
-                        <span class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">{{ (int) round($finalTotal) }} {{ __('global.currency') }}</span>
+                    <div class="flex justify-between items-baseline pt-4 border-t border-slate-200/40 dark:border-slate-800/60 mb-8">
+                        <span class="text-lg font-extrabold text-slate-900 dark:text-white">{{ __('global.final_total') }}</span>
+                        <span class="text-2xl font-black text-brand-primary dark:text-accent">{{ (int) round($finalTotal) }} {{ __('global.currency') }}</span>
                     </div>
 
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                    <button type="submit" class="w-full bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.5)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer">
                         <span>{{ __('global.confirm_order') }}</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </button>

@@ -27,7 +27,7 @@ class LoginController extends Controller
             if ($user->role === 'customer') {
                 Auth::logout();
                 throw ValidationException::withMessages([
-                    'email' => 'هذا الحساب ليس حساب إداري.',
+                    'email' => __('This account is not an admin account.'),
                 ]);
             }
 
@@ -37,7 +37,7 @@ class LoginController extends Controller
         }
 
         throw ValidationException::withMessages([
-            'email' => 'بيانات الدخول غير صحيحة.',
+            'email' => __('These credentials do not match our records.'),
         ]);
     }
 
