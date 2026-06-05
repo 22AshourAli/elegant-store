@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
@@ -10,15 +11,13 @@ class NotificationController extends Controller
     {
         if (request()->query('json')) {
             $notifications = auth()->user()->notifications()->latest()->take(10)->get()->map(function ($n) {
-                $data = $n->data;
-                $type = $this->resolveType($data);
                 return [
                     'id' => $n->id,
-                    'title' => $data['title'] ?? $data['message'] ?? '',
+                    'title' => $n->data['title'] ?? $n->data['message'] ?? '',
                     'time' => $n->created_at->diffForHumans(),
                     'read_at' => $n->read_at,
-                    'type' => $type,
-                    'url' => $this->resolveUrl($data, $type),
+                    'type' => isset($n->data['order_id']) ? 'order' : 'info',
+                    'order_url' => isset($n->data['order_id']) ? route('admin.orders.show', $n->data['order_id']) : null,
                 ];
             });
 
@@ -49,38 +48,5 @@ class NotificationController extends Controller
         return response()->json([
             'count' => auth()->user()->unreadNotifications->count()
         ]);
-    }
-
-    private function resolveType(array $data): string
-    {
-        $type = $data['type'] ?? null;
-        if (in_array($type, ['exchange', 'exchange_approved', 'exchange_submitted'])) {
-            return 'exchange';
-        }
-        if ($type === 'return') {
-            return 'return';
-        }
-        if (isset($data['order_id'])) {
-            return 'order';
-        }
-        return 'info';
-    }
-
-    private function resolveUrl(array $data, string $type): ?string
-    {
-        return match ($type) {
-            'exchange' => isset($data['exchange_id'])
-                ? route('admin.exchanges.show', $data['exchange_id'])
-                : (isset($data['return_request_id'])
-                    ? route('admin.exchanges.show', $data['return_request_id'])
-                    : null),
-            'return' => isset($data['return_request_id'])
-                ? route('admin.returns.show', $data['return_request_id'])
-                : null,
-            'order' => isset($data['order_id'])
-                ? route('admin.orders.show', $data['order_id'])
-                : null,
-            default => null,
-        };
     }
 }

@@ -19,10 +19,11 @@
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body class="font-sans text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-950 min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 transition-colors duration-300 px-4" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
@@ -47,7 +48,7 @@
             </div>
 
             <!-- Theme Switcher -->
-            <button @click="darkMode = !darkMode" class="p-2.5 rounded-xl bg-white dark:bg-gray-800 shadow-md border cursor-pointer border-gray-100 dark:border-gray-700 hover:scale-105 transition duration-200">
+            <button @click="darkMode = !darkMode" class="p-2.5 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700 hover:scale-105 transition duration-200">
                 <template x-if="darkMode">
                     <!-- Sun icon -->
                     <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

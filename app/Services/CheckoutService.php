@@ -22,7 +22,7 @@ class CheckoutService
                 $shipping = 0;
             } else {
                 // Use provided shipping_cost or default to a simple zone-based placeholder
-                $shipping = $data['shipping_cost'] ?? config('store.default_shipping', 30);
+                $shipping = $data['shipping_cost'] ?? config('store.default_shipping', 50);
             }
 
             $total = $subtotal + $shipping - $discount;

@@ -32,14 +32,7 @@
                         @foreach($order->items as $item)
                         <div class="flex items-center py-4 first:pt-0 last:pb-0">
                             <!-- Variant thumbnail -->
-                            @php
-                                $variantImg = $item->variant->getFirstMediaUrl('variant_images', 'thumb')
-                                    ?: $item->variant->getFirstMediaUrl('variant_images')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images', 'thumb')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images')
-                                    ?: asset('images/logo.svg');
-                            @endphp
-                            <img src="{{ $variantImg }}" loading="lazy" class="w-14 h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
+                            <img src="{{ $item->variant->getFirstMediaUrl('variant_images', 'thumb') ?: ($item->variant->getFirstMediaUrl('variant_images') ?: ($item->variant->product->getFirstMediaUrl('product_images', 'thumb') ?: ($item->variant->product->getFirstMediaUrl('product_images') ?: '/images/placeholder.jpg'))) }}" class="w-16 h-20 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
 
                             <div class="flex-1 min-w-0 text-start">
                                 <h3 class="font-bold text-gray-900 dark:text-white truncate">{{ $item->product_name }}</h3>
@@ -127,7 +120,7 @@
 
                     @if(in_array($order->status, ['pending', 'confirmed']))
                     <div class="mt-6 pt-6 border-t dark:border-gray-700">
-                        <form action="{{ route('orders.cancel', $order) }}" method="POST" onsubmit="return confirm(@json(__('global.cancel_order_confirm')))">
+                        <form action="{{ route('orders.cancel', $order) }}" method="POST" onsubmit="return confirm('{{ __('global.cancel_order_confirm') }}')">
                             @csrf
                             <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition duration-200 transform hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -135,30 +128,6 @@
                             </button>
                         </form>
                     </div>
-                    @endif
-
-                    @if($order->status === 'delivered' && $order->delivered_at && $order->delivered_at->diffInDays(now()) <= 3)
-                        @php
-                            $hasPendingReturn = $order->returnRequests()->whereIn('status', ['pending', 'approved'])->exists();
-                            $hasPendingExchange = $order->exchanges()->whereIn('status', ['pending', 'approved'])->exists();
-                        @endphp
-                        @if(!$hasPendingReturn)
-                        <div class="mt-6 pt-6 border-t dark:border-gray-700">
-                            <form action="{{ route('returns.store', $order) }}" method="POST">
-                                @csrf
-                                <label class="block text-sm font-bold mb-2">{{ __('return.request_return') }}</label>
-                                <textarea name="reason" rows="2" required placeholder="{{ __('return.reason_placeholder') }}" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-800 rounded-lg px-3 py-2 text-sm mb-3"></textarea>
-                                <button type="submit" onclick="this.disabled=true;this.form.submit();" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition text-sm disabled:opacity-50 disabled:cursor-not-allowed">{{ __('return.submit_request') }}</button>
-                            </form>
-                        </div>
-                        @endif
-                        @if(!$hasPendingExchange)
-                        <div class="mt-4">
-                            <a href="{{ route('exchanges.create', $order) }}" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition text-sm text-center">
-                                {{ __('return.request_exchange') }}
-                            </a>
-                        </div>
-                        @endif
                     @endif
                 </div>
             </div>

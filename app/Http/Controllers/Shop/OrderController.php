@@ -10,7 +10,7 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = auth()->user()->orders()->with('items.variant.product', 'payment')->latest()->paginate(10);
+        $orders = auth()->user()->orders()->latest()->paginate(10);
         return view('shop.orders.index', compact('orders'));
     }
 
@@ -38,8 +38,6 @@ class OrderController extends Controller
 
         // Cancel the order
         $order->update(['status' => 'cancelled']);
-
-        $order->load('items.variant');
 
         // Restore stock for cancelled items
         foreach ($order->items as $item) {

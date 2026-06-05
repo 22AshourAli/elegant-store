@@ -20,15 +20,6 @@ class Order extends Model
         'phone',
         'notes',
         'tracking_number',
-        'delivered_at',
-    ];
-
-    protected $casts = [
-        'delivered_at' => 'datetime',
-        'subtotal' => 'decimal:2',
-        'discount' => 'decimal:2',
-        'shipping_cost' => 'decimal:2',
-        'total' => 'decimal:2',
     ];
 
     public function user()
@@ -49,15 +40,5 @@ class Order extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class);
-    }
-
-    public function returnRequests()
-    {
-        return $this->hasMany(ReturnRequest::class);
-    }
-
-    public function exchanges()
-    {
-        return $this->hasMany(Exchange::class);
     }
 }

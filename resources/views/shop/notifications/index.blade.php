@@ -25,42 +25,14 @@
                         </p>
                         <span class="text-xs text-gray-400 mt-2 block">{{ $notification->created_at->diffForHumans() }}</span>
                     </div>
-                    @php
-                        $data = $notification->data;
-                        $notifType = $data['type'] ?? (isset($data['order_id']) ? 'order' : 'info');
-                        $user = auth()->user();
-                        $isAdmin = $user->isSuperAdmin() || $user->isManager();
-                        $notifUrl = null;
-                        if (in_array($notifType, ['exchange', 'exchange_approved', 'exchange_submitted'])) {
-                            $notifUrl = $isAdmin
-                                ? (isset($data['exchange_id'])
-                                    ? route('admin.exchanges.show', $data['exchange_id'])
-                                    : (isset($data['return_request_id'])
-                                        ? route('admin.exchanges.show', $data['return_request_id'])
-                                        : null))
-                                : route('exchanges.index');
-                        } elseif ($notifType === 'return') {
-                            $notifUrl = $isAdmin
-                                ? (isset($data['return_request_id'])
-                                    ? route('admin.returns.show', $data['return_request_id'])
-                                    : null)
-                                : route('returns.index');
-                        } elseif (isset($data['order_id'])) {
-                            $notifUrl = $isAdmin
-                                ? route('admin.orders.show', $data['order_id'])
-                                : route('orders.show', $data['order_id']);
-                        }
-                    @endphp
-                    @if($notifUrl)
-                        <a href="{{ $notifUrl }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 whitespace-nowrap">
-                            @if(in_array($notifType, ['exchange', 'exchange_approved', 'exchange_submitted']))
-                                عرض الاستبدال &larr;
-                            @elseif($notifType === 'return')
-                                عرض الإرجاع &larr;
-                            @else
-                                عرض الطلب &larr;
-                            @endif
-                        </a>
+                    @if(isset($notification->data['order_id']))
+                        @php
+                            $user = auth()->user();
+                            $orderRoute = ($user->isSuperAdmin() || $user->isManager()) 
+                                ? route('admin.orders.show', $notification->data['order_id']) 
+                                : route('orders.show', $notification->data['order_id']);
+                        @endphp
+                        <a href="{{ $orderRoute }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">عرض الطلب &larr;</a>
                     @endif
                 </div>
             @endforeach

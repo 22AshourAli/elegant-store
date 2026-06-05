@@ -12,6 +12,6 @@ class AdminMiddleware
         if (auth()->check() && (auth()->user()->isSuperAdmin() || auth()->user()->isManager())) {
             return $next($request);
         }
-        abort(403, __('Unauthorized'));
+        abort(403, 'غير مصرح');
     }
 }

@@ -30,7 +30,7 @@ class CategoryController extends Controller
         ]);
         
         $data['slug'] = Str::slug($data['name']) . '-' . uniqid();
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_active'] = $request->has('is_active');
         
         Category::create($data);
         return redirect()->route('admin.categories.index')->with('success', 'تم إضافة التصنيف');
@@ -51,7 +51,7 @@ class CategoryController extends Controller
         ]);
         
         $data['slug'] = Str::slug($data['name']) . '-' . uniqid();
-        $data['is_active'] = $request->boolean('is_active');
+        $data['is_active'] = $request->has('is_active');
 
         $category->update($data);
         return redirect()->route('admin.categories.index')->with('success', 'تم التحديث');

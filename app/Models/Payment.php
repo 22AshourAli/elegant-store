@@ -17,7 +17,6 @@ class Payment extends Model
 
     protected $casts = [
         'response' => 'array',
-        'amount' => 'decimal:2',
     ];
 
     public function order()

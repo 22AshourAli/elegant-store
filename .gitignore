@@ -21,16 +21,9 @@
 /storage/pail
 /vendor
 _ide_helper.php
-.phpstorm.meta.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
 cloudflared.exe
 *.zip
 *.exe
-/public/storage
-/storage/framework/views/*.php
-/storage/framework/cache/data/*
-test_output.txt
-test_output_*.txt
-temp_*.php

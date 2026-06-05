@@ -3,18 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Lang;
 
 class Branch extends Model
 {
     protected $fillable = ['name', 'address', 'phone', 'is_active'];
-
-    protected function casts(): array
-    {
-        return [
-            'is_active' => \App\Casts\PostgresBoolean::class,
-        ];
-    }
 
     /**
      * Get the users associated with this branch.
@@ -36,7 +28,7 @@ class Branch extends Model
         if (request()->is('admin*')) {
             return $value;
         }
-        return Lang::has($value) ? __($value) : $value;
+        return __($value);
     }
 
     public function getAddressAttribute($value)
@@ -44,6 +36,6 @@ class Branch extends Model
         if (request()->is('admin*')) {
             return $value;
         }
-        return Lang::has($value) ? __($value) : $value;
+        return __($value);
     }
 }

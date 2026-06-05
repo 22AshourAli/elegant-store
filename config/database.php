@@ -15,10 +15,9 @@ return [
     | the connection which will be utilized unless another connection
     | is explicitly specified when you execute a query / statement.
     |
-    |  تم التأكد من قراءة نوع الاتصال السليم من ملف الـ .env
     */
 
-    'default' => env('DB_CONNECTION', 'pgsql'),
+    'default' => env('DB_CONNECTION', 'sqlite'),
 
     /*
     |--------------------------------------------------------------------------
@@ -85,7 +84,7 @@ return [
             ]) : [],
         ],
 
-      'pgsql' => [
+        'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
@@ -93,21 +92,11 @@ return [
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
-            'charset' => 'utf8',
+            'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
-            'schema' => 'public',
-            // إعدادات PgBouncer لمنع فصل الاتصال والتعامل مع Boolean
-            'options' => [
-                PDO::ATTR_EMULATE_PREPARES => true,
-                PDO::ATTR_PERSISTENT => false,
-                PDO::ATTR_STRINGIFY_FETCHES => false,
-            ],
-            // مهلة الاتصال والباقه لتجنب التعليق عند بطء Supabase
-            'connect_timeout' => 3,
-            'statement_timeout' => 30,
         ],
 
         'sqlsrv' => [
@@ -121,6 +110,8 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
+            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
+            // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
     ],

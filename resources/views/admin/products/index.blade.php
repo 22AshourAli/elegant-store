@@ -28,7 +28,7 @@
             <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="p-3">
                     @if($product->hasMedia('product_images'))
-                        <img src="{{ $product->getFirstMediaUrl('product_images', 'thumb') ?: $product->getFirstMediaUrl('product_images') }}" loading="lazy" class="w-12 h-12 object-cover rounded shadow-sm">
+                        <img src="{{ $product->getFirstMediaUrl('product_images', 'thumb') ?: $product->getFirstMediaUrl('product_images') }}" class="w-12 h-12 object-cover rounded shadow-sm">
                     @else
                         <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-400">{{ __('global.admin_no_image') }}</div>
                     @endif

@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"
-      x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches), sidebarOpen: false }"
+      x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', sidebarOpen: false }"
       x-init="$watch('darkMode', val => { localStorage.setItem('darkMode', val); document.documentElement.classList.toggle('dark', val) })"
       :class="{ 'dark': darkMode }">
 <head>
     <meta charset="utf-8">
-    <script>
-        (function() {
-            const dark = localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (dark) document.documentElement.classList.add('dark');
-        })();
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#4f46e5">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
     <title>@yield('title', __('global.admin_dashboard')) | {{ config('app.name') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite('resources/css/app.css')
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-300 min-h-screen" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-
+    
     <!-- Sidebar Overlay for mobile -->
-    <div x-show="sidebarOpen"
+    <div x-show="sidebarOpen" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         @click="sidebarOpen = false"
+         @click="sidebarOpen = false" 
          class="lg:hidden fixed inset-0 z-30 bg-gray-950/60 backdrop-blur-sm"
          style="display: none;">
     </div>
 
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'"
-               class="fixed right-0 top-0 bottom-0 lg:static z-45 w-64 bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 overflow-y-auto transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none">
-
+        <aside :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'" 
+               class="fixed right-0 top-0 bottom-0 lg:static z-45 w-64 bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 h-screen overflow-y-auto transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none">
+            
             <!-- Sidebar Header with Logo and Close Button -->
             <div class="p-5 flex justify-between items-center border-b border-gray-150 dark:border-gray-800">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 hover:opacity-90 transition">
+                <a href="/" class="flex items-center gap-2 hover:opacity-90 transition">
                     <svg class="h-8 w-8" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M16 2L30 16L16 30L2 16L16 2Z" class="fill-indigo-600 dark:fill-indigo-400"/>
                         <path d="M16 8L24 16L16 24L8 16L16 8Z" class="fill-white dark:fill-gray-900"/>
@@ -71,14 +73,6 @@
                         </svg>
                         {{ __('global.admin_branches') }}
                     </a>
-                    @if(auth()->user()->isSuperAdmin())
-                    <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                        </svg>
-                        {{ __('global.admin_users') }}
-                    </a>
-                    @endif
                     <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.categories.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
@@ -103,30 +97,6 @@
                         </svg>
                         {{ __('global.admin_orders') }}
                     </a>
-                    <a href="{{ route('admin.returns.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.returns.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        {{ __('global.return_requests') }}
-                    </a>
-                    <a href="{{ route('admin.exchanges.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.exchanges.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                        </svg>
-                        {{ __('global.admin_exchanges') }}
-                    </a>
-                    <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.expenses.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {{ __('global.admin_expenses') }}
-                    </a>
-                    <a href="{{ route('admin.whatsapp.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.whatsapp.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                        {{ __('global.admin_whatsapp') }}
-                    </a>
                 </nav>
             </div>
         </aside>
@@ -134,27 +104,32 @@
         <!-- Main content -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Top bar -->
-            <header class="bg-white dark:bg-gray-900 shadow-sm px-3 sm:px-4 py-3 flex justify-between items-center border-b border-gray-100 dark:border-gray-800 transition overflow-visible">
-                <div class="flex items-center gap-2 sm:gap-4 min-w-0">
-                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition flex-shrink-0">
+            <header class="bg-white dark:bg-gray-900 shadow-sm p-4 flex justify-between items-center border-b border-gray-100 dark:border-gray-800 transition">
+                <div class="flex items-center gap-4">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </button>
-                    <h1 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">@yield('page-title')</h1>
+                    <h1 class="text-lg font-bold text-gray-900 dark:text-white">@yield('page-title')</h1>
                 </div>
-
-                <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                
+                <div class="flex items-center gap-4">
+                    <!-- Back to Store -->
+                    <a href="{{ route('home') }}" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        {{ __('global.admin_back_to_store') }}
+                    </a>
 
                     <!-- Dark mode toggle -->
-                    <button @click="darkMode = !darkMode" class="p-1.5 sm:p-2 cursor-pointer rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150">
-                        <svg x-show="!darkMode" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <svg x-show="darkMode" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" style="display: none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
+                    <button @click="darkMode = !darkMode" class="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150">
+                        <svg x-show="!darkMode" class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg x-show="darkMode" class="w-5 h-5 text-amber-500" style="display: none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
                     </button>
 
                     <!-- Notifications -->
                     <div x-data="notifications()" x-init="init()">
-                        <div class="relative cursor-pointer">
-                            <button @click="togglePanel" class="relative p-1.5 sm:p-2 cursor-pointer rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <div class="relative">
+                            <button @click="togglePanel" class="relative p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0m6 0H9"></path>
                                 </svg>
                                 <span x-show="unread > 0" x-text="unread" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" style="display:none"></span>
@@ -165,28 +140,22 @@
                                  x-transition:enter="transition ease-out duration-200"
                                  x-transition:enter-start="opacity-0 translate-y-2"
                                  x-transition:enter-end="opacity-100 translate-y-0"
-                                 class="fixed sm:absolute cursor-pointer z-50 top-14 sm:top-auto inset-x-2 sm:inset-x-auto sm:mt-2 {{ app()->getLocale() === 'ar' ? 'sm:left-0' : 'sm:right-0' }} w-auto sm:w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-hidden"
+                                 class="absolute z-50 mt-2 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 max-h-96 overflow-hidden"
                                  style="display:none">
                                 <div class="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                                     <span class="text-sm font-bold text-gray-900 dark:text-white">{{ __('global.admin_notifications') }}</span>
-                                    <button x-show="unread > 0" @click="markAllRead" class="text-xs cursor-pointer text-indigo-600 dark:text-indigo-400 hover:underline flex-shrink-0">{{ __('global.admin_mark_all_read') }}</button>
+                                    <button x-show="unread > 0" @click="markAllRead" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">{{ __('global.admin_mark_all_read') }}</button>
                                 </div>
                                 <div class="overflow-y-auto max-h-72">
                                     <div x-show="items.length === 0" class="p-6 text-center text-gray-400 text-sm" style="display:none">{{ __('global.admin_no_notifications') }}</div>
                                     <template x-for="n in items" :key="n.id">
-                                        <a :href="n.url || '#'" @click="n.read_at ? null : markRead(n.id)" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition border-b border-gray-50 dark:border-gray-700/50" :class="{'bg-indigo-50/50 dark:bg-indigo-950/20': !n.read_at}">
+                                        <a :href="n.order_url || '#'" @click="n.read_at ? null : markRead(n.id)" class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition border-b border-gray-50 dark:border-gray-700/50" :class="{'bg-indigo-50/50 dark:bg-indigo-950/20': !n.read_at}">
                                             <div class="flex items-start gap-3">
-                                                <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" :class="n.type === 'exchange' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : n.type === 'return' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600' : n.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'">
-                                                    <template x-if="n.type === 'exchange'">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                                                    </template>
-                                                    <template x-if="n.type === 'return'">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
-                                                    </template>
+                                                <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" :class="n.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'">
                                                     <template x-if="n.type === 'order'">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                                     </template>
-                                                    <template x-if="n.type === 'info'">
+                                                    <template x-if="n.type !== 'order'">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
                                                     </template>
                                                 </div>
@@ -198,7 +167,7 @@
                                         </a>
                                     </template>
                                 </div>
-                                <a href="{{ route('admin.notifications.index') }}" class="block cursor-pointer p-3 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition border-t border-gray-100 dark:border-gray-700">
+                                <a href="{{ route('admin.notifications.index') }}" class="block p-3 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition border-t border-gray-100 dark:border-gray-700">
                                     {{ __('global.admin_notifications_all') }}
                                 </a>
                             </div>
@@ -206,9 +175,9 @@
                     </div>
 
                     <!-- Language Switcher -->
-                    <div x-data="{ langOpen: false }" class="relative cursor-pointer">
-                        <button @click="langOpen = !langOpen" class="p-1.5 sm:p-2 cursor-pointer rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150 flex items-center gap-1 text-xs font-bold uppercase">
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a3 3 0 003-3V6.7m-2 9l-3-3m0 0l-3 3m3-3v12M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
+                    <div x-data="{ langOpen: false }" class="relative">
+                        <button @click="langOpen = !langOpen" class="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150 flex items-center gap-1 text-xs font-bold uppercase">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a3 3 0 003-3V6.7m-2 9l-3-3m0 0l-3 3m3-3v12M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
                         </button>
                         <div x-show="langOpen" @click.away="langOpen = false" x-transition class="absolute z-50 mt-2 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-2" style="display: none;">
                             <a href="{{ route('lang.switch', 'ar') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'ar' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
@@ -222,24 +191,15 @@
                         </div>
                     </div>
 
-                    <!-- Back to Store -->
-                    <a href="{{ route('home') }}" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition flex-shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        <span class="hidden sm:inline">{{ __('global.admin_back_to_store') }}</span>
-                    </a>
-
-                    <span class="hidden sm:inline text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">{{ auth()->user()->name }}</span>
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
                         @csrf
-                        <button class="p-1.5 cursor-pointer sm:px-3 sm:py-1.5 rounded-xl text-sm font-semibold transition bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50">
-                            <svg class="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            <span class="hidden sm:inline">{{ __('global.admin_logout') }}</span>
-                        </button>
+                        <button class="bg-red-50 dark:bg-red-950/30 text-red-650 dark:text-red-400 px-3.5 py-1.5 rounded-xl text-sm font-semibold hover:bg-red-100 dark:hover:bg-red-900/50 transition">{{ __('global.admin_logout') }}</button>
                     </form>
                 </div>
             </header>
 
-            <main class="p-3 sm:p-4 md:p-6">
+            <main class="p-6">
                 @yield('content')
             </main>
         </div>
@@ -258,14 +218,14 @@
                 },
                 async fetchUnread() {
                     try {
-                        const res = await fetch("{{ route('admin.notifications.unread-count') }}");
+                        const res = await fetch('{{ route('admin.notifications.unread-count') }}');
                         const data = await res.json();
                         this.unread = data.count;
                     } catch(e) {}
                 },
                 async fetchItems() {
                     try {
-                        const res = await fetch("{{ route('admin.notifications.index') }}?json=1");
+                        const res = await fetch('{{ route('admin.notifications.index') }}?json=1');
                         const data = await res.json();
                         this.items = data.notifications || [];
                     } catch(e) {}
@@ -276,7 +236,7 @@
                 },
                 async markRead(id) {
                     try {
-                        await fetch("{{ url('admin/notifications') }}/" + id + "/read", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
+                        await fetch('{{ url('admin/notifications') }}/' + id + '/read', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
                         this.unread = Math.max(0, this.unread - 1);
                         const n = this.items.find(i => i.id === id);
                         if (n) n.read_at = true;
@@ -284,7 +244,7 @@
                 },
                 async markAllRead() {
                     try {
-                        await fetch("{{ route('admin.notifications.mark-all-read') }}", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
+                        await fetch('{{ route('admin.notifications.mark-all-read') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
                         this.unread = 0;
                         this.items.forEach(n => n.read_at = true);
                     } catch(e) {}

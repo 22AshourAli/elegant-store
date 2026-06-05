@@ -36,14 +36,7 @@
             <div class="divide-y dark:divide-gray-700">
                 @foreach($order->items as $item)
                 <div class="flex items-center py-4 first:pt-0 last:pb-0">
-                            @php
-                                $variantImg = $item->variant->getFirstMediaUrl('variant_images', 'thumb')
-                                    ?: $item->variant->getFirstMediaUrl('variant_images')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images', 'thumb')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images')
-                                    ?: asset('images/logo.svg');
-                            @endphp
-                            <img src="{{ $variantImg }}" loading="lazy" class="w-14 h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
+                    <img src="{{ $item->variant->getFirstMediaUrl('variant_images', 'thumb') ?: ($item->variant->getFirstMediaUrl('variant_images') ?: ($item->variant->product->getFirstMediaUrl('product_images', 'thumb') ?: ($item->variant->product->getFirstMediaUrl('product_images') ?: '/images/placeholder.jpg'))) }}" class="w-14 h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
                     <div class="flex-1 min-w-0">
                         <h3 class="font-bold text-gray-900 dark:text-white truncate">{{ $item->product_name }}</h3>
                         <p class="text-xs text-gray-500 mt-1">

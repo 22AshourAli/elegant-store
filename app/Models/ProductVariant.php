@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Lang;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -13,20 +12,17 @@ class ProductVariant extends Model implements HasMedia
 
     protected $fillable = [
         'product_id', 'sku', 'color', 'size', 'price_override',
-        'sale_price', 'cost_price', 'discount_start', 'discount_end',
+        'sale_price', 'discount_start', 'discount_end',
         'is_active', 'is_default'
     ];
 
     protected $casts = [
         'discount_start' => 'datetime',
         'discount_end' => 'datetime',
-        'is_active' => \App\Casts\PostgresBoolean::class,
-        'is_default' => \App\Casts\PostgresBoolean::class,
     ];
 
     protected $appends = [
         'current_price',
-        'total_stock',
     ];
 
     public function product()
@@ -47,8 +43,8 @@ class ProductVariant extends Model implements HasMedia
         $now = now();
         // نبدأ من الـ price_override إن وجد، وإلا base_price من الأب
         $base = $this->price_override ?? $this->product->base_price;
-        if ($this->sale_price &&
-            (!$this->discount_start || $this->discount_start <= $now) &&
+        if ($this->sale_price && 
+            (!$this->discount_start || $this->discount_start <= $now) && 
             (!$this->discount_end || $this->discount_end >= $now)) {
             return $this->sale_price;
         }
@@ -66,14 +62,6 @@ class ProductVariant extends Model implements HasMedia
         return $branch ? $branch->pivot->stock : 0;
     }
 
-    public function getTotalStockAttribute()
-    {
-        if ($this->relationLoaded('branches')) {
-            return $this->branches->sum(fn($branch) => $branch->pivot->stock);
-        }
-        return $this->branches()->sum('branch_product_variant.stock');
-    }
-
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('variant_images')
@@ -85,16 +73,6 @@ class ProductVariant extends Model implements HasMedia
         if (request()->is('admin*')) {
             return $value;
         }
-        return Lang::has($value) ? __($value) : $value;
-    }
-
-    public function getNameAttribute()
-    {
-        $name = $this->product->name;
-        $parts = array_filter([$this->color, $this->size]);
-        if (!empty($parts)) {
-            $name .= ' (' . implode(', ', $parts) . ')';
-        }
-        return $name;
+        return __($value);
     }
 }

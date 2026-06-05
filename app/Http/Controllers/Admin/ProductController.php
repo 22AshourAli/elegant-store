@@ -7,21 +7,20 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\Branch;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category', 'media')->latest()->paginate(20);
+        $products = Product::with('category')->latest()->paginate(20);
         return view('admin.products.index', compact('products'));
     }
 
     public function create()
     {
-        $categories = Category::whereRaw('"is_active" = true')->get();
-        $branches = Branch::whereRaw('"is_active" = true')->get();
+        $categories = Category::where('is_active', true)->get();
+        $branches = Branch::where('is_active', true)->get();
         return view('admin.products.create', compact('categories', 'branches'));
     }
 
@@ -40,34 +39,31 @@ class ProductController extends Controller
             'is_active' => 'boolean',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
-            'colors' => 'nullable|string',
-            'sizes' => 'nullable|string',
-            'variants' => 'nullable|array',
-            'variant_stocks' => 'nullable|array',
-            'variant_stocks.*' => 'nullable|array',
-            'variant_stocks.*.*' => 'nullable|integer|min:0',
-            'cost_prices' => 'nullable|array',
-            'cost_prices.*' => 'nullable|numeric|min:0',
-            'variants_data' => 'nullable|array',
-            'variants_data.*.sku' => 'nullable|string|max:255',
-            'variants_data.*.price_override' => 'nullable|numeric|min:0',
-            'variants_data.*.sale_price' => 'nullable|numeric|min:0',
+            'colors' => 'nullable|string', 
+            'sizes' => 'nullable|string', 
+            'variants' => 'nullable|array', 
+            'variant_prices' => 'nullable|array',
+            'variant_sale_prices' => 'nullable|array',
+            'variant_stocks' => 'nullable|array', 
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,webp,jpg|max:2048',
-            'color_images' => 'nullable|array',
-            'color_images.*' => 'image|mimes:jpeg,png,webp,jpg|max:2048',
+            'primary_image' => 'nullable|integer', 
         ]);
 
         $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
-        $validated['has_variants'] = $request->boolean('has_variants');
-        $validated['featured'] = $request->boolean('featured');
-        $validated['is_active'] = $request->boolean('is_active');
+        $validated['has_variants'] = $request->has('has_variants');
+        $validated['featured'] = $request->has('featured');
+        $validated['is_active'] = $request->has('is_active');
 
         $product = Product::create($validated);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $product->addMedia($image)->toMediaCollection('product_images');
+                $media = $product->addMedia($image)->toMediaCollection('product_images');
+                if ($request->input('primary_image') == $index) {
+                    $media->setCustomProperty('primary', true);
+                    $media->save();
+                }
             }
         }
 
@@ -79,17 +75,14 @@ class ProductController extends Controller
             foreach ($colors as $color) {
                 foreach ($sizes as $size) {
                     $key = $color . '_' . $size;
-
+                    
                     if (empty($variantData) || isset($variantData[$key])) {
-                        $cost = $validated['cost_prices'][$key] ?? null;
-                        $vdata = $request->input('variants_data.' . $key, []);
                         $variant = $product->variants()->create([
                             'color' => $color,
                             'size' => $size,
-                            'sku' => $vdata['sku'] ?? ($product->id . '-' . $color . '-' . $size),
-                            'price_override' => $vdata['price_override'] ?? null,
-                            'sale_price' => $vdata['sale_price'] ?? null,
-                            'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
+                            'sku' => $product->id . '-' . $color . '-' . $size,
+                            'price_override' => $validated['variant_prices'][$key] ?? null,
+                            'sale_price' => $validated['variant_sale_prices'][$key] ?? null,
                         ]);
 
                         $stocks = $validated['variant_stocks'][$key] ?? [];
@@ -100,26 +93,15 @@ class ProductController extends Controller
                 }
             }
         } else {
-            $cost = $validated['cost_prices']['default'] ?? null;
             $variant = $product->variants()->create([
                 'is_default' => true,
-                'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
+                'price_override' => null,
             ]);
-
+            
             $stocks = $validated['variant_stocks']['default'] ?? [];
             foreach (Branch::all() as $branch) {
                 $qty = $stocks[$branch->id] ?? 0;
                 $variant->branches()->attach($branch->id, ['stock' => max(0, (int)$qty)]);
-            }
-        }
-
-        // Attach color-specific images to the first variant of each color
-        if ($request->hasFile('color_images')) {
-            foreach ($request->file('color_images') as $color => $image) {
-                $first = $product->variants()->where('color', $color)->first();
-                if ($first) {
-                    $first->addMedia($image)->toMediaCollection('variant_images');
-                }
             }
         }
 
@@ -128,8 +110,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::whereRaw('"is_active" = true')->get();
-        $branches = Branch::whereRaw('"is_active" = true')->get();
+        $categories = Category::where('is_active', true)->get();
+        $branches = Branch::where('is_active', true)->get();
         $product->load('variants.branches', 'media');
         return view('admin.products.edit', compact('product', 'categories', 'branches'));
     }
@@ -150,13 +132,10 @@ class ProductController extends Controller
             'meta_description' => 'nullable|string',
             'variants' => 'nullable|array',
             'variants.*.image' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:2048',
-            'variants.*.stocks' => 'nullable|array',
-            'variants.*.stocks.*' => 'nullable|integer|min:0',
-            'variants.*.cost_price' => 'nullable|numeric|min:0',
         ]);
 
-        $validated['featured'] = $request->boolean('featured');
-        $validated['is_active'] = $request->boolean('is_active');
+        $validated['featured'] = $request->has('featured');
+        $validated['is_active'] = $request->has('is_active');
 
         $product->update($validated);
 
@@ -181,7 +160,6 @@ class ProductController extends Controller
                 $variant->update([
                     'price_override' => empty($vData['price_override']) ? null : $vData['price_override'],
                     'sale_price' => empty($vData['sale_price']) ? null : $vData['sale_price'],
-                    'cost_price' => array_key_exists('cost_price', $vData) && $vData['cost_price'] !== '' && $vData['cost_price'] !== null ? (float) $vData['cost_price'] : null,
                     'sku' => $vData['sku'] ?? null,
                 ]);
 

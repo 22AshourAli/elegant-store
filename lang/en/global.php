@@ -2,9 +2,6 @@
 
 return [
     'home' => 'Home',
-    'shop' => 'Shop',
-    'categories' => 'Categories',
-    'search_placeholder' => 'Search products...',
     'mens_clothing' => 'Men\'s Clothing',
     'pants' => 'Pants',
     'offers' => 'Offers',
@@ -20,36 +17,6 @@ return [
     'admin_products' => 'Products',
     'admin_coupons' => 'Coupons',
     'admin_orders' => 'Orders',
-    'return_requests' => 'Returns',
-    'admin_exchanges'=> 'Exchanges',
-    'admin_expenses'=> 'Expenses',
-    'admin_whatsapp'=> 'WhatsApp',
-    'admin_users' => 'Users',
-    'admin_manage_users' => 'Manage Users',
-    'admin_user_created' => 'User created successfully',
-    'admin_user_updated' => 'User updated successfully',
-    'admin_user_deleted' => 'User deleted successfully',
-    'unauthorized' => 'Unauthorized action',
-    'admin_add_user' => 'Add User',
-    'admin_edit_user' => 'Edit User',
-    'admin_edit_customer' => 'Edit Customer',
-    'admin_super_admin' => 'Super Admin',
-    'admin_manager' => 'Branch Manager',
-    'admin_customer' => 'Customer',
-    'admin_customers' => 'Customers',
-    'admin_staff' => 'Staff',
-    'admin_add_customer' => 'Add Customer',
-    'admin_create_customer' => 'Create Customer',
-    'admin_customer_create_hint' => 'Enter the customer\'s email only. A random password will be generated and shown after saving.',
-    'admin_customer_password_auto' => 'A random password will be auto-generated. It will appear after saving. Share the email & password with the customer so they can log in.',
-    'admin_customer_created' => 'Customer created successfully! Email: :email | Password: :password — Please share it with the customer.',
-    'admin_role' => 'Role',
-    'admin_no_users' => 'No users yet',
-    'admin_no_branch' => 'No Branch',
-    'admin_branch_hint' => 'Select a branch if the user is a branch manager',
-    'admin_save' => 'Save',
-    'admin_update' => 'Update',
-    'admin_password_hint' => 'Leave empty if you don\'t want to change the password',
     'admin_logout' => 'Logout',
     'admin_back_to_store' => 'Store',
     'admin_all_statuses' => 'All Statuses',
@@ -146,16 +113,6 @@ return [
     'admin_enabled' => 'Enabled',
     'admin_custom_price' => 'Custom Price',
     'admin_default' => 'Default',
-    'admin_sale_price_info' => 'Leave empty if no discount. All variants inherit this price.',
-    'admin_variants_price_info' => 'All variants inherit the product base price (:price). You can customize per variant later in edit page.',
-    'admin_color_images' => 'Color Images (optional — upload one image per color, all sizes share the same image)',
-    'add_to_wishlist' => 'Add to Wishlist',
-    'remove_from_wishlist' => 'Remove from Wishlist',
-    'wishlist_added' => 'Added to wishlist!',
-    'wishlist_removed' => 'Removed from wishlist',
-    'wishlist' => 'Wishlist',
-    'empty_wishlist' => 'Your wishlist is empty.',
-    'empty_wishlist_desc' => 'Browse products and add your favorites to the wishlist.',
     'admin_no_variants_info' => 'Since the product has no variants, please specify the available stock in each branch:',
     'admin_category_status' => 'Category & Status',
     'admin_select_category' => 'Select Category',
@@ -178,7 +135,7 @@ return [
     'select_language' => 'Language',
     'arabic' => 'العربية',
     'english' => 'English',
-
+    
     // Product Details
     'color' => 'Color',
     'size' => 'Size',
@@ -190,10 +147,10 @@ return [
     'related_products' => 'Related Products',
     'on_sale' => 'Sale',
     'view_details' => 'View Details',
-    'limited_time_offer' => 'Limited Time Offer! Ends in',
+    'limited_time_offer' => 'Limited Time Offer! Offer ends in :days days',
     'original_price' => 'Original Price',
     'current_price' => 'Current Price',
-
+    
     // Cart
     'shopping_cart' => 'Shopping Cart',
     'empty_cart' => 'Your cart is empty.',
@@ -206,7 +163,7 @@ return [
     'checkout' => 'Proceed to Checkout',
     'added_to_cart' => 'Product added to cart successfully!',
     'removed_from_cart' => 'Item removed from cart',
-
+    
     // Checkout
     'checkout_title' => 'Checkout',
     'billing_details' => 'Shipping & Billing Details',
@@ -222,7 +179,7 @@ return [
     'shipping_at_checkout' => 'Calculated at checkout',
     'place_order' => 'Confirm Order & Pay',
     'order_success' => 'Your order has been placed successfully!',
-
+    
     // Profile
     'edit_profile' => 'Edit Profile',
     'name' => 'Name',
@@ -243,7 +200,7 @@ return [
     'delete_account_confirm_desc' => 'Please enter your password to confirm you would like to permanently delete your account.',
     'cancel' => 'Cancel',
     'delete_account_btn' => 'Delete Account',
-
+    
     // Footer
     'footer_desc' => 'Best and latest collection of modern men\'s clothing in Egypt. We are committed to providing the highest quality at the best price.',
     'quick_links' => 'Quick Links',
@@ -263,15 +220,12 @@ return [
     'learn_more' => 'Learn More',
 
     // Home slider
-    'new_collection' => 'New Collection',
-    'best_sellers' => 'Best Sellers',
-    'limited_offer' => 'Limited Offer',
     'slide_1_title' => 'Latest Men Collection',
     'slide_1_desc' => 'Discover the latest modern men fashion trends.',
     'slide_2_title' => 'Up to 50% Off',
     'slide_2_desc' => 'Exclusive limited-time offers on our selected collection.',
-    'slide_3_title' => 'Genuine Brands',
-    'slide_3_desc' => 'We provide the best international brands with the highest quality and best prices.',
+    'slide_3_title' => 'Free Delivery on First Order',
+    'slide_3_desc' => 'Try shopping with us and enjoy free delivery service.',
     'shop_by_category' => 'Shop by Category',
     'view_all' => 'View All',
     'sub_categories' => 'Sub Categories',
@@ -425,7 +379,6 @@ return [
     'coupon_remove_btn' => 'Remove Coupon',
     'coupon_success' => 'Coupon :code applied successfully!',
     'coupon_error' => 'Invalid or expired coupon code.',
-    'coupon_removed' => 'Coupon removed successfully.',
     'coupon_discount_label' => 'Discount',
     'phone_invalid' => 'Phone number must be a valid 11-digit Egyptian number (starting with 01).',
 
@@ -450,10 +403,4 @@ return [
     'page_not_found_desc' => 'The page you are looking for does not exist or has been moved.',
     'server_error' => 'Server Error',
     'server_error_desc' => 'Something went wrong. Please try again later.',
-    'login_required' => 'Please login first',
-
-    // Offline
-    'offline_title' => 'Connection Lost',
-    'offline_desc' => 'Unable to connect to the server. Please check your internet connection and try again.',
-    'try_again' => 'Try Again',
 ];

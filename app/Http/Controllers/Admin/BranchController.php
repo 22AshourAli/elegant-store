@@ -10,7 +10,7 @@ class BranchController extends Controller
 {
     public function index()
     {
-        $branches = Branch::paginate(15);
+        $branches = Branch::all();
         return view('admin.branches.index', compact('branches'));
     }
 
@@ -27,9 +27,9 @@ class BranchController extends Controller
             'phone' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-
-        $data['is_active'] = $request->boolean('is_active');
-
+        
+        $data['is_active'] = $request->has('is_active');
+        
         Branch::create($data);
         return redirect()->route('admin.branches.index')->with('success', 'تم إضافة الفرع');
     }
@@ -47,8 +47,8 @@ class BranchController extends Controller
             'phone' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
-
-        $data['is_active'] = $request->boolean('is_active');
+        
+        $data['is_active'] = $request->has('is_active');
 
         $branch->update($data);
         return redirect()->route('admin.branches.index')->with('success', 'تم التحديث');
