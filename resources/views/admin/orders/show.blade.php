@@ -37,10 +37,8 @@
                 @foreach($order->items as $item)
                 <div class="flex items-center py-4 first:pt-0 last:pb-0">
                             @php
-                                $variantImg = $item->variant->getFirstMediaUrl('variant_images', 'thumb')
-                                    ?: $item->variant->getFirstMediaUrl('variant_images')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images', 'thumb')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images')
+                                $variantImg = $item->variant->imageUrl()
+                                    ?: $item->variant->product->firstImageUrl()
                                     ?: asset('images/logo.svg');
                             @endphp
                             <img src="{{ $variantImg }}" loading="lazy" class="w-14 h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
@@ -86,6 +84,20 @@
 
     <!-- Right side (Status and Payment updates) -->
     <div class="lg:col-span-1 space-y-6">
+        <!-- Order Type Badge -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm text-center">
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold {{ $order->order_type === 'offline' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    @if($order->order_type === 'offline')
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    @else
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    @endif
+                </svg>
+                {{ $order->order_type === 'offline' ? __('global.admin_offline') : __('global.admin_online') }}
+            </span>
+        </div>
+
         <!-- Status change -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
             <h2 class="text-lg font-bold mb-4 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.admin_update_status') }}</h2>

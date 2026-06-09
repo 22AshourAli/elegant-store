@@ -41,6 +41,7 @@ Route::get('/lang/{locale}', function ($locale) {
     return redirect()->back();
 })->name('lang.switch');
 
+Route::get('/search', [HomeController::class, 'search'])->name('shop.search');
 Route::get('/category/{slug}', [ShopCategoryController::class, 'show'])->name('shop.category');
 Route::get('/product/{slug}', [ShopProductController::class, 'show'])->name('shop.product');
 
@@ -114,6 +115,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('branches', BranchController::class);
     Route::resource('users', UserController::class);
+    Route::get('/customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/{user}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
     Route::resource('coupons', CouponController::class);
@@ -151,6 +154,40 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/whatsapp/{user}', [\App\Http\Controllers\Admin\WhatsappMarketingController::class, 'show'])->name('whatsapp.show');
     Route::post('/whatsapp/{user}/send', [\App\Http\Controllers\Admin\WhatsappMarketingController::class, 'sendMessage'])->name('whatsapp.send');
     Route::post('/whatsapp/{user}/mark-sent', [\App\Http\Controllers\Admin\WhatsappMarketingController::class, 'markSent'])->name('whatsapp.mark-sent');
+
+    // Point of Sale
+    Route::get('/pos', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('pos.index');
+    Route::get('/pos/search', [\App\Http\Controllers\Admin\PosController::class, 'search'])->name('pos.search');
+    Route::get('/pos/categories', [\App\Http\Controllers\Admin\PosController::class, 'categories'])->name('pos.categories');
+    Route::get('/pos/recent', [\App\Http\Controllers\Admin\PosController::class, 'recentOrders'])->name('pos.recent');
+    Route::get('/pos/cart', function () {
+        $cart = session('pos_cart', []);
+        $controller = new \App\Http\Controllers\Admin\PosController;
+        return response()->json([
+            'cart' => $controller->getEnrichedCart($cart),
+            'total' => $controller->cartTotal($cart),
+        ]);
+    })->name('pos.cart');
+    Route::post('/pos/add', [\App\Http\Controllers\Admin\PosController::class, 'addToCart'])->name('pos.add');
+    Route::post('/pos/update', [\App\Http\Controllers\Admin\PosController::class, 'updateCart'])->name('pos.update');
+    Route::delete('/pos/remove/{variantId}', [\App\Http\Controllers\Admin\PosController::class, 'removeFromCart'])->name('pos.remove');
+    Route::post('/pos/checkout', [\App\Http\Controllers\Admin\PosController::class, 'checkout'])->name('pos.checkout');
+    Route::get('/pos/clear', [\App\Http\Controllers\Admin\PosController::class, 'clearCart'])->name('pos.clear');
+
+    // POS Return / Exchange
+    Route::get('/pos/return', [\App\Http\Controllers\Admin\PosReturnController::class, 'index'])->name('pos.return');
+    Route::post('/pos/return/search', [\App\Http\Controllers\Admin\PosReturnController::class, 'search'])->name('pos.return.search');
+    Route::post('/pos/return/process', [\App\Http\Controllers\Admin\PosReturnController::class, 'process'])->name('pos.return.process');
+
+    // Reports & Analytics
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');
+        Route::get('/returns', [\App\Http\Controllers\Admin\AnalyticsController::class, 'returnAnalytics'])->name('returns');
+        Route::get('/aov-clv', [\App\Http\Controllers\Admin\AnalyticsController::class, 'aovAndClv'])->name('aov-clv');
+        Route::get('/dead-stock', [\App\Http\Controllers\Admin\AnalyticsController::class, 'deadStock'])->name('dead-stock');
+        Route::get('/cart-funnel', [\App\Http\Controllers\Admin\AnalyticsController::class, 'cartFunnel'])->name('cart-funnel');
+        Route::get('/payment-reconciliation', [\App\Http\Controllers\Admin\AnalyticsController::class, 'paymentReconciliation'])->name('payment-reconciliation');
+    });
 });
 
 require __DIR__.'/auth.php';

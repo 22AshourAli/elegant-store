@@ -7,11 +7,44 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
+    public function search(Request $request)
+    {
+        $query = $request->get('search');
+
+        if (!$query) {
+            return redirect()->route('home');
+        }
+
+        $products = Product::with('media', 'variants')
+            ->where('is_active', true)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('description', 'LIKE', "%{$query}%");
+            })
+            ->latest()
+            ->paginate(12)
+            ->appends(['search' => $query]);
+
+        $wishlistIds = [];
+        $cartProductIds = [];
+        if (auth()->check()) {
+            $wishlistIds = auth()->user()->wishlist()->pluck('product_id')->toArray();
+        }
+        $cart = app(CartService::class);
+        $variantIds = array_keys($cart->getCart());
+        if (!empty($variantIds)) {
+            $cartProductIds = ProductVariant::whereIn('id', $variantIds)->pluck('product_id')->toArray();
+        }
+
+        return view('shop.search', compact('products', 'query', 'wishlistIds', 'cartProductIds'));
+    }
+
     public function index()
     {
         $products = $this->loadProducts();
@@ -79,12 +112,12 @@ class HomeController extends Controller
         }
 
         try {
-            $query = Product::with('media', 'variants')->whereRaw('"is_active" = true');
+            $query = Product::with('media', 'variants')->where('is_active', true);
 
             if ($search = request('search')) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('name', 'ilike', "%{$search}%")
-                      ->orWhere('description', 'ilike', "%{$search}%");
+$q->where('name', 'LIKE', "%{$search}%")
+  ->orWhere('description', 'LIKE', "%{$search}%");
                 });
             }
 
@@ -132,7 +165,7 @@ class HomeController extends Controller
     {
         try {
             $categories = Cache::remember('categories_all', 3600, function () {
-                return Category::whereRaw('"is_active" = true')
+                return Category::where('is_active', true)
                     ->whereNull('parent_id')
                     ->with('children')
                     ->get();

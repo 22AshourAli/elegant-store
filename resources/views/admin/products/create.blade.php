@@ -65,14 +65,14 @@
 
                     <p class="text-sm text-gray-500 mb-4">{{ __('global.admin_variants_price_info') }} <strong>{{ (int) round(old('base_price', 0)) }} {{ __('global.currency') }}</strong></p>
 
-                    <!-- Color Images Upload -->
+                    <!-- Color Image URLs -->
                     <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border dark:border-gray-600">
-                        <p class="text-sm font-semibold mb-3">{{ __('global.admin_color_images') }}</p>
+                        <p class="text-sm font-semibold mb-3">{{ __('global.admin_color_image_urls') }}</p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <template x-for="(color, ci) in colorList" :key="color">
                                 <div>
-                                    <label class="block text-xs font-medium mb-1" x-text="'صورة لون ' + color"></label>
-                                    <input type="file" :name="'color_images['+color+']'" accept="image/*" class="w-full text-xs border border-gray-300 dark:border-gray-600 p-1.5 rounded bg-white dark:bg-gray-800">
+                                    <label class="block text-xs font-medium mb-1" x-text="'رابط صورة ' + color"></label>
+                                    <input type="url" :name="'color_image_urls['+color+']'" :placeholder="'https://example.com/'+color+'.jpg'" class="w-full text-xs border border-gray-300 dark:border-gray-600 p-1.5 rounded bg-white dark:bg-gray-800">
                                 </div>
                             </template>
                         </div>
@@ -99,7 +99,6 @@
                                     <th class="p-2">{{ __('global.size') }}</th>
                                     <th class="p-2">SKU</th>
                                     <th class="p-2">سعر مخصص</th>
-                                    <th class="p-2">سعر التخفيض</th>
                                     <template x-for="branch in selectedBranches" :key="branch.id">
                                         <th class="p-2" x-text="'{{ __('global.admin_stock') }} (' + branch.name + ')' "></th>
                                     </template>
@@ -120,9 +119,6 @@
                                                 </td>
                                                 <td class="p-2">
                                                     <input type="number" step="0.01" :name="'variants_data['+color+'_'+size+'][price_override]'" placeholder="سعر مخصص" class="w-28 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model.number="variantsData[color+'_'+size].price_override">
-                                                </td>
-                                                <td class="p-2">
-                                                    <input type="number" step="0.01" :name="'variants_data['+color+'_'+size+'][sale_price]'" placeholder="سعر التخفيض" class="w-28 px-2 py-1 text-sm border rounded dark:bg-gray-800 dark:border-gray-600" x-model.number="variantsData[color+'_'+size].sale_price">
                                                 </td>
                                                 <template x-for="branch in selectedBranches" :key="branch.id">
                                                     <td class="p-2">
@@ -150,7 +146,6 @@
                                                                 <th class="p-2">المقاس</th>
                                                                 <th class="p-2">SKU</th>
                                                                 <th class="p-2">سعر مخصص</th>
-                                                                <th class="p-2">سعر تخفيض</th>
                                                                 <th class="p-2">مجموع المخزون</th>
                                                             </tr>
                                                         </thead>
@@ -161,7 +156,6 @@
                                                                     <td class="p-2" x-text="v.size"></td>
                                                                     <td class="p-2" x-text="v.sku || '-' "></td>
                                                                     <td class="p-2" x-text="v.price_override || '-' "></td>
-                                                                    <td class="p-2" x-text="v.sale_price || '-' "></td>
                                                                     <td class="p-2" x-text="v.totalStock"></td>
                                                                 </tr>
                                                             </template>
@@ -218,8 +212,16 @@
 
             <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
                 <h3 class="text-lg font-bold mb-4 border-b pb-2 dark:border-gray-700">{{ __('global.admin_product_images') }}</h3>
-                <input type="file" name="images[]" multiple accept=".png,.jpg,.jpeg,.webp,image/*" class="w-full border border-gray-300 dark:border-gray-600 p-2 rounded">
-                <p class="text-xs text-gray-500 mt-2">{{ __('global.admin_images_info') }}</p>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">{{ __('global.upload_images') }}</label>
+                    <input type="file" name="images[]" multiple accept=".png,.jpg,.jpeg,.webp,image/*" class="w-full border border-gray-300 dark:border-gray-600 p-2 rounded">
+                    <p class="text-xs text-gray-500 mt-1">{{ __('global.admin_images_info') }}</p>
+                </div>
+                <div class="border-t pt-4 dark:border-gray-700">
+                    <label class="block text-sm font-medium mb-1">{{ __('global.image_urls') }}</label>
+                    <textarea name="image_urls" rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg">{{ old('image_urls') }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('global.image_urls_info') }}</p>
+                </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded shadow p-6 flex flex-col gap-3">
@@ -274,7 +276,6 @@
                     this.variantsData[key] = {
                         sku: '',
                         price_override: '',
-                        sale_price: '',
                         cost_price: '',
                         stocks: {},
                         color,

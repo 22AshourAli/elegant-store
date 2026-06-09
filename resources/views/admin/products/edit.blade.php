@@ -41,7 +41,6 @@
                                 <th class="p-2">{{ __('global.admin_variant_image') }}</th>
                                 <th class="p-2">{{ __('global.admin_sku') }}</th>
                                 <th class="p-2">{{ __('global.admin_custom_price') }} ({{ __('global.currency') }})</th>
-                                <th class="p-2">{{ __('global.admin_sale_price') }} ({{ __('global.currency') }})</th>
                                 <th class="p-2">تكلفة الشراء ({{ __('global.currency') }})</th>
                                 <th class="p-2">{{ __('global.admin_stock_branches') }}</th>
                             </tr>
@@ -52,15 +51,11 @@
                                 <td class="p-2 font-bold">{{ $variant->is_default ? __('global.admin_default_variant') : $variant->color . ' - ' . $variant->size }}</td>
                                 <td class="p-2">
                                     <div class="space-y-1">
-                                        <input type="file" name="variants[{{ $variant->id }}][image]" accept=".png,.jpg,.jpeg,.webp,image/*" class="w-full text-xs">
-                                        @if($variant->hasMedia('variant_images'))
-                                            <div class="mt-1 flex items-center gap-2">
-                                                <img src="{{ $variant->getFirstMediaUrl('variant_images') }}" class="w-10 h-10 object-cover rounded border">
-                                                <label class="flex items-center text-xs text-red-500 cursor-pointer">
-                                                    <input type="checkbox" name="variants[{{ $variant->id }}][delete_image]" value="1" class="rounded text-red-600 ml-1">
-                                                    <span>{{ __('global.admin_delete') }}</span>
-                                                </label>
-                                            </div>
+                                        <input type="url" name="variants[{{ $variant->id }}][image_url]" value="{{ old('variants.'.$variant->id.'.image_url', $variant->image_url) }}" placeholder="https://example.com/image.jpg" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">
+                                        @if($variant->image_url)
+                                            <img src="{{ $variant->image_url }}" class="w-10 h-10 object-cover rounded border">
+                                        @elseif($variant->hasMedia('variant_images'))
+                                            <img src="{{ $variant->getFirstMediaUrl('variant_images') }}" class="w-10 h-10 object-cover rounded border">
                                         @endif
                                     </div>
                                 </td>
@@ -69,9 +64,6 @@
                                 </td>
                                 <td class="p-2">
                                     <input type="number" step="0.01" name="variants[{{ $variant->id }}][price_override]" value="{{ old('variants.'.$variant->id.'.price_override', $variant->price_override) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="{{ __('global.admin_default') }}">
-                                </td>
-                                <td class="p-2">
-                                    <input type="number" step="0.01" name="variants[{{ $variant->id }}][sale_price]" value="{{ old('variants.'.$variant->id.'.sale_price', $variant->sale_price) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="{{ __('global.admin_no_sale') }}">
                                 </td>
                                 <td class="p-2">
                                     <input type="number" step="0.01" name="variants[{{ $variant->id }}][cost_price]" value="{{ old('variants.'.$variant->id.'.cost_price', $variant->cost_price) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="مثلاً 150">
@@ -125,8 +117,17 @@
 
             <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
                 <h3 class="text-lg font-bold mb-4 border-b pb-2 dark:border-gray-700">{{ __('global.admin_product_images') }}</h3>
-                <label class="block text-sm font-medium mb-2">{{ __('global.admin_add_new_images') }}:</label>
-                <input type="file" name="images[]" multiple accept=".png,.jpg,.jpeg,.webp,image/*" class="w-full border border-gray-300 dark:border-gray-600 p-2 rounded mb-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-1">{{ __('global.upload_images') }}</label>
+                    <input type="file" name="images[]" multiple accept=".png,.jpg,.jpeg,.webp,image/*" class="w-full border border-gray-300 dark:border-gray-600 p-2 rounded">
+                    <p class="text-xs text-gray-500 mt-1">{{ __('global.admin_images_info') }}</p>
+                </div>
+
+                <div class="border-t pt-4 mb-4 dark:border-gray-700">
+                    <label class="block text-sm font-medium mb-1">{{ __('global.image_urls') }}</label>
+                    <textarea name="image_urls" rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg">{{ old('image_urls', is_array($product->image_urls) ? implode("\n", $product->image_urls) : '') }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('global.image_urls_info') }}</p>
+                </div>
 
                 @if($product->getMedia('product_images')->count() > 0)
                 <div class="mt-4 border-t pt-4 dark:border-gray-700">

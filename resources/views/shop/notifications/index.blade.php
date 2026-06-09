@@ -46,9 +46,14 @@
                                     : null)
                                 : route('returns.index');
                         } elseif (isset($data['order_id'])) {
-                            $notifUrl = $isAdmin
-                                ? route('admin.orders.show', $data['order_id'])
-                                : route('orders.show', $data['order_id']);
+                            // If order was returned, link to returns page instead of order details
+                            if (($data['status'] ?? '') === 'returned') {
+                                $notifUrl = $isAdmin ? route('admin.returns.index') : route('returns.index');
+                            } else {
+                                $notifUrl = $isAdmin
+                                    ? route('admin.orders.show', $data['order_id'])
+                                    : route('orders.show', $data['order_id']);
+                            }
                         }
                     @endphp
                     @if($notifUrl)

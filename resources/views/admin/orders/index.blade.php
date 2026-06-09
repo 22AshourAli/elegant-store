@@ -8,6 +8,12 @@
 
     <!-- Filter form -->
     <form method="GET" class="flex flex-wrap gap-3">
+        <select name="order_type" class="rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 border">
+            <option value="">{{ __('global.admin_all_types') }}</option>
+            <option value="online" {{ request('order_type') == 'online' ? 'selected' : '' }}>{{ __('global.admin_online') }}</option>
+            <option value="offline" {{ request('order_type') == 'offline' ? 'selected' : '' }}>{{ __('global.admin_offline') }}</option>
+        </select>
+
         <select name="status" class="rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:ring-indigo-500 focus:border-indigo-500 px-3 py-2 border">
             <option value="">{{ __('global.admin_all_statuses') }}</option>
             @foreach(['pending','confirmed','processing','shipped','delivered','cancelled','returned'] as $st)
@@ -54,8 +60,24 @@
                 <tbody class="divide-y dark:divide-gray-700">
                     @foreach($orders as $order)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm text-gray-900 dark:text-gray-200">
-                        <td class="p-4 font-bold">#{{ $order->id }}</td>
-                        <td class="p-4">{{ $order->user->name }}</td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold">#{{ $order->id }}</span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ $order->order_type === 'offline' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' }}">
+                                    {{ $order->order_type === 'offline' ? __('global.admin_offline') : __('global.admin_online') }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-1.5">
+                                <span>{{ $order->user->name }}</span>
+                                @if(!empty($order->user->email))
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">أونلاين</span>
+                                @else
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">أوفلاين</span>
+                                @endif
+                            </div>
+                        </td>
                         <td class="p-4">{{ $order->branch->name ?? __('global.admin_not_specified') }}</td>
                         <td class="p-4">
                             @if($order->payment_method === 'cash')

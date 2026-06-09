@@ -9,6 +9,8 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'branch_id',
+        'order_type',
+        'cashier_id',
         'status',
         'payment_method',
         'payment_status',
@@ -34,6 +36,11 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cashier()
+    {
+        return $this->belongsTo(User::class, 'cashier_id');
     }
 
     public function branch()

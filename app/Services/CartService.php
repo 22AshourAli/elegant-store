@@ -151,7 +151,7 @@ class CartService
     {
         $now    = Carbon::now();
         $coupon = Coupon::where('code', $code)
-            ->whereRaw('"is_active" = true')
+            ->where('is_active', true)
             ->where(function ($q) use ($now) {
                 $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now);
             })

@@ -29,6 +29,14 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->filled('order_type')) {
+            $query->where('order_type', $request->order_type);
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
         $orders = $query->latest()->paginate(20);
         $branches = Cache::remember('admin_branches', 3600, fn() => Branch::all());
         return view('admin.orders.index', compact('orders', 'branches'));

@@ -50,7 +50,7 @@
 
                     <div class="relative group cursor-pointer mb-4">
                         <img id="avatar-preview"
-                             src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&color=7F9CF5&background=EBF4FF' }}"
+                             src="{{ $user->avatarUrl() }}"
                              alt="{{ $user->name }}"
                              class="w-32 h-32 rounded-full object-cover border-4 border-indigo-50 dark:border-gray-700 shadow-md">
 
@@ -66,6 +66,12 @@
                     @error('avatar')
                         <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
                     @enderror
+
+                    <div class="mt-4 w-full">
+                        <label class="block text-xs font-medium mb-1">{{ __('global.avatar_url') }}</label>
+                        <input type="url" name="avatar_url" value="{{ old('avatar_url', str_starts_with($user->avatar ?? '', 'http') ? $user->avatar : '') }}" placeholder="https://example.com/avatar.jpg" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">
+                        <p class="text-xs text-gray-500 mt-1">{{ __('global.avatar_url_info') }}</p>
+                    </div>
                 </form>
 
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-4">{{ $user->name }}</h3>

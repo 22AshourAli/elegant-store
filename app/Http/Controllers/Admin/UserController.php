@@ -52,7 +52,7 @@ class UserController extends Controller
             return view('admin.users.create', ['type' => 'customers']);
         }
 
-        $branches = Branch::whereRaw('"is_active" = true')->orderBy('name')->get();
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
         return view('admin.users.create', compact('branches', 'type'));
     }
 
@@ -107,7 +107,7 @@ class UserController extends Controller
             return view('admin.users.edit', ['user' => $user, 'type' => 'customers']);
         }
 
-        $branches = Branch::whereRaw('"is_active" = true')->orderBy('name')->get();
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
         return view('admin.users.edit', ['user' => $user, 'branches' => $branches, 'type' => 'staff']);
     }
 

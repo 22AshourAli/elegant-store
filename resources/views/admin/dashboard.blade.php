@@ -45,6 +45,10 @@
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_orders_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalOrders }}</h3>
+                <div class="flex gap-3 text-xs mt-1">
+                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">Online: {{ $onlineOrders }}</span>
+                    <span class="text-amber-600 dark:text-amber-400 font-bold">Offline: {{ $offlineOrders }}</span>
+                </div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>

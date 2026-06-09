@@ -281,6 +281,9 @@ document.addEventListener('alpine:init', () => {
         applyFilters() {
             this.loading = true;
             const p = new URLSearchParams();
+            const currentUrl = new URL(window.location.href);
+            const searchTerm = currentUrl.searchParams.get('search');
+            if (searchTerm) p.append('search', searchTerm);
             Object.entries(this.filters).forEach(([k, v]) => {
                 if (v !== '' && v !== null) {
                     p.append(k, v);
@@ -330,7 +333,16 @@ document.addEventListener('alpine:init', () => {
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: "{{ __('global.filter_error') }}", type: 'error' } }));
                 });
         },
-        resetFilters() { this.filters = { category_id: '', sort: '', min_price: '', max_price: '' }; this.applyFilters(); }
+        resetFilters() {
+            this.filters = { category_id: '', sort: '', min_price: '', max_price: '' };
+            const currentUrl = new URL(window.location.href);
+            const searchTerm = currentUrl.searchParams.get('search');
+            if (searchTerm) {
+                this.applyFilters();
+            } else {
+                window.location.href = '/';
+            }
+        }
     }));
 });
 </script>

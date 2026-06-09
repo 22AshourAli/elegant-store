@@ -6,27 +6,41 @@ use App\Http\Controllers\Controller;
 use App\Mail\BulkMarketingMail;
 use App\Models\User;
 use App\Models\WhatsappLog;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class WhatsappMarketingController extends Controller
 {
+    public function __construct(
+        private readonly WhatsAppService $whatsApp
+    ) {}
+
     public function bulkForm()
     {
         $totalCustomers = User::where('role', 'customer')->count();
+        $withEmail = User::where('role', 'customer')
+            ->whereNotNull('email')->where('email', '!=', '')->count();
+        $withPhone = User::where('role', 'customer')
+            ->whereNotNull('phone')->where('phone', '!=', '')->count();
         $previousBuyers = User::where('role', 'customer')
             ->whereHas('orders', fn($q) => $q->where('status', '!=', 'cancelled'))
             ->count();
 
-        return view('admin.whatsapp.bulk', compact('totalCustomers', 'previousBuyers'));
+        return view('admin.whatsapp.bulk', [
+            'totalCustomers' => $totalCustomers,
+            'withEmail' => $withEmail,
+            'withPhone' => $withPhone,
+            'withoutEmail' => $totalCustomers - $withEmail,
+            'previousBuyers' => $previousBuyers,
+        ]);
     }
 
     public function sendBulk(Request $request)
     {
         $request->validate([
-            'channel' => 'required|in:whatsapp,email',
-            'audience' => 'required|in:all,previous_buyers',
+            'channel' => 'required|in:whatsapp,email,mixed',
+            'audience' => 'required|in:all,online,offline,previous_buyers',
             'subject' => 'required_if:channel,email|string|max:255',
             'message' => 'required|string|max:10000',
         ]);
@@ -35,6 +49,10 @@ class WhatsappMarketingController extends Controller
 
         if ($request->audience === 'previous_buyers') {
             $query->whereHas('orders', fn($q) => $q->where('status', '!=', 'cancelled'));
+        } elseif ($request->audience === 'online') {
+            $query->online();
+        } elseif ($request->audience === 'offline') {
+            $query->offline();
         }
 
         $customers = $query->get();
@@ -44,47 +62,71 @@ class WhatsappMarketingController extends Controller
         }
 
         if ($request->channel === 'email') {
-            $sent = 0;
-            $failed = 0;
-            foreach ($customers as $customer) {
-                try {
-                    Mail::to($customer->email)->send(new BulkMarketingMail($customer, $request->message));
-                    WhatsappLog::create([
-                        'user_id' => $customer->id,
-                        'sent_by' => auth()->id(),
-                        'message' => $request->message,
-                        'message_type' => 'marketing',
-                        'status' => 'sent',
-                        'sent_at' => now(),
-                    ]);
-                    $sent++;
-                } catch (\Exception $e) {
-                    \Log::error("Bulk email failed for {$customer->id}: " . $e->getMessage());
-                    $failed++;
-                }
-            }
-            return redirect()->route('admin.whatsapp.index')
-                ->with('success', "تم إرسال {$sent} رسالة بنجاح" . ($failed ? "، فشل {$failed}" : ''));
+            return $this->sendBulkEmail($customers, $request->message);
         }
 
-        // WhatsApp: generate links and show results page
-        $results = $customers->map(function ($customer) use ($request) {
-            $phone = preg_replace('/[^0-9]/', '', $customer->phone);
-            if (str_starts_with($phone, '00')) {
-                $phone = '+' . substr($phone, 2);
-            } elseif (str_starts_with($phone, '0')) {
-                $phone = '+20' . substr($phone, 1);
-            } elseif (!str_starts_with($phone, '+')) {
-                $phone = '+20' . $phone;
-            }
-            return [
-                'name' => $customer->name,
-                'phone' => $phone,
-                'wa_link' => 'https://wa.me/' . $phone . '?text=' . urlencode($request->message),
-            ];
-        })->filter(fn($r) => !empty($r['phone']));
+        if ($request->channel === 'mixed') {
+            $withEmail = $customers->filter(fn($c) => !empty($c->email));
+            $withoutEmail = $customers->filter(fn($c) => empty($c->email));
 
-        return view('admin.whatsapp.bulk-results', compact('results', 'request'));
+            $emailResult = $this->sendBulkEmail($withEmail, $request->message, true);
+
+            $results = $withoutEmail
+                ->map(fn($c) => $this->whatsApp->customerWaInfo($c, $request->message))
+                ->filter()
+                ->values()
+                ->toArray();
+
+            $stats = [
+                'total' => $customers->count(),
+                'email_sent' => $emailResult['sent'],
+                'email_failed' => $emailResult['failed'],
+                'wa_links' => count($results),
+            ];
+
+            return view('admin.whatsapp.bulk-results', compact('results', 'stats'));
+        }
+
+        $results = $customers
+            ->map(fn($c) => $this->whatsApp->customerWaInfo($c, $request->message))
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $stats = [
+            'total' => $customers->count(),
+            'wa_links' => count($results),
+        ];
+
+        return view('admin.whatsapp.bulk-results', compact('results', 'stats'));
+    }
+
+    private function sendBulkEmail($customers, string $message, bool $returnStats = false)
+    {
+        $sent = 0;
+        $failed = 0;
+
+        foreach ($customers as $customer) {
+            if (empty($customer->email)) {
+                $failed++;
+                continue;
+            }
+            try {
+                Mail::to($customer->email)->send(new BulkMarketingMail($customer, $message));
+                $this->whatsApp->logMessage($customer->id, auth()->id(), $message);
+                $sent++;
+            } catch (\Exception $e) {
+                \Log::error("Bulk email failed for {$customer->id}: " . $e->getMessage());
+                $failed++;
+            }
+        }
+
+        if ($returnStats) {
+            return ['sent' => $sent, 'failed' => $failed];
+        }
+
+        return redirect()->route('admin.whatsapp.index')
+            ->with('success', "تم إرسال {$sent} رسالة بنجاح" . ($failed ? "، فشل {$failed}" : ''));
     }
 
     public function index()
@@ -126,8 +168,12 @@ class WhatsappMarketingController extends Controller
             ->get();
 
         $customer = $user;
+        $info = $this->whatsApp->customerWaInfo($user, '');
 
-        return view('admin.whatsapp.show', compact('customer', 'totalOrders', 'totalSpent', 'logs'));
+        return view('admin.whatsapp.show', compact('customer', 'totalOrders', 'totalSpent', 'logs') + [
+            'waPhone' => $info['phone'] ?? '',
+            'waLink' => $info['wa_link'] ?? '',
+        ]);
     }
 
     public function sendMessage(Request $request, User $user)
@@ -136,71 +182,54 @@ class WhatsappMarketingController extends Controller
             'message' => 'required|string|max:5000',
         ]);
 
-        $phone = preg_replace('/[^0-9]/', '', $user->phone);
-        if (str_starts_with($phone, '00')) {
-            $phone = '+' . substr($phone, 2);
-        } elseif (str_starts_with($phone, '0')) {
-            $phone = '+20' . substr($phone, 1);
-        } elseif (!str_starts_with($phone, '+')) {
-            $phone = '+20' . $phone;
+        $info = $this->whatsApp->customerWaInfo($user, $request->message);
+
+        if (!$info) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'رقم الهاتف غير متوفر لهذا العميل.'], 422);
+            }
+            return back()->with('error', 'رقم الهاتف غير متوفر لهذا العميل.');
         }
 
-        $waLink = 'https://wa.me/' . $phone . '?text=' . urlencode($request->message);
+        $this->whatsApp->logMessage($user->id, auth()->id(), $request->message);
 
-        WhatsappLog::create([
-            'user_id' => $user->id,
-            'sent_by' => auth()->id(),
-            'message' => $request->message,
-            'message_type' => 'marketing',
-            'status' => 'sent',
-            'sent_at' => now(),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'wa_link' => $info['wa_link'],
+                'phone' => $info['phone'],
+                'customer_name' => $info['name'],
+            ]);
+        }
 
-        return redirect()->away($waLink);
+        return redirect()->away($info['wa_link']);
     }
 
     public function nextInLine()
     {
-        $messagedCustomerIds = WhatsappLog::pluck('user_id')->unique();
+        $messagedIds = WhatsappLog::pluck('user_id')->unique();
 
-        $nextCustomer = User::where('role', 'customer')
-            ->whereNotIn('id', $messagedCustomerIds)
+        $next = User::where('role', 'customer')
+            ->whereNotIn('id', $messagedIds)
             ->select('users.*')
-            ->selectSub(function ($q) {
-                $q->selectRaw('COALESCE(SUM(total), 0)')
-                    ->from('orders')
-                    ->whereColumn('orders.user_id', 'users.id');
-            }, 'total_spent')
+            ->selectSub(fn($q) => $q->selectRaw('COALESCE(SUM(total), 0)')->from('orders')->whereColumn('orders.user_id', 'users.id'), 'total_spent')
             ->orderByDesc('total_spent')
             ->first();
 
-        if (!$nextCustomer) {
-            $nextCustomer = User::where('role', 'customer')
+        if (!$next) {
+            $next = User::where('role', 'customer')
                 ->select('users.*')
-                ->selectSub(function ($q) {
-                    $q->selectRaw('COALESCE(SUM(total), 0)')
-                        ->from('orders')
-                        ->whereColumn('orders.user_id', 'users.id');
-                }, 'total_spent')
+                ->selectSub(fn($q) => $q->selectRaw('COALESCE(SUM(total), 0)')->from('orders')->whereColumn('orders.user_id', 'users.id'), 'total_spent')
                 ->orderByDesc('total_spent')
                 ->first();
         }
 
-        return redirect()->route('admin.whatsapp.show', ['user' => $nextCustomer->id]);
+        return redirect()->route('admin.whatsapp.show', ['user' => $next->id]);
     }
 
     public function markSent(User $user)
     {
-        $customer = $user;
-
-        WhatsappLog::create([
-            'user_id' => $user->id,
-            'sent_by' => auth()->id(),
-            'message' => 'تم الإرسال عبر واتساب',
-            'message_type' => 'marketing',
-            'status' => 'sent',
-            'sent_at' => now(),
-        ]);
+        $this->whatsApp->logMessage($user->id, auth()->id(), 'تم الإرسال عبر واتساب');
 
         return back()->with('success', 'تم تسجيل الإرسال بنجاح.');
     }

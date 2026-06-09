@@ -14,9 +14,9 @@ class ProductController extends Controller
 
         try {
             $product = Product::where('slug', $slug)
-                ->whereRaw('"is_active" = true')
+                ->where('is_active', true)
                 ->with(['variants' => function($q) {
-                    $q->whereRaw('"is_active" = true');
+                    $q->where('is_active', true);
                 }, 'variants.branches', 'variants.media', 'media', 'category'])
                 ->firstOrFail();
 
@@ -37,16 +37,16 @@ class ProductController extends Controller
             $key = is_string($color) ? mb_strtolower(trim($color)) : $color;
             $variantWithImage = $product->variants
                 ->where('color', $color)
-                ->first(fn($v) => $v->hasMedia('variant_images'));
+                ->first(fn($v) => $v->image_url || $v->hasMedia('variant_images'));
             $colorImages[$key] = $variantWithImage
-                ? $variantWithImage->getFirstMediaUrl('variant_images', 'responsive')
-                : $product->getFirstMediaUrl('product_images', 'responsive');
+                ? $variantWithImage->imageUrl()
+                : $product->firstImageUrl();
         }
 
         \SEOMeta::setTitle($product->name . ' | Elegant Store');
         \SEOMeta::setDescription($product->meta_description ?? mb_substr(strip_tags($product->description), 0, 160));
         \OpenGraph::setTitle($product->name);
-        \OpenGraph::addImage($product->getFirstMediaUrl('product_images'));
+        \OpenGraph::addImage($product->firstImageUrl());
 
         return view('shop.product', compact('product', 'colors', 'sizes', 'colorImages'));
     }

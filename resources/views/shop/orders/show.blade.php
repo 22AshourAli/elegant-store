@@ -33,10 +33,8 @@
                         <div class="flex items-center py-4 first:pt-0 last:pb-0">
                             <!-- Variant thumbnail -->
                             @php
-                                $variantImg = $item->variant->getFirstMediaUrl('variant_images', 'thumb')
-                                    ?: $item->variant->getFirstMediaUrl('variant_images')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images', 'thumb')
-                                    ?: $item->variant->product->getFirstMediaUrl('product_images')
+                                $variantImg = $item->variant->imageUrl()
+                                    ?: $item->variant->product->firstImageUrl()
                                     ?: asset('images/logo.svg');
                             @endphp
                             <img src="{{ $variantImg }}" loading="lazy" class="w-14 h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">

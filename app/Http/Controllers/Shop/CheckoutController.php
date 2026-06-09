@@ -31,7 +31,7 @@ class CheckoutController extends Controller
         $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
         $finalTotal = $total + $shipping;
 
-        $hasActiveCoupons = \App\Models\Coupon::whereRaw('"is_active" = true')
+        $hasActiveCoupons = \App\Models\Coupon::where('is_active', true)
             ->where(function($q) { $q->whereNull('valid_from')->orWhere('valid_from', '<=', now()); })
             ->where(function($q) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()); })
             ->exists();

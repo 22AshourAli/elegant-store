@@ -111,12 +111,14 @@
 
             <!-- Desktop Search (Premium Input) -->
             <div class="hidden md:flex flex-1 max-w-md mx-6 lg:mx-10">
-                <form action="{{ route('home') }}" method="GET" class="relative w-full">
+                <form action="{{ route('shop.search') }}" method="GET" class="relative w-full">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') ?? 'Search products...' }}" aria-label="{{ __('global.search_placeholder') ?? 'Search products' }}"
                            class="w-full ps-12 pe-5 h-10 text-sm bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-900 rounded-full focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary dark:focus:border-accent dark:text-slate-100 placeholder-slate-400/80 transition-all duration-300 focus:bg-white dark:focus:bg-slate-950/80 focus:shadow-[0_0_15px_rgba(79,70,229,0.1)] dark:focus:shadow-[0_0_20px_rgba(139,92,246,0.15)] outline-none">
-                    <svg class="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
+                    <button type="submit" class="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-slate-400 hover:text-brand-primary dark:hover:text-accent transition-colors" aria-label="بحث">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </button>
                 </form>
             </div>
 
@@ -161,7 +163,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </button>
                     <div x-show="show" x-cloak @click.away="show = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 p-4 shadow-lg z-50 glass-premium">
-                        <form action="{{ route('home') }}" method="GET" class="flex gap-2">
+                        <form action="{{ route('shop.search') }}" method="GET" class="flex gap-2">
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') ?? 'Search...' }}"
                                    class="flex-1 px-4 h-11 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-2xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary dark:focus:border-accent dark:text-slate-100 outline-none">
                             <button type="submit" class="px-5 h-11 bg-brand-primary hover:bg-brand-hover text-white rounded-2xl text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
@@ -265,11 +267,12 @@
                 @auth
                 <div x-data="{ open: false }" class="relative hidden sm:block">
                     <button @click="open = !open" :aria-expanded="open.toString()" class="icon-btn focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" title="{{ auth()->user()->name }}" aria-label="User Profile menu">
-                        @if(auth()->user()->avatar)
-                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="" class="w-6 h-6 rounded-full object-cover ring-2 ring-brand-primary/20 hover:ring-brand-primary transition duration-300">
+                        @php $au = auth()->user(); @endphp
+                        @if($au->avatar)
+                            <img src="{{ $au->avatarUrl() }}" alt="" class="w-6 h-6 rounded-full object-cover ring-2 ring-brand-primary/20 hover:ring-brand-primary transition duration-300">
                         @else
                             <div class="w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-brand-primary dark:text-accent flex items-center justify-center font-extrabold text-xs border border-indigo-200/50 dark:border-indigo-850/30">
-                                {{ substr(auth()->user()->name, 0, 1) }}
+                                {{ substr($au->name, 0, 1) }}
                             </div>
                         @endif
                     </button>
@@ -331,23 +334,26 @@
 
             <!-- Drawer Search -->
             <div class="p-4 border-b border-slate-100 dark:border-slate-900">
-                <form action="{{ route('home') }}" method="GET">
+                <form action="{{ route('shop.search') }}" method="GET">
                     <div class="relative">
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') ?? 'Search...' }}"
                                class="w-full ps-10 pe-4 h-10 text-sm bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-900 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary dark:focus:border-accent dark:text-slate-150 transition-all duration-300 outline-none">
-                        <svg class="absolute top-1/2 -translate-y-1/2 {{ app()->getLocale() === 'ar' ? 'right-3.5' : 'left-3.5' }} w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <button type="submit" class="absolute top-1/2 -translate-y-1/2 {{ app()->getLocale() === 'ar' ? 'right-3.5' : 'left-3.5' }} w-4 h-4 text-slate-400 hover:text-brand-primary dark:hover:text-accent transition-colors" aria-label="بحث">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </button>
                     </div>
                 </form>
             </div>
 
             <!-- Drawer User Info -->
             @auth
+            @php $au = auth()->user(); @endphp
             <div class="p-4.5 border-b border-slate-100 dark:border-slate-900 flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/10">
-                @if(auth()->user()->avatar)
-                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="" class="w-10 h-10 rounded-xl object-cover ring-2 ring-indigo-500/10">
+                @if($au->avatar)
+                    <img src="{{ $au->avatarUrl() }}" alt="" class="w-10 h-10 rounded-xl object-cover ring-2 ring-indigo-500/10">
                 @else
                     <div class="w-10 h-10 rounded-xl bg-indigo-55 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm border border-indigo-200/40">
-                        {{ substr(auth()->user()->name, 0, 1) }}
+                        {{ substr($au->name, 0, 1) }}
                     </div>
                 @endif
                 <div class="min-w-0 flex-1">

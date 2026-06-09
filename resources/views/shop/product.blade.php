@@ -3,7 +3,7 @@
 @section('meta_description', Str::limit(strip_tags($product->description ?: $product->name), 160))
 @section('og_title', $product->name)
 @section('og_description', Str::limit(strip_tags($product->description ?: $product->name), 200))
-@section('og_image', $product->getFirstMediaUrl('product_images') ?: asset('images/logo.svg'))
+@section('og_image', $product->firstImageUrl())
 
 @push('head')
     <meta property="og:type" content="product">
@@ -50,37 +50,67 @@
 
         {{-- Image Gallery --}}
         <div class="space-y-4">
-            <div class="relative bg-white/70 dark:bg-surface-dark/50 rounded-3xl overflow-hidden shadow-lg border border-slate-200/40 dark:border-slate-800/40 aspect-[4/5] md:aspect-square group backdrop-blur-md">
-                <img :src="currentImage" alt="{{ $product->name }}" loading="lazy"
-                     class="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
-                     x-ref="mainImg">
-
+            {{-- Main Image --}}
+            <div class="relative bg-white/70 dark:bg-surface-dark/50 rounded-3xl overflow-hidden shadow-lg border border-slate-200/40 dark:border-slate-800/40 aspect-[4/5] md:aspect-square group backdrop-blur-md"
+                 x-data="{ imgLoaded: false, transitioning: false }"
+                 x-init="$watch('currentImage', () => { imgLoaded = false; transitioning = true; }); $nextTick(() => { imgLoaded = true; transitioning = false; })">
+                <img :src="currentImage" alt="{{ $product->name }}"
+                     class="w-full h-full object-cover transition-all duration-500 ease-out"
+                     :class="imgLoaded ? 'opacity-100 scale-100 group-hover:scale-110' : 'opacity-0 scale-95'"
+                     x-on:load="imgLoaded = true; transitioning = false">
+                {{-- Loading shimmer --}}
+                <div x-show="!imgLoaded"
+                     class="absolute inset-0 bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-700/80 flex items-center justify-center z-20">
+                    <div class="flex flex-col items-center gap-2">
+                        <svg class="w-8 h-8 text-brand-primary/60 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 animate-pulse">{{ app()->getLocale() === 'ar' ? 'جاري التحميل...' : 'Loading...' }}</span>
+                    </div>
+                </div>
+                {{-- Badges --}}
                 @if($product->isOnSale)
                 <div class="absolute top-4 end-4 bg-gradient-to-r from-luxury-gold to-luxury-gold-mute text-white text-xs font-black tracking-wider px-3 py-1.5 rounded-full shadow-[0_4px_12px_rgba(212,175,55,0.3)] z-10">
                     {{ __('global.on_sale') }}
                 </div>
                 @endif
-
                 {{-- Zoom hint --}}
-                <div class="absolute bottom-4 start-4 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1.5">
+                <div class="absolute bottom-4 start-4 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1.5 z-10">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
                     <span>{{ __('global.product') }}</span>
                 </div>
             </div>
 
-            {{-- Thumbnails --}}
-            @if($product->getMedia('product_images')->count() > 1)
-            <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                @foreach($product->getMedia('product_images') as $media)
-                <button @click="currentImage = @json($media->getUrl('responsive'))"
-                        aria-label="View image {{ $loop->iteration }}"
-                        class="w-20 h-24 flex-shrink-0 rounded-xl overflow-hidden border-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary transition-all duration-300 hover:scale-105"
-                        :class="currentImage === @json($media->getUrl('responsive')) ? 'border-brand-primary dark:border-accent shadow-md shadow-brand-primary/20' : 'border-slate-200/40 dark:border-slate-800/60 opacity-60 hover:opacity-100 hover:border-brand-primary/40 dark:hover:border-accent/40'">
-                    <img src="{{ $media->getUrl('thumb') }}" loading="lazy" class="w-full h-full object-cover" alt="{{ $product->name }} thumbnail {{ $loop->iteration }}">
-                </button>
-                @endforeach
+            {{-- Thumbnails + Color swatches --}}
+            @php $productThumbs = $product->allImageThumbs(); $productUrls = $product->allImageUrls(); @endphp
+            <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {{-- Color swatches --}}
+                <template x-if="colors.length > 0">
+                    <template x-for="color in colors" :key="'swatch-'+color">
+                        <button @click="selectColor(color)"
+                                class="relative flex-shrink-0 w-12 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary group/swatch"
+                                :class="selectedColor === color ? 'border-brand-primary dark:border-accent shadow-lg shadow-brand-primary/20 scale-105' : 'border-slate-200/40 dark:border-slate-800/60 opacity-70 hover:opacity-100 hover:border-brand-primary/40'"
+                                :title="color">
+                            <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color">
+                            <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider" x-text="color"></span>
+                            {{-- Active indicator --}}
+                            <span x-show="selectedColor === color" class="absolute inset-0 ring-2 ring-inset ring-white/60 dark:ring-slate-900/60 rounded-xl pointer-events-none"></span>
+                            {{-- Tooltip --}}
+                            <span x-show="selectedColor === color" class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-brand-primary dark:text-accent whitespace-nowrap opacity-0 group-hover/swatch:opacity-100 transition-opacity">
+                                <span x-text="color"></span>
+                            </span>
+                        </button>
+                    </template>
+                </template>
+                {{-- Product thumbnails --}}
+                <template x-for="(thumb, index) in @json($productThumbs)" :key="'thumb-'+index">
+                    <button @click="currentImage = @json($productUrls)[index] || thumb"
+                            aria-label="View image"
+                            class="relative flex-shrink-0 w-12 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+                            :class="currentImage === (@json($productUrls)[index] || thumb) ? 'border-brand-primary dark:border-accent shadow-lg shadow-brand-primary/20' : 'border-slate-200/40 dark:border-slate-800/60 opacity-60 hover:opacity-100 hover:border-brand-primary/40'">
+                        <img :src="thumb" loading="lazy" class="w-full h-full object-cover" alt="Thumbnail">
+                        <span x-show="currentImage === (@json($productUrls)[index] || thumb)" class="absolute inset-0 ring-2 ring-inset ring-white/60 dark:ring-slate-900/60 rounded-xl pointer-events-none"></span>
+                    </button>
+                </template>
             </div>
-            @endif
         </div>
 
         {{-- Product Details --}}
@@ -100,12 +130,19 @@
 
             {{-- Price & Countdown --}}
             <div class="flex flex-col mb-6 pb-6 border-b border-slate-200/40 dark:border-slate-800/60">
-                <div class="flex items-baseline gap-4">
-                    <span x-text="formatPrice(currentPrice)" class="text-3xl sm:text-4xl font-black text-brand-primary dark:text-accent tracking-tight"></span>
-                    <span x-show="originalPrice !== currentPrice" x-cloak x-text="formatPrice(originalPrice)" class="text-base text-slate-400 line-through font-bold"></span>
+                <div class="flex items-center gap-4 flex-wrap">
+                    <span x-text="formatPrice(currentPrice)" class="text-3xl sm:text-4xl font-black text-brand-primary dark:text-accent tracking-tight"
+                          :class="originalPrice !== currentPrice ? 'text-emerald-600 dark:text-emerald-400' : ''"></span>
+                    <span x-show="originalPrice !== currentPrice" x-cloak x-text="formatPrice(originalPrice)" class="text-base sm:text-lg text-slate-400 line-through font-bold"></span>
+                    {{-- Save badge --}}
+                    <span x-show="originalPrice !== currentPrice" x-cloak
+                          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 text-xs font-black shadow-sm">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <span x-text="'{{ app()->getLocale() === 'ar' ? 'وفر' : 'Save' }} ' + formatNumber(originalPrice - currentPrice)"></span>
+                    </span>
                 </div>
                 @if($product->discount_end)
-                    <div class="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 px-3 py-2 rounded-xl w-fit" x-data="{ label: '' }" x-init="
+                    <div class="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2 rounded-xl w-fit shadow-sm" x-data="{ label: '' }" x-init="
                         const end = new Date('{{ $product->discount_end->format('Y-m-d H:i:s') }}').getTime();
                         const update = () => {
                             const diff = end - Date.now();
@@ -125,7 +162,7 @@
                         };
                         update(); setInterval(update, 60000);
                     ">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span x-text="label"></span>
                     </div>
                 @endif
@@ -279,10 +316,8 @@
 
             get currentPrice() {
                 if((!product.has_variants || product.has_variants == 0) && product.variants[0]) {
-                    // It's a simple product, check default variant or product price
                     let v = product.variants[0];
                     let base = v.price_override ?? product.base_price;
-                    if(v.sale_price) return parseFloat(v.sale_price);
                     if(product.is_on_sale) return parseFloat(product.current_price);
                     return parseFloat(base);
                 }
@@ -296,7 +331,7 @@
                 return this.currentVariant ? parseFloat(this.currentVariant.price_override ?? product.base_price) : parseFloat(product.base_price);
             },
 
-            currentImage: @json($product->getFirstMediaUrl('product_images') ?: asset('images/logo.svg')),
+            currentImage: @json($product->firstImageUrl()),
 
             get availableQty() {
                 if (!this.currentVariant) return 0;
@@ -317,9 +352,14 @@
 
             formatPrice(price) {
                 const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
-                // Round to integer for clean display, avoid excessive decimals
                 const value = Math.round(parseFloat(price || 0));
                 return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(value);
+            },
+
+            formatNumber(value) {
+                const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
+                const num = Math.round(parseFloat(value || 0));
+                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(num);
             },
 
             addToCart() {
@@ -373,7 +413,7 @@
       '@context' => 'https://schema.org/',
       '@type' => 'Product',
       'name' => $product->name,
-      'image' => $product->getFirstMediaUrl('product_images') ?: asset('images/logo.svg'),
+      'image' => $product->firstImageUrl(),
       'description' => Str::limit(strip_tags($product->description ?? $product->name), 200),
       'sku' => $product->sku ?? '',
       'offers' => [

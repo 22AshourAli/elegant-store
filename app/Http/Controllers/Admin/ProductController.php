@@ -20,8 +20,8 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::whereRaw('"is_active" = true')->get();
-        $branches = Branch::whereRaw('"is_active" = true')->get();
+        $categories = Category::where('is_active', true)->get();
+        $branches = Branch::where('is_active', true)->get();
         return view('admin.products.create', compact('categories', 'branches'));
     }
 
@@ -51,17 +51,17 @@ class ProductController extends Controller
             'variants_data' => 'nullable|array',
             'variants_data.*.sku' => 'nullable|string|max:255',
             'variants_data.*.price_override' => 'nullable|numeric|min:0',
-            'variants_data.*.sale_price' => 'nullable|numeric|min:0',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,webp,jpg|max:2048',
-            'color_images' => 'nullable|array',
-            'color_images.*' => 'image|mimes:jpeg,png,webp,jpg|max:2048',
+            'color_image_urls' => 'nullable|array',
+            'color_image_urls.*' => 'nullable|string|max:2048',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']) . '-' . uniqid();
         $validated['has_variants'] = $request->boolean('has_variants');
         $validated['featured'] = $request->boolean('featured');
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['image_urls'] = $this->parseImageUrls($request->input('image_urls'));
 
         $product = Product::create($validated);
 
@@ -88,7 +88,6 @@ class ProductController extends Controller
                             'size' => $size,
                             'sku' => $vdata['sku'] ?? ($product->id . '-' . $color . '-' . $size),
                             'price_override' => $vdata['price_override'] ?? null,
-                            'sale_price' => $vdata['sale_price'] ?? null,
                             'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
                         ]);
 
@@ -113,12 +112,14 @@ class ProductController extends Controller
             }
         }
 
-        // Attach color-specific images to the first variant of each color
-        if ($request->hasFile('color_images')) {
-            foreach ($request->file('color_images') as $color => $image) {
-                $first = $product->variants()->where('color', $color)->first();
-                if ($first) {
-                    $first->addMedia($image)->toMediaCollection('variant_images');
+        // Attach color-specific image URLs to the first variant of each color
+        if ($request->has('color_image_urls')) {
+            foreach ($request->input('color_image_urls') as $color => $url) {
+                if (!empty(trim($url))) {
+                    $first = $product->variants()->where('color', $color)->first();
+                    if ($first) {
+                        $first->update(['image_url' => trim($url)]);
+                    }
                 }
             }
         }
@@ -128,8 +129,8 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
-        $categories = Category::whereRaw('"is_active" = true')->get();
-        $branches = Branch::whereRaw('"is_active" = true')->get();
+        $categories = Category::where('is_active', true)->get();
+        $branches = Branch::where('is_active', true)->get();
         $product->load('variants.branches', 'media');
         return view('admin.products.edit', compact('product', 'categories', 'branches'));
     }
@@ -149,7 +150,7 @@ class ProductController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
             'variants' => 'nullable|array',
-            'variants.*.image' => 'nullable|image|mimes:jpeg,png,webp,jpg|max:2048',
+            'variants.*.image_url' => 'nullable|string|max:2048',
             'variants.*.stocks' => 'nullable|array',
             'variants.*.stocks.*' => 'nullable|integer|min:0',
             'variants.*.cost_price' => 'nullable|numeric|min:0',
@@ -157,6 +158,7 @@ class ProductController extends Controller
 
         $validated['featured'] = $request->boolean('featured');
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['image_urls'] = $this->parseImageUrls($request->input('image_urls'));
 
         $product->update($validated);
 
@@ -180,19 +182,10 @@ class ProductController extends Controller
                 $variant = $product->variants()->findOrFail($variantId);
                 $variant->update([
                     'price_override' => empty($vData['price_override']) ? null : $vData['price_override'],
-                    'sale_price' => empty($vData['sale_price']) ? null : $vData['sale_price'],
                     'cost_price' => array_key_exists('cost_price', $vData) && $vData['cost_price'] !== '' && $vData['cost_price'] !== null ? (float) $vData['cost_price'] : null,
                     'sku' => $vData['sku'] ?? null,
+                    'image_url' => !empty($vData['image_url']) ? trim($vData['image_url']) : null,
                 ]);
-
-                if (!empty($vData['delete_image']) && $variant->hasMedia('variant_images')) {
-                    $variant->clearMediaCollection('variant_images');
-                }
-
-                if ($request->hasFile("variants.{$variantId}.image")) {
-                    $variant->clearMediaCollection('variant_images');
-                    $variant->addMediaFromRequest("variants.{$variantId}.image")->toMediaCollection('variant_images');
-                }
 
                 if (isset($vData['stocks'])) {
                     foreach ($vData['stocks'] as $branchId => $qty) {
@@ -211,5 +204,14 @@ class ProductController extends Controller
     {
         $product->delete();
         return redirect()->route('admin.products.index')->with('success', 'تم الحذف');
+    }
+
+    private function parseImageUrls(?string $input): array
+    {
+        if (empty(trim((string) $input))) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode("\n", $input)), fn($url) => !empty($url)));
     }
 }

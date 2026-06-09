@@ -24,7 +24,7 @@ class DashboardController extends Controller
         $revenueQuery = Order::whereNotIn('status', ['cancelled', 'returned']);
         $returnedQuery = Order::where('status', 'returned');
         $lowStockQuery = ProductVariant::whereHas('branches', function ($q) use ($branchId) {
-            $q->where('stock', '<', 2);
+            $q->where('stock', '>', 0)->where('stock', '<', 2);
             if ($branchId) $q->where('branch_id', $branchId);
         });
 
@@ -35,6 +35,8 @@ class DashboardController extends Controller
         }
 
         $totalOrders = (clone $orderQuery)->count();
+        $onlineOrders = (clone $orderQuery)->where('order_type', 'online')->count();
+        $offlineOrders = (clone $orderQuery)->where('order_type', 'offline')->count();
         $totalRevenue = (float) (clone $revenueQuery)->sum('total');
         $totalProductRevenue = (float) (clone $revenueQuery)->sum('subtotal');
         $totalShippingCollected = (float) (clone $revenueQuery)->sum('shipping_cost');
@@ -127,6 +129,7 @@ class DashboardController extends Controller
                 'branches.name as branch_name',
                 'branch_product_variant.stock'
             )
+            ->where('branch_product_variant.stock', '>', 0)
             ->where('branch_product_variant.stock', '<', 2);
 
         if ($branchId) $lowStockQuery->where('branch_product_variant.branch_id', $branchId);
@@ -182,6 +185,8 @@ class DashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'totalOrders',
+            'onlineOrders',
+            'offlineOrders',
             'totalRevenue',
             'totalProductRevenue',
             'totalShippingCollected',

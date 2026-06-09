@@ -16,7 +16,7 @@ class Product extends Model implements HasMedia
         'category_id', 'name', 'slug', 'description', 'base_price',
         'sale_price', 'discount_start', 'discount_end',
         'has_variants', 'is_active', 'featured',
-        'meta_title', 'meta_description'
+        'meta_title', 'meta_description', 'image_urls'
     ];
 
     protected $casts = [
@@ -25,6 +25,7 @@ class Product extends Model implements HasMedia
         'has_variants' => \App\Casts\PostgresBoolean::class,
         'is_active' => \App\Casts\PostgresBoolean::class,
         'featured' => \App\Casts\PostgresBoolean::class,
+        'image_urls' => 'array',
     ];
 
     protected $appends = [
@@ -42,6 +43,20 @@ class Product extends Model implements HasMedia
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function colorImages()
+    {
+        return $this->hasMany(ProductColorImage::class)->orderBy('sort_order');
+    }
+
+    public function colorGroupedImages(): array
+    {
+        $groups = [];
+        foreach ($this->colorImages as $img) {
+            $groups[$img->color][] = $img->image_url;
+        }
+        return $groups;
+    }
+
     // المنتجات ذات الصلة (نفس التصنيف)
     public function relatedProducts()
     {
@@ -53,10 +68,9 @@ class Product extends Model implements HasMedia
 
     public function scopeActive($query)
     {
-        return $query->whereRaw('"is_active" = true');
+        return $query->where('is_active', true);
     }
 
-    // السعر النهائي الحالي مع الأخذ في الاعتبار الخصم الزمني
     public function getCurrentPriceAttribute()
     {
         $now = now();
@@ -68,7 +82,6 @@ class Product extends Model implements HasMedia
         return $this->base_price;
     }
 
-    // التحقق مما إذا كان المنتج عليه خصم نشط
     public function getIsOnSaleAttribute()
     {
         return $this->current_price < $this->base_price;
@@ -137,5 +150,29 @@ class Product extends Model implements HasMedia
         $this->addMediaConversion('responsive')
              ->withResponsiveImages()
              ->format('webp');
+    }
+
+    public function firstImageUrl(): string
+    {
+        if (!empty($this->image_urls)) {
+            return $this->image_urls[0];
+        }
+        return $this->getFirstMediaUrl('product_images') ?: asset('images/logo.svg');
+    }
+
+    public function allImageUrls(): array
+    {
+        if (!empty($this->image_urls)) {
+            return $this->image_urls;
+        }
+        return $this->getMedia('product_images')->map(fn($m) => $m->getUrl('responsive') ?: $m->getUrl())->toArray();
+    }
+
+    public function allImageThumbs(): array
+    {
+        if (!empty($this->image_urls)) {
+            return $this->image_urls;
+        }
+        return $this->getMedia('product_images')->map(fn($m) => $m->getUrl('thumb') ?: $m->getUrl())->toArray();
     }
 }

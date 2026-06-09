@@ -21,7 +21,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //
+        // Process abandoned carts every hour
+        $schedule->command('carts:process-abandoned --idle=120 --batch=50')
+            ->hourly()
+            ->withoutOverlapping();
     }
 
     /**

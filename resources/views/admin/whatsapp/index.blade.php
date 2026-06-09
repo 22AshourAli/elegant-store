@@ -34,7 +34,21 @@
                     $log = $latestLogs[$customer->id] ?? null;
                 @endphp
                 <tr class="border-t dark:border-gray-700">
-                    <td class="p-3">{{ $customer->name }}</td>
+                    <td class="p-3">
+                            <div class="flex items-center gap-1.5">
+                                <span>{{ $customer->name }}</span>
+                                @if(!empty($customer->email))
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">أونلاين</span>
+                                @else
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">أوفلاين</span>
+                                @endif
+                                @if($customer->total_orders > 0)
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">مشتري</span>
+                                @else
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-500">جديد</span>
+                                @endif
+                            </div>
+                        </td>
                     <td class="p-3">{{ $customer->total_orders }}</td>
                     <td class="p-3">{{ number_format((int) $customer->total_spent) }} ج.م</td>
                     <td class="p-3 max-w-xs truncate">

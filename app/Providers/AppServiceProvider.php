@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.store', function ($view) {
             $navbarCategories = Cache::remember('navbar_categories', 3600, function () {
-                return Category::whereRaw('"is_active" = true')
+                return Category::where('is_active', true)
                     ->whereNull('parent_id')
                     ->with('children')
                     ->get();

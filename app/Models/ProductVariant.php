@@ -13,13 +13,11 @@ class ProductVariant extends Model implements HasMedia
 
     protected $fillable = [
         'product_id', 'sku', 'color', 'size', 'price_override',
-        'sale_price', 'cost_price', 'discount_start', 'discount_end',
-        'is_active', 'is_default'
+        'cost_price',
+        'is_active', 'is_default', 'image_url'
     ];
 
     protected $casts = [
-        'discount_start' => 'datetime',
-        'discount_end' => 'datetime',
         'is_active' => \App\Casts\PostgresBoolean::class,
         'is_default' => \App\Casts\PostgresBoolean::class,
     ];
@@ -41,19 +39,10 @@ class ProductVariant extends Model implements HasMedia
                     ->withTimestamps();
     }
 
-    // السعر النهائي لهذا المتغير
     public function getCurrentPriceAttribute()
     {
-        $now = now();
-        // نبدأ من الـ price_override إن وجد، وإلا base_price من الأب
         $base = $this->price_override ?? $this->product->base_price;
-        if ($this->sale_price &&
-            (!$this->discount_start || $this->discount_start <= $now) &&
-            (!$this->discount_end || $this->discount_end >= $now)) {
-            return $this->sale_price;
-        }
-        // وإلا نفحص خصم المنتج العام إن لم يحدد المتغير خصماً
-        if (!$this->sale_price && $this->product->isOnSale) {
+        if ($this->product->isOnSale) {
             return $this->product->current_price;
         }
         return $base;
@@ -72,6 +61,15 @@ class ProductVariant extends Model implements HasMedia
             return $this->branches->sum(fn($branch) => $branch->pivot->stock);
         }
         return $this->branches()->sum('branch_product_variant.stock');
+    }
+
+    public function imageUrl(): string
+    {
+        if (!empty($this->image_url)) {
+            return $this->image_url;
+        }
+        return $this->getFirstMediaUrl('variant_images', 'thumb')
+            ?: $this->getFirstMediaUrl('variant_images');
     }
 
     public function registerMediaCollections(): void

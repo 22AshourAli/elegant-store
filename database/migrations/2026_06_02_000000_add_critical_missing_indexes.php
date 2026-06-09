@@ -8,7 +8,20 @@ return new class extends Migration
     private function createIndexIfNotExists(string $table, string $column, ?string $indexName = null): void
     {
         $index = $indexName ?? "{$table}_{$column}_index";
-        DB::statement("CREATE INDEX IF NOT EXISTS \"{$index}\" ON \"{$table}\" (\"{$column}\")");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'mysql') {
+            $schema = DB::getDatabaseName();
+            $exists = DB::select(
+                "SELECT COUNT(*) as cnt FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ?",
+                [$schema, $table, $index]
+            );
+            if ($exists[0]->cnt == 0) {
+                DB::statement("CREATE INDEX `{$index}` ON `{$table}` (`{$column}`)");
+            }
+        } else {
+            DB::statement("CREATE INDEX IF NOT EXISTS \"{$index}\" ON \"{$table}\" (\"{$column}\")");
+        }
     }
 
     public function up(): void

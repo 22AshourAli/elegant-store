@@ -13,6 +13,7 @@ class PostgresBoolean implements CastsAttributes
 
     public function set($model, string $key, $value, array $attributes): array
     {
-        return [$key => $value ? 'true' : 'false'];
+        $bool = $value ? 'true' : 'false';
+        return [$key => \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'mysql' ? ($value ? 1 : 0) : $bool];
     }
 }

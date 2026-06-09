@@ -27,10 +27,11 @@
             @forelse($products as $product)
             <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td class="p-3">
-                    @if($product->hasMedia('product_images'))
-                        <img src="{{ $product->getFirstMediaUrl('product_images', 'thumb') ?: $product->getFirstMediaUrl('product_images') }}" loading="lazy" class="w-12 h-12 object-cover rounded shadow-sm">
+                    @php $adminImg = $product->firstImageUrl(); @endphp
+                    @if($adminImg !== asset('images/logo.svg'))
+                        <img src="{{ $adminImg }}" loading="lazy" class="w-12 h-12 object-cover rounded shadow-sm">
                     @else
-                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-400">{{ __('global.admin_no_image') }}</div>
+                        <span class="text-xs text-gray-400">{{ __('global.admin_no_image') }}</span>
                     @endif
                 </td>
                 <td class="p-3 font-semibold">{{ $product->name }}</td>

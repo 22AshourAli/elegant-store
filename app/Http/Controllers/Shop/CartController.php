@@ -18,7 +18,7 @@ class CartController extends Controller
 
         try {
             $now = Carbon::now();
-            $coupons = Coupon::whereRaw('"is_active" = true')
+            $coupons = Coupon::where('is_active', true)
                 ->where(function($q) use ($now) { $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now); })
                 ->where(function($q) use ($now) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now); })
                 ->get();

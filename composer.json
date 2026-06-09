@@ -9,6 +9,7 @@
         "php": "^8.3",
         "ext-exif": "*",
         "artesaos/seotools": "^1.4",
+        "cloudinary/cloudinary_php": "*",
         "laravel/framework": "^13.8",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",

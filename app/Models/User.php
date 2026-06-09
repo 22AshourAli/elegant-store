@@ -35,6 +35,17 @@ class User extends Authenticatable
         return $this->belongsTo(Branch::class);
     }
 
+    public function avatarUrl(): string
+    {
+        if (!empty($this->avatar)) {
+            if (str_starts_with($this->avatar, 'http')) {
+                return $this->avatar;
+            }
+            return asset('storage/' . $this->avatar);
+        }
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+    }
+
     public function isSuperAdmin()
     {
         return $this->role === 'super_admin';
