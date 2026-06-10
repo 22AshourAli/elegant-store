@@ -35,7 +35,6 @@ class ProductSeeder extends Seeder
                     'color' => $color,
                     'size' => $size,
                     'price_override' => null, // يرث base_price
-                    'sale_price' => null, // يرث الخصم من المنتج
                 ]);
                 // تعيين مخزون عشوائي للفرع الرئيسي (id=1)
                 $variant->branches()->attach(1, ['stock' => rand(1, 10)]);
