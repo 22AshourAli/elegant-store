@@ -189,5 +189,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/payment-reconciliation', [\App\Http\Controllers\Admin\AnalyticsController::class, 'paymentReconciliation'])->name('payment-reconciliation');
     });
 });
+Route::get('/force-seed-database', function() {
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+    return 'تم عمل الـ Seed بنجاح يا هندسة! جرب الـ Login حالا.';
+});
 
 require __DIR__.'/auth.php';
