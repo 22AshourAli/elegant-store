@@ -113,9 +113,14 @@ class OrderController extends Controller
                 }
             }
 
-            // Send notification to customer
-            $order->user->notify(new OrderStatusChanged($order, $newStatus));
         });
+
+        // Send notification outside transaction so mail failure doesn't rollback the order update
+        try {
+            $order->user->notify(new OrderStatusChanged($order, $newStatus));
+        } catch (\Throwable $e) {
+            // Notification sent best-effort; mail may fail (e.g. SMTP timeout)
+        }
 
         return back()->with('success', 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.');
     }

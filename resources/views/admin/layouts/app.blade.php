@@ -272,10 +272,25 @@
     </div>
     @push('scripts')
     <script>
+        function playNotifSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
+            } catch(e) {}
+        }
         document.addEventListener('alpine:init', () => {
             Alpine.data('notifications', () => ({
                 open: false,
                 unread: 0,
+                _initialized: false,
+                lastCount: 0,
                 items: [],
                 async init() {
                     await this.fetchUnread();
@@ -286,6 +301,9 @@
                     try {
                         const res = await fetch("{{ route('admin.notifications.unread-count') }}");
                         const data = await res.json();
+                        if (this._initialized && data.count > this.lastCount) playNotifSound();
+                        this._initialized = true;
+                        this.lastCount = data.count;
                         this.unread = data.count;
                     } catch(e) {}
                 },
