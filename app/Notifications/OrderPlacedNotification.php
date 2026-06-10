@@ -17,7 +17,10 @@ class OrderPlacedNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return array_values(array_filter([
+            config('mail.default') !== 'log' && !empty(config('mail.mailers.smtp.host')) && config('mail.mailers.smtp.host') !== '127.0.0.1' ? 'mail' : null,
+            'database',
+        ]));
     }
 
     public function toMail($notifiable)

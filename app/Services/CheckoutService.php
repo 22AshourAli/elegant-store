@@ -90,7 +90,7 @@ class CheckoutService
                     App::setLocale($adminLocale);
                     $admin->notify(new \App\Notifications\NewOrderAdminNotification($order));
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 // Silently ignore mail errors so it doesn't break checkout
                 \Log::error('Notification failed: ' . $e->getMessage());
             }
