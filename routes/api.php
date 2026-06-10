@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LoyaltyController;
 use App\Http\Controllers\Api\PaymentReconciliationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ShippingController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,4 +57,30 @@ Route::prefix('payments')->group(function () {
     Route::post('/reconcile/batch', [PaymentReconciliationController::class, 'batchReconcile']);
     Route::get('/financial-summary', [PaymentReconciliationController::class, 'financialSummary']);
     Route::post('/settlements', [PaymentReconciliationController::class, 'storeSettlement']);
+});
+
+// =============================================================================
+// TEMPORARY: Database seeding endpoint — REMOVE THIS ROUTE AFTER SEEDING
+// Usage: POST /api/seed-database
+//        Header: X-Seed-Token: <value of SEED_TOKEN env var>
+// Runs: AdminUserSeeder, BranchSeeder, CategorySeeder, ProductSeeder
+// =============================================================================
+Route::post('/seed-database', function () {
+    $token = env('SEED_TOKEN', 'temporary-seed-token');
+
+    if (request()->header('X-Seed-Token') !== $token) {
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+
+    try {
+        Artisan::call('db:seed', ['--force' => true]);
+        $output = Artisan::output();
+
+        return response()->json([
+            'message' => 'Database seeded successfully',
+            'output'  => $output,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
 });
