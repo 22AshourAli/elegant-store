@@ -20,7 +20,6 @@ class SetLocale
         } else {
             $default = config('app.locale', 'ar');
             App::setLocale($default);
-            Session::put('locale', $default);
         }
 
         return $next($request);

@@ -104,7 +104,8 @@ class HomeController extends Controller
 
     private function loadProducts()
     {
-        $cacheKey = 'homepage_' . md5(request()->fullUrl());
+        $version = Cache::get('cache_version', 1);
+        $cacheKey = 'homepage_' . $version . '_' . md5(request()->fullUrl());
 
         $products = Cache::get($cacheKey);
         if ($products) {

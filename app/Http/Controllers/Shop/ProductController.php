@@ -10,7 +10,8 @@ class ProductController extends Controller
 {
     public function show($slug)
     {
-        $cacheKey = 'product_' . md5($slug);
+        $version = Cache::get('cache_version', 1);
+        $cacheKey = 'product_' . $version . '_' . md5($slug);
 
         try {
             $product = Product::where('slug', $slug)

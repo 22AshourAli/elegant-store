@@ -13,7 +13,8 @@ class CategoryController extends Controller
 {
     public function show($slug)
     {
-        $cacheKey = 'category_' . md5($slug . '_' . request()->fullUrl());
+        $version = Cache::get('cache_version', 1);
+        $cacheKey = 'category_' . $version . '_' . md5($slug . '_' . request()->fullUrl());
 
         try {
             $category = Category::where('slug', $slug)->with('children')->firstOrFail();

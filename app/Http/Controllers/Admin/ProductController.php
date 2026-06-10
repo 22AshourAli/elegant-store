@@ -215,6 +215,7 @@ class ProductController extends Controller
     {
         Cache::forget('homepage_default');
         Cache::forget('categories_all');
+        Cache::increment('cache_version');
     }
 
     private function parseImageUrls(?string $input): array
