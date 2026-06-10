@@ -90,7 +90,7 @@
     </script>
     @stack('schema')
 </head>
-<<body class="bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<body class="bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
     <!-- Navbar (Semantic Header) -->
     <header role="banner" class="sticky top-0 z-50 glass-premium nav-blur border-b border-slate-200/40 dark:border-slate-900/60 shadow-[0_4px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.3)] transition-all duration-300">
@@ -128,8 +128,8 @@
                     @if(is_object($cat) && isset($cat->slug))
                         @if($cat->children && $cat->children->count() > 0)
                             <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative">
-                                <a href="{{ route('shop.category', $cat->slug) }}" 
-                                   aria-label="Category: {{ $cat->name }}" 
+                                <a href="{{ route('shop.category', $cat->slug) }}"
+                                   aria-label="Category: {{ $cat->name }}"
                                    aria-haspopup="true"
                                    :aria-expanded="open.toString()"
                                    class="nav-link-underline px-3.5 py-2.5 text-xs font-bold tracking-wide text-slate-700 dark:text-slate-350 hover:text-brand-primary dark:hover:text-accent rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/55 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
