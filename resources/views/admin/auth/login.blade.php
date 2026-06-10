@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"
-      x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', showPassword: false }"
+      x-data="{ darkMode: localStorage.getItem('darkMode') !== 'false', showPassword: false }"
       x-init="$watch('darkMode', val => { localStorage.setItem('darkMode', val); document.documentElement.classList.toggle('dark', val) })"
       :class="{ 'dark': darkMode }">
 <head>
@@ -9,7 +9,7 @@
     <title>@yield('title', __('global.admin_login')) | {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script>
-        if (localStorage.getItem('darkMode') === 'true') {
+        if (localStorage.getItem('darkMode') !== 'false') {
             document.documentElement.classList.add('dark');
         }
     </script>

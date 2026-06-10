@@ -65,6 +65,8 @@ class ProductController extends Controller
 
         $product = Product::create($validated);
 
+        $this->clearHomepageCache();
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
                 $product->addMedia($image)->toMediaCollection('product_images');
@@ -162,6 +164,8 @@ class ProductController extends Controller
 
         $product->update($validated);
 
+        $this->clearHomepageCache();
+
         if ($request->has('delete_images')) {
             foreach ($request->input('delete_images') as $mediaId) {
                 $media = $product->media()->find($mediaId);
@@ -203,7 +207,14 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
+        $this->clearHomepageCache();
         return redirect()->route('admin.products.index')->with('success', 'تم الحذف');
+    }
+
+    private function clearHomepageCache(): void
+    {
+        Cache::forget('homepage_default');
+        Cache::forget('categories_all');
     }
 
     private function parseImageUrls(?string $input): array

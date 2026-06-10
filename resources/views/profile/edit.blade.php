@@ -69,7 +69,7 @@
 
                     <div class="mt-4 w-full">
                         <label class="block text-xs font-medium mb-1">{{ __('global.avatar_url') }}</label>
-                        <input type="url" name="avatar_url" value="{{ old('avatar_url', str_starts_with($user->avatar ?? '', 'http') ? $user->avatar : '') }}" placeholder="https://example.com/avatar.jpg" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">
+                        <input type="url" name="avatar_url" value="{{ old('avatar_url', str_starts_with($user->avatar ?? '', 'http') ? $user->avatar : '') }}" placeholder="https://example.com/avatar.jpg" onchange="document.getElementById('avatar-form').submit()" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">
                         <p class="text-xs text-gray-500 mt-1">{{ __('global.avatar_url_info') }}</p>
                     </div>
                 </form>

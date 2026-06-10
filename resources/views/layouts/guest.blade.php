@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-      x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }"
+      x-data="{ darkMode: localStorage.getItem('darkMode') !== 'false' }"
       x-init="$watch('darkMode', val => { localStorage.setItem('darkMode', val); document.documentElement.classList.toggle('dark', val) })"
       :class="{ 'dark': darkMode }">
     <head>
         <meta charset="utf-8">
         <script>
-            if (localStorage.getItem('darkMode') === 'true') {
+            if (localStorage.getItem('darkMode') !== 'false') {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');

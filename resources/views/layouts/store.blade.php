@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}"
       x-data="{
-        darkMode: localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches),
+        darkMode: localStorage.getItem('darkMode') !== 'false',
         mobileOpen: false,
         cartCount: 0,
         wishlistCount: 0,
@@ -38,8 +38,7 @@
     <meta charset="utf-8">
     <script>
         (function() {
-            const dark = localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (dark) document.documentElement.classList.add('dark');
+            if (localStorage.getItem('darkMode') !== 'false') document.documentElement.classList.add('dark');
         })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
