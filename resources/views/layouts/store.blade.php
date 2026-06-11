@@ -309,22 +309,18 @@
         </div>
     </header>
 
-    <!-- Mobile Off-canvas Overlay -->
-    <div @click="mobileOpen = false"
-         class="fixed inset-0 z-[55] bg-black/60 backdrop-blur-md lg:hidden transition-opacity duration-300 ease-out opacity-0 pointer-events-none"
-         :class="{ 'opacity-100 pointer-events-auto': mobileOpen }"
-         role="presentation">
-    </div>
-
-    <!-- Mobile Off-canvas Panel -->
-    <aside role="dialog" aria-label="Mobile navigation menu"
-           :aria-modal="mobileOpen.toString()"
-           :aria-hidden="(!mobileOpen).toString()"
-           class="fixed inset-y-0 {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} z-[60] w-80 max-w-[85vw] bg-white/95 dark:bg-[#030712]/95 backdrop-blur-2xl shadow-2xl flex flex-col lg:hidden border-slate-100/60 dark:border-slate-900/40 {{ app()->getLocale() === 'ar' ? 'border-l' : 'border-r' }}
-                  transition-all duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]
-                  {{ app()->getLocale() === 'ar' ? 'translate-x-full' : '-translate-x-full' }}"
-           :class="{ 'translate-x-0': mobileOpen }"
-           @keydown.escape.window="mobileOpen = false">
+    <!-- Mobile Off-canvas Drawer (Semantic aside) -->
+    <aside x-show="mobileOpen" x-cloak role="dialog" aria-label="Mobile navigation menu" :aria-modal="mobileOpen.toString()" class="fixed inset-0 z-[60] lg:hidden">
+        <div @click="mobileOpen = false" class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity"></div>
+        <div class="fixed inset-y-0 {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} w-80 max-w-[85vw] bg-white/95 dark:bg-[#030712]/95 backdrop-blur-2xl shadow-2xl z-10 flex flex-col border-slate-100/60 dark:border-slate-900/40"
+             :class="{'border-l': '{{ app()->getLocale() }}' !== 'ar', 'border-r': '{{ app()->getLocale() }}' === 'ar'}"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 {{ app()->getLocale() === 'ar' ? 'translate-x-8' : '-translate-x-8' }}"
+             x-transition:enter-end="opacity-100 translate-x-0"
+             x-transition:leave="transition ease-in duration-250"
+             x-transition:leave-start="opacity-100 translate-x-0"
+             x-transition:leave-end="opacity-0 {{ app()->getLocale() === 'ar' ? 'translate-x-8' : '-translate-x-8' }}"
+             @click.away="mobileOpen = false">
 
             <!-- Drawer Header -->
             <div class="flex items-center justify-between p-4.5 border-b border-slate-100 dark:border-slate-900 shrink-0">
@@ -446,6 +442,7 @@
                 </form>
                 @endauth
             </div>
+        </div>
     </aside>
 
     <!-- Mobile Bottom Navigation Bar -->
