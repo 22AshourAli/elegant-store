@@ -6,9 +6,11 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable(['name', 'email', 'password', 'role', 'branch_id', 'phone', 'avatar', 'social_id', 'social_type'])]
 #[Hidden(['password', 'remember_token'])]
@@ -79,5 +81,27 @@ class User extends Authenticatable
     public function exchanges()
     {
         return $this->hasMany(Exchange::class);
+    }
+
+    public function scopeOnline(Builder $query): void
+    {
+        $activeIds = DB::table('sessions')
+            ->where('last_activity', '>=', now()->subMinutes(15)->timestamp)
+            ->whereNotNull('user_id')
+            ->distinct()
+            ->pluck('user_id');
+
+        $query->whereIn('id', $activeIds);
+    }
+
+    public function scopeOffline(Builder $query): void
+    {
+        $activeIds = DB::table('sessions')
+            ->where('last_activity', '>=', now()->subMinutes(15)->timestamp)
+            ->whereNotNull('user_id')
+            ->distinct()
+            ->pluck('user_id');
+
+        $query->whereNotIn('id', $activeIds);
     }
 }
