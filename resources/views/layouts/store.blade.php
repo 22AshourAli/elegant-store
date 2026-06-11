@@ -173,7 +173,7 @@
                 </div>
 
                 <!-- Language Selection -->
-                <div class="relative" x-data="{ open: false }">
+                <div class="hidden lg:block relative" x-data="{ open: false }">
                     <button @click="open = !open" :aria-expanded="open.toString()" class="icon-btn text-xs font-bold gap-1 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" aria-label="Switch Language">
                         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-.778.099-1.533.284-2.253"></path>
@@ -193,10 +193,12 @@
                 </div>
 
                 <!-- Dark Mode toggle button -->
-                <button @click="darkMode = !darkMode" aria-label="Toggle dark mode" class="icon-btn focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
-                    <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                    <svg x-show="darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="5"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                </button>
+                <div class="hidden lg:block">
+                    <button @click="darkMode = !darkMode" aria-label="Toggle dark mode" class="icon-btn focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
+                        <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg x-show="darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="5"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
+                </div>
 
                 @auth
                 <!-- Notifications Dropdown -->
@@ -443,26 +445,35 @@
         </div>
     </aside>
 
-    <!-- Mobile Bottom Navigation Bar (Glassmorphic Accent) -->
-    <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-950/80 nav-blur border-t border-slate-200/50 dark:border-slate-900/60 lg:hidden shadow-[0_-8px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.2)]">
-        <div class="flex items-center justify-around py-2">
-            <a href="{{ route('home') }}" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-500 dark:text-slate-400 transition-colors {{ request()->routeIs('home') && !request()->has('search') ? 'text-indigo-655 dark:text-indigo-400 font-extrabold scale-105' : 'font-semibold' }}">
-                <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span class="text-[9px] tracking-wide">{{ __('global.home') ?? 'Home' }}</span>
+    <!-- Mobile Bottom Navigation Bar -->
+    <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-t border-slate-200/50 dark:border-slate-800/50 lg:hidden shadow-[0_-2px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_30px_rgba(0,0,0,0.25)]">
+        <div class="grid grid-cols-5 py-0.5">
+            <a href="{{ route('home') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg {{ request()->routeIs('home') && !request()->has('search') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50' }}">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                <span class="text-[8px] font-bold leading-tight">{{ __('global.home') }}</span>
             </a>
-            <a href="{{ route('home') }}#featured" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-500 dark:text-slate-400 transition-colors font-semibold">
-                <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                <span class="text-[9px] tracking-wide">{{ __('global.shop') ?? 'Shop' }}</span>
+            <a href="{{ route('home') }}#featured" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+                <span class="text-[8px] font-bold leading-tight">{{ __('global.shop') }}</span>
+            </a>
+            <button @click="darkMode = !darkMode" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50 cursor-pointer">
+                <svg x-show="!darkMode" class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+                <svg x-show="darkMode" x-cloak class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+                <span class="text-[8px] font-bold leading-tight">{{ app()->getLocale() === 'ar' ? 'ليلي' : 'Dark' }}</span>
+            </button>
+            <a href="{{ route('lang.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.78.147 2.653.255m-4.589 8.495a18.023 18.023 0 01-3.827-5.802"/></svg>
+                <span class="text-[8px] font-bold leading-tight">{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
             </a>
             @auth
-                <a href="{{ route('profile.edit') }}" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-500 dark:text-slate-400 transition-colors {{ request()->routeIs('profile.edit') ? 'text-indigo-655 dark:text-indigo-400 font-extrabold scale-105' : 'font-semibold' }}">
-                    <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    <span class="text-[9px] tracking-wide">{{ __('global.profile') ?? 'Profile' }}</span>
+                <a href="{{ route('profile.edit') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg {{ request()->routeIs('profile.edit') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50' }}">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                    <span class="text-[8px] font-bold leading-tight">{{ __('global.profile') }}</span>
                 </a>
             @else
-                <a href="{{ route('login') }}" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-500 dark:text-slate-400 transition-colors font-semibold">
-                    <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    <span class="text-[9px] tracking-wide">{{ __('global.login') ?? 'Login' }}</span>
+                <a href="{{ route('login') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
+                    <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+                    <span class="text-[8px] font-bold leading-tight">{{ __('global.login') }}</span>
                 </a>
             @endauth
         </div>
@@ -541,7 +552,7 @@
                 </div>
             </div>
         </div>
-        <div class="text-center py-6 text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-900">
+        <div class="text-center py-6 pb-20 lg:pb-6 text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-900">
             <div>&copy; {{ date('Y') }} Elegant Store. {{ __('global.rights_reserved') }}</div>
         </div>
     </footer>

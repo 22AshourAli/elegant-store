@@ -20,6 +20,17 @@
   --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* Global box-sizing reset (Tailwind v4 preflight not loaded) */
+*, ::before, ::after {
+  box-sizing: border-box;
+}
+
+/* Responsive media defaults */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Base Body Styling */
 body {
   margin: 0;
@@ -28,7 +39,6 @@ body {
   letter-spacing: -0.01em;
   background-color: var(--color-bg-light);
   color: #0f172a; /* Slate 900 */
-  overflow-x: hidden;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -267,7 +277,7 @@ body {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
 }
 @media (min-width: 640px) {

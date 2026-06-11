@@ -142,7 +142,7 @@
                     </span>
                 </div>
                 @if($product->discount_end)
-                    <div class="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2 rounded-xl w-fit shadow-sm" x-data="{ label: '' }" x-init="
+                    <div class="mt-3 text-xs text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2 rounded-xl w-fit max-w-full shadow-sm" x-data="{ label: '' }" x-init="
                         const end = new Date('{{ $product->discount_end->format('Y-m-d H:i:s') }}').getTime();
                         const update = () => {
                             const diff = end - Date.now();
@@ -202,7 +202,7 @@
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.size') }}</label>
                 </div>
-                <div class="grid grid-cols-4 md:grid-cols-5 gap-3" role="group" aria-label="{{ __('global.size') }}">
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3" role="group" aria-label="{{ __('global.size') }}">
                     <template x-for="size in sizes" :key="size">
                         <button @click="selectedSize = size"
                                 class="py-2.5 px-2 border rounded-xl text-xs font-extrabold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary transition-all duration-300"
