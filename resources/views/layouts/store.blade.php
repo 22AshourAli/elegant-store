@@ -93,7 +93,7 @@
 
     <!-- Navbar (Semantic Header) -->
     <header role="banner" class="sticky top-0 z-50 glass-premium nav-blur border-b border-slate-200/40 dark:border-slate-900/60 shadow-[0_4px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.3)] transition-all duration-300">
-        <div class="container flex items-center justify-between h-14 sm:h-16 lg:h-20">
+        <div class="container flex items-center justify-between h-14 sm:h-16 lg:h-20 px-3 sm:px-4">
 
             <!-- Logo -->
             <a href="{{ route('home') }}" class="flex items-center gap-2 shrink-0 group focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none rounded-lg" aria-label="{{ config('app.name') }} Home">
@@ -154,7 +154,7 @@
             </nav>
 
             <!-- Right Icons -->
-            <div class="flex items-center gap-1 sm:gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2.5">
 
                 <!-- Mobile Search Toggle -->
                 <div class="md:hidden" x-data="{ show: false }">
