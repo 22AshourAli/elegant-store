@@ -78,21 +78,24 @@ class CheckoutService
                 session()->forget('cart');
             }
 
-            // Dispatch Notifications
+            // Dispatch Notifications — each notification in its own try-catch so one failure never blocks others
             try {
                 $locale = $user->locale ?? app()->getLocale();
                 App::setLocale($locale);
                 $user->notify(new \App\Notifications\OrderPlacedNotification($order));
+            } catch (\Throwable $e) {
+                \Log::error('Customer notif failed: ' . $e->getMessage());
+            }
 
-                $admins = \App\Models\User::whereIn('role', ['super_admin', 'manager'])->get();
-                foreach ($admins as $admin) {
+            $admins = \App\Models\User::whereIn('role', ['super_admin', 'manager'])->get();
+            foreach ($admins as $admin) {
+                try {
                     $adminLocale = $admin->locale ?? config('app.fallback_locale', 'ar');
                     App::setLocale($adminLocale);
                     $admin->notify(new \App\Notifications\NewOrderAdminNotification($order));
+                } catch (\Throwable $e) {
+                    \Log::error('Admin notif failed for ' . $admin->email . ': ' . $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                // Silently ignore mail errors so it doesn't break checkout
-                \Log::error('Notification failed: ' . $e->getMessage());
             }
 
             return $order;

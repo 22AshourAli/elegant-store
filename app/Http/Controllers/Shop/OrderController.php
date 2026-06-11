@@ -53,14 +53,14 @@ class OrderController extends Controller
             }
         }
 
-        // Send notification to admin about cancellation
-        try {
-            $admins = \App\Models\User::whereIn('role', ['super_admin', 'manager'])->get();
-            foreach ($admins as $admin) {
+        // Send notification to each admin about cancellation
+        $admins = \App\Models\User::whereIn('role', ['super_admin', 'manager'])->get();
+        foreach ($admins as $admin) {
+            try {
                 $admin->notify(new \App\Notifications\OrderStatusChanged($order, 'cancelled'));
+            } catch (\Throwable $e) {
+                \Log::error('Cancel notif failed for ' . $admin->email . ': ' . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            \Log::error('Notification failed: ' . $e->getMessage());
         }
 
         return redirect()->route('orders.show', $order)->with('success', __('تم إلغاء الطلب بنجاح.'));
