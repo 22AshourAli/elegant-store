@@ -114,7 +114,7 @@ class WhatsappMarketingController extends Controller
             }
             try {
                 $start = microtime(true);
-                Mail::mailer('smtp')->to($customer->email)->send(new BulkMarketingMail($customer, $message));
+                Mail::to($customer->email)->send(new BulkMarketingMail($customer, $message));
                 $elapsed = round(microtime(true) - $start, 2);
                 \Log::info("Bulk email sent to {$customer->email} in {$elapsed}s");
                 $this->whatsApp->logMessage($customer->id, auth()->id(), $message);
