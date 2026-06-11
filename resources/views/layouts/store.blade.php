@@ -652,22 +652,42 @@
             Alpine.data('notifications', () => ({
                 open: false,
                 unread: 0,
-                _initialized: false,
-                lastCount: 0,
                 items: [],
+                latestId: null,
+                _pollTimer: null,
+                _bc: null,
+                _baseTitle: '',
                 async init() {
+                    this._baseTitle = document.title.replace(/^\(\d+\) /, '');
                     await this.fetchUnread();
                     await this.fetchItems();
-                    setInterval(() => this.fetchUnread(), 30000);
+                    this._pollTimer = setInterval(() => this.fetchUnread(), 8000);
+                    try {
+                        this._bc = new BroadcastChannel('notifications');
+                        this._bc.onmessage = (e) => {
+                            if (e.data.type === 'new_notification') {
+                                this.unread = e.data.count;
+                                this.latestId = e.data.latestId;
+                                playNotifSound();
+                                if (this.open) this.fetchItems();
+                                this._updateTitle();
+                            }
+                        };
+                    } catch(e) {}
+                    window.addEventListener('online', () => { this.fetchUnread(); this.fetchItems(); }, { once: false });
                 },
                 async fetchUnread() {
                     try {
                         const res = await fetch("{{ route('notifications.unread-count') }}");
                         const data = await res.json();
-                        if (this._initialized && data.count > this.lastCount) playNotifSound();
-                        this._initialized = true;
-                        this.lastCount = data.count;
+                        if (this.latestId && data.latest_id && data.latest_id !== this.latestId && data.count > 0) {
+                            playNotifSound();
+                            if (this.open) this.fetchItems();
+                            try { this._bc?.postMessage({ type: 'new_notification', count: data.count, latestId: data.latest_id }); } catch(e) {}
+                        }
+                        this.latestId = data.latest_id || this.latestId;
                         this.unread = data.count;
+                        this._updateTitle();
                     } catch(e) {}
                 },
                 async fetchItems() {
@@ -687,6 +707,7 @@
                         this.unread = Math.max(0, this.unread - 1);
                         const n = this.items.find(i => i.id === id);
                         if (n) n.read_at = true;
+                        this._updateTitle();
                     } catch(e) {}
                 },
                 async markAllRead() {
@@ -694,7 +715,15 @@
                         await fetch("{{ route('notifications.mark-all-read') }}", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
                         this.unread = 0;
                         this.items.forEach(n => n.read_at = true);
+                        this._updateTitle();
                     } catch(e) {}
+                },
+                _updateTitle() {
+                    document.title = this.unread > 0 ? `(${this.unread}) ${this._baseTitle}` : this._baseTitle;
+                },
+                destroy() {
+                    if (this._pollTimer) clearInterval(this._pollTimer);
+                    try { this._bc?.close(); } catch(e) {}
                 }
             }));
         });
