@@ -122,6 +122,14 @@ class OrderController extends Controller
             // Notification sent best-effort; mail may fail (e.g. SMTP timeout)
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.',
+                'status' => $newStatus,
+                'old_status' => $oldStatus,
+            ]);
+        }
+
         return back()->with('success', 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.');
     }
 }

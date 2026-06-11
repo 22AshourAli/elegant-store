@@ -45,7 +45,7 @@
     ], JSON_UNESCAPED_UNICODE) !!};
 </script>
 
-<section class="container py-10 md:py-16 mb-10 overflow-x-hidden" x-data="productView(window.productData.product, window.productData.colors, window.productData.sizes, window.productData.colorImages)">
+<section class="container py-10 md:py-16 mb-10 overflow-x-hidden" x-data="productView(window.productData.product, window.productData.colors, window.productData.sizes, window.productData.colorImages)" @cart-updated.window="cartLoading = false">
     <div class="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
 
         {{-- Image Gallery --}}
@@ -248,20 +248,24 @@
 
                     {{-- Add to Cart --}}
                     <button @click="addToCart"
-                            :disabled="stockStatus !== 'in_stock'"
+                            :disabled="stockStatus !== 'in_stock' || cartLoading"
                             class="w-full sm:flex-1 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-3.5 px-5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.97] shadow-[0_4px_20px_rgba(79,70,229,0.25)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.45)] hover:-translate-y-0.5 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer btn-shimmer"
                             aria-label="{{ __('global.add_to_cart') }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        <span>{{ __('global.add_to_cart') }}</span>
+                        <svg x-show="!cartLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <svg x-show="cartLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span x-show="!cartLoading">{{ __('global.add_to_cart') }}</span>
+                        <span x-show="cartLoading">{{ __('global.adding') }}...</span>
                     </button>
 
                     {{-- Buy Now --}}
                     <button @click="buyNow"
-                            :disabled="stockStatus !== 'in_stock'"
+                            :disabled="stockStatus !== 'in_stock' || buyLoading"
                             class="w-full sm:flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3.5 px-5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.97] shadow-[0_4px_20px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
                             aria-label="{{ __('global.buy_now') }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                        <span>{{ __('global.buy_now') }}</span>
+                        <svg x-show="!buyLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        <svg x-show="buyLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span x-show="!buyLoading">{{ __('global.buy_now') }}</span>
+                        <span x-show="buyLoading">{{ __('global.redirecting') }}...</span>
                     </button>
                 </div>
             </div>
@@ -279,7 +283,9 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('productView', (product, colors, sizes, colorImages) => ({
+                Alpine.data('productView', (product, colors, sizes, colorImages) => ({
+                    cartLoading: false,
+                    buyLoading: false,
             colors: colors,
             sizes: sizes,
             selectedColor: colors.length > 0 ? colors[0] : '',
@@ -364,6 +370,7 @@
 
             addToCart() {
                 if (!this.currentVariant) return;
+                this.cartLoading = true;
                 fetch(`/cart/add/${this.currentVariant.id}`, {
                     method: 'POST',
                     headers: {
@@ -376,10 +383,12 @@
                 })
                 .then(res => res.json())
                 .then(data => {
+                    this.cartLoading = false;
                     window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
                 })
                 .catch(err => {
+                    this.cartLoading = false;
                     console.error(err);
                     const errMsg = @json(__('global.error_adding_to_cart'));
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: errMsg, type: 'error' } }));
@@ -388,6 +397,7 @@
 
             buyNow() {
                 if (!this.currentVariant) return;
+                this.buyLoading = true;
                 fetch(`/buy-now/${this.currentVariant.id}`, {
                     method: 'POST',
                     headers: {

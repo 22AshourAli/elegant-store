@@ -63,16 +63,22 @@
                             <div class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto mt-3 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800/60">
 
                                 {{-- Quantity Stepper --}}
-                                <div class="flex items-center border border-slate-200/60 dark:border-slate-800/80 rounded-xl bg-white/80 dark:bg-slate-950/80 overflow-hidden shadow-sm hover:border-brand-primary/40 dark:hover:border-accent/40 transition-colors duration-200"
+                                <div class="flex items-center border border-slate-200/60 dark:border-slate-800/80 rounded-xl bg-white/80 dark:bg-slate-950/80 overflow-hidden shadow-sm hover:border-brand-primary/40 dark:hover:border-accent/40 transition-colors duration-200 opacity-75"
+                                     :class="{ 'opacity-50 pointer-events-none': isItemLoading(item.variant_id) === 'qty' }"
                                      role="group" :aria-label="'Quantity for ' + item.product_name">
                                     <button @click="updateQty(item.variant_id, item.quantity - 1)"
+                                            :disabled="isItemLoading(item.variant_id)"
                                             :aria-label="'Decrease quantity of ' + item.product_name"
-                                            class="px-3 py-1.5 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer">−</button>
-                                    <input type="number" :value="item.quantity" :aria-label="'Quantity of ' + item.product_name"
+                                            class="px-3 py-1.5 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer disabled:opacity-40">−</button>
+                                    <span x-show="isItemLoading(item.variant_id) === 'qty'" class="w-9 flex justify-center">
+                                        <svg class="w-4 h-4 animate-spin text-brand-primary dark:text-accent" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    </span>
+                                    <input x-show="!isItemLoading(item.variant_id)" type="number" :value="item.quantity" :aria-label="'Quantity of ' + item.product_name"
                                            class="w-9 text-center bg-transparent border-0 focus:ring-0 p-0 font-black text-sm text-slate-900 dark:text-slate-100" readonly>
                                     <button @click="updateQty(item.variant_id, item.quantity + 1)"
+                                            :disabled="isItemLoading(item.variant_id)"
                                             :aria-label="'Increase quantity of ' + item.product_name"
-                                            class="px-3 py-1.5 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer">+</button>
+                                            class="px-3 py-1.5 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer disabled:opacity-40">+</button>
                                 </div>
 
                                 {{-- Line total --}}
@@ -83,9 +89,11 @@
 
                                 {{-- Remove --}}
                                 <button @click="removeItem(item.variant_id)"
+                                        :disabled="isItemLoading(item.variant_id)"
                                         :aria-label="'Remove ' + item.product_name + ' from cart'"
-                                        class="p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        class="p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer disabled:opacity-40 disabled:hover:scale-100">
+                                    <svg x-show="isItemLoading(item.variant_id) !== 'remove'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <svg x-show="isItemLoading(item.variant_id) === 'remove'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                 </button>
                             </div>
                         </article>
@@ -112,17 +120,19 @@
                                placeholder="{{ __('global.coupon_enter_placeholder') }}"
                                aria-label="{{ __('global.coupon_enter_placeholder') }}"
                                class="flex-1 border border-slate-200/60 dark:border-slate-700/60 rounded-xl px-3 py-2.5 bg-white/60 dark:bg-slate-950/60 text-slate-800 dark:text-slate-200 text-sm font-semibold focus:ring-2 focus:ring-brand-primary focus:border-brand-primary dark:focus:border-accent outline-none transition-shadow placeholder:text-slate-400 backdrop-blur-sm">
-                        <button type="button" @click="applyCoupon(couponCode)"
-                                class="px-4 py-2.5 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white rounded-xl text-xs font-extrabold transition-all shadow-sm hover:shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
-                            {{ __('global.coupon_apply_btn') }}
+                        <button type="button" @click="applyCoupon(couponCode)" :disabled="couponLoading"
+                                class="px-4 py-2.5 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white rounded-xl text-xs font-extrabold transition-all shadow-sm hover:shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!couponLoading">{{ __('global.coupon_apply_btn') }}</span>
+                            <svg x-show="couponLoading" class="w-4 h-4 animate-spin mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         </button>
                     </div>
                     <div class="mt-2" x-show="appliedCoupon" x-cloak>
                         <div class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl px-3 py-2">
                             <span class="text-emerald-700 dark:text-emerald-400 font-bold text-xs" x-text="appliedCouponText"></span>
-                            <button type="button" @click="removeCoupon()"
-                                    class="text-red-500 hover:text-red-700 text-[10px] font-extrabold px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors uppercase tracking-wider cursor-pointer">
-                                {{ __('global.coupon_remove_btn') }}
+                            <button type="button" @click="removeCoupon()" :disabled="couponLoading"
+                                    class="text-red-500 hover:text-red-700 text-[10px] font-extrabold px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors uppercase tracking-wider cursor-pointer disabled:opacity-50">
+                                <span x-show="!couponLoading">{{ __('global.coupon_remove_btn') }}</span>
+                                <svg x-show="couponLoading" class="w-3 h-3 animate-spin mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             </button>
                         </div>
                     </div>
@@ -172,12 +182,16 @@
                 shipping: shipping,
                 totalPrice: initialTotal + shipping,
                 csrfToken: csrfToken,
+                loadingItems: {},
+                couponLoading: false,
 
             updateQty(variantId, newQty) {
                 if (newQty <= 0) {
                     this.removeItem(variantId);
                     return;
                 }
+
+                this.loadingItems[variantId] = 'qty';
 
                 fetch(`/cart/${variantId}`, {
                     method: 'PATCH',
@@ -194,13 +208,17 @@
                         item.quantity = newQty;
                     }
                     this.totalPrice = Number(data.total) + this.shipping;
+                    delete this.loadingItems[variantId];
                     window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                });
+                })
+                .catch(() => { delete this.loadingItems[variantId]; });
             },
 
             removeItem(variantId) {
                 const confirmMsg = @json(__('global.confirm_delete_cart'));
                 if (!confirm(confirmMsg)) return;
+
+                this.loadingItems[variantId] = 'remove';
 
                 fetch(`/cart/${variantId}`, {
                     method: 'DELETE',
@@ -212,8 +230,14 @@
                 .then(data => {
                     this.items = this.items.filter(i => i.variant_id != variantId);
                     this.totalPrice = Number(data.total) + this.shipping;
+                    delete this.loadingItems[variantId];
                     window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                });
+                })
+                .catch(() => { delete this.loadingItems[variantId]; });
+            },
+
+            isItemLoading(variantId) {
+                return this.loadingItems[variantId];
             },
 
             formatPrice(price) {
@@ -233,6 +257,7 @@
             applyCoupon(code) {
                 this.couponError = '';
                 if (!code) return;
+                this.couponLoading = true;
                 fetch(@json(route('coupon.apply')), {
                     method: 'POST',
                     headers: {
@@ -246,23 +271,27 @@
                     this.totalPrice = Number(data.total) + this.shipping;
                     this.appliedCoupon = data.coupon;
                     this.couponCode = '';
+                    this.couponLoading = false;
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
                 }).catch(err => {
                     this.couponError = err.message;
+                    this.couponLoading = false;
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
                 });
             },
 
             removeCoupon() {
                 this.couponError = '';
+                this.couponLoading = true;
                 fetch(@json(route('coupon.remove')), {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': @json(csrf_token()) }
                 }).then(res => res.json()).then(data => {
                     this.totalPrice = Number(data.total) + this.shipping;
                     this.appliedCoupon = null;
+                    this.couponLoading = false;
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                });
+                }).catch(() => { this.couponLoading = false; });
             }
         }));
     });

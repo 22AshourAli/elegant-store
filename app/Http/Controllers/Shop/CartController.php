@@ -93,6 +93,8 @@ return response()->json([
             'message' => __('global.coupon_success'),
             'cartCount' => $cart->count(),
             'total' => (int) round($cart->total()),
+            'baseTotal' => (int) round($cart->baseTotal()),
+            'discount' => (int) round($cart->getDiscount()),
             'coupon' => ['code' => $coupon->code, 'type' => $coupon->type, 'value' => $coupon->value]
         ]);
     }
@@ -103,7 +105,9 @@ return response()->json([
         return response()->json([
             'message' => __('global.coupon_removed'),
             'cartCount' => $cart->count(),
-            'total' => (int) round($cart->total())
+            'total' => (int) round($cart->total()),
+            'baseTotal' => (int) round($cart->baseTotal()),
+            'discount' => (int) round($cart->getDiscount())
         ]);
     }
 }

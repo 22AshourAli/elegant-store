@@ -99,10 +99,10 @@
         </div>
 
         <!-- Status change -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm" x-data="orderStatusUpdate()">
             <h2 class="text-lg font-bold mb-4 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.admin_update_status') }}</h2>
 
-            <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" onsubmit="return confirmStatusChange(this)">
+            <form @submit.prevent="updateStatus">
                 @csrf
                 @method('PATCH')
 
@@ -113,10 +113,10 @@
                         $currentStatusLabel = $trans === $key ? ucfirst(str_replace('_', ' ', $order->status)) : $trans;
                     @endphp
                     <label class="block text-sm font-medium mb-2">{{ __('global.admin_current_status') }}
-                        <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ $currentStatusLabel }}</span>
+                        <span class="font-bold text-indigo-600 dark:text-indigo-400" x-text="statusLabel">{{ $currentStatusLabel }}</span>
                     </label>
 
-                    <select name="status" id="order-status-select" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 border p-2">
+                    <select name="status" x-model="selectedStatus" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 border p-2">
                         @foreach(['pending','confirmed','processing','shipped','delivered','cancelled','returned'] as $st)
                             @php
                                 $k = 'orders.status_' . $st;
@@ -128,19 +128,52 @@
                     </select>
                 </div>
 
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm">
-                    {{ __('global.admin_update_notify') }}
+                <button type="submit" :disabled="saving" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <span x-show="!saving">{{ __('global.admin_update_notify') }}</span>
+                    <svg x-show="saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span x-show="saving">{{ __('global.processing') }}...</span>
                 </button>
             </form>
 
             <script>
-                function confirmStatusChange(form) {
-                    var select = form.querySelector('#order-status-select');
-                    var val = select.value;
-                    if (val === 'cancelled' || val === 'returned') {
-                        return confirm('{{ __("global.admin_confirm_cancel_msg") }} "' + select.options[select.selectedIndex].text + '"؟ {{ __("global.admin_stock_will_restore") }}');
-                    }
-                    return true;
+                function orderStatusUpdate() {
+                    return {
+                        selectedStatus: '{{ $order->status }}',
+                        statusLabel: '{{ $currentStatusLabel }}',
+                        saving: false,
+                        updateStatus() {
+                            var val = this.selectedStatus;
+                            if ((val === 'cancelled' || val === 'returned') && !confirm('{{ __("global.admin_confirm_cancel_msg") }} "' + this.statusLabel + '"؟ {{ __("global.admin_stock_will_restore") }}')) {
+                                return;
+                            }
+                            this.saving = true;
+                            fetch('{{ route('admin.orders.update-status', $order) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'X-HTTP-Method-Override': 'PATCH',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ status: this.selectedStatus })
+                            })
+                            .then(async res => {
+                                const data = await res.json();
+                                if (!res.ok) throw new Error(data.message || 'Error');
+                                var statusKey = 'orders.status_' + data.status;
+                                var locale = @json(app()->getLocale());
+                                var labels = @json(collect(['pending','confirmed','processing','shipped','delivered','cancelled','returned'])->mapWithKeys(fn($s) => [$s => __("orders.status_" . $s)]));
+                                var label = labels[data.status] || data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                                this.statusLabel = label;
+                                this.saving = false;
+                                window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                            })
+                            .catch(err => {
+                                this.saving = false;
+                                window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message || '{{ __('global.error_occurred') }}', type: 'error' } }));
+                            });
+                        }
+                    };
                 }
             </script>
         </div>

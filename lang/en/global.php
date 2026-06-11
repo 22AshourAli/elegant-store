@@ -364,6 +364,9 @@ return [
     'confirm_delete_cart' => 'Do you want to remove this item from cart?',
     'validation_errors' => 'Please correct the following errors:',
     'error_occurred' => 'An error occurred',
+    'adding' => 'Adding',
+    'redirecting' => 'Redirecting',
+    'processing' => 'Processing',
     'error_adding_to_cart' => 'An error occurred while adding the product to cart.',
     'error_checkout' => 'An error occurred while processing checkout.',
 

@@ -12,16 +12,13 @@ class CheckoutService
     public function createOrder($user, $cartItems, $data)
     {
         return DB::transaction(function () use ($user, $cartItems, $data) {
-            // Prefer subtotal/discount passed from CartService (which handles coupons)
             $subtotal = $data['subtotal'] ?? 0;
             $discount = $data['discount'] ?? 0;
 
-            // First-order free shipping: if this is the user's first completed order, shipping = 0
             $previousOrders = $user->orders()->where('status', '!=', 'cancelled')->count();
             if ($previousOrders === 0) {
                 $shipping = 0;
             } else {
-                // Use provided shipping_cost or default to a simple zone-based placeholder
                 $shipping = $data['shipping_cost'] ?? config('store.default_shipping', 30);
             }
 
@@ -42,8 +39,22 @@ class CheckoutService
                 'notes' => $data['notes'] ?? '',
             ]);
 
+            $branchId = $data['branch_id'] ?? 1;
+
             foreach ($cartItems as $variantId => $item) {
                 $variant = ProductVariant::findOrFail($variantId);
+
+                // Pessimistic lock on the pivot row to prevent race conditions
+                $pivot = DB::table('branch_product_variant')
+                    ->where('product_variant_id', $variantId)
+                    ->where('branch_id', $branchId)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$pivot || $pivot->stock < $item['quantity']) {
+                    throw new \Exception("المخزون غير كافٍ للمنتج: {$item['product_name']}");
+                }
+
                 $order->items()->create([
                     'product_variant_id' => $variantId,
                     'product_name' => $item['product_name'],
@@ -54,16 +65,10 @@ class CheckoutService
                     'total' => $item['price'] * $item['quantity'],
                 ]);
 
-                // Deduct stock from the branch
-                $branchId = $data['branch_id'] ?? 1;
-                $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                if ($pivot && $pivot->pivot->stock >= $item['quantity']) {
-                    $variant->branches()->updateExistingPivot($branchId, [
-                        'stock' => $pivot->pivot->stock - $item['quantity'],
-                    ]);
-                } else {
-                    throw new \Exception("المخزون غير كافٍ للمنتج: {$item['product_name']}");
-                }
+                DB::table('branch_product_variant')
+                    ->where('product_variant_id', $variantId)
+                    ->where('branch_id', $branchId)
+                    ->update(['stock' => $pivot->stock - $item['quantity']]);
             }
 
             // Create initial payment record
@@ -73,12 +78,10 @@ class CheckoutService
                 'gateway' => $data['payment_method'] === 'cash' ? 'cash' : 'paymob',
             ]);
 
-            // Clear session cart only for cash. Online payments will clear upon success.
             if ($data['payment_method'] === 'cash') {
                 session()->forget('cart');
             }
 
-            // Dispatch Notifications — each notification in its own try-catch so one failure never blocks others
             try {
                 $locale = $user->locale ?? app()->getLocale();
                 App::setLocale($locale);

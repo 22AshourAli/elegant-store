@@ -1,7 +1,13 @@
 @extends('layouts.store')
 
 @section('content')
-<div class="container mx-auto px-4 py-12">
+<div class="container mx-auto px-4 py-12" x-data="checkoutPage({
+    baseTotal: {{ (int) round($baseTotal) }},
+    discount: {{ (int) round($discount) }},
+    shipping: {{ (int) round($shipping) }},
+    finalTotal: {{ (int) round($finalTotal) }},
+    appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null)
+})">
     <h1 class="text-3xl font-extrabold mb-8 text-slate-900 dark:text-white">{{ __('global.checkout_title_page') }}</h1>
 
         @if(session('error'))
@@ -30,7 +36,7 @@
         </div>
     @endif
 
-    <form action="{{ route('checkout.store') }}" method="POST">
+    <form action="{{ route('checkout.store') }}" method="POST" @submit="submitting = true">
         @csrf
         <div class="grid lg:grid-cols-3 gap-8">
 
@@ -135,16 +141,18 @@
                     </div>
 
                     @if($hasActiveCoupons)
-                    <!-- Coupon Section -->
-                    <div class="mb-4" x-data="checkoutCoupon()">
+                    <div class="mb-4">
                         <div class="flex gap-2">
                             <input type="text" x-model="couponCode" @keydown.enter="applyCoupon(couponCode)" placeholder="{{ __('global.coupon_enter_placeholder') }}" class="flex-1 border border-slate-200/60 dark:border-slate-700/60 rounded-xl px-3 py-2.5 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white text-sm font-semibold focus:ring-2 focus:ring-brand-primary focus:border-brand-primary dark:focus:border-accent outline-none transition-shadow placeholder:text-slate-400 backdrop-blur-sm">
-                            <button type="button" @click="applyCoupon(couponCode)" class="px-4 py-2.5 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white rounded-xl text-sm font-extrabold transition-all shadow-sm hover:shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">{{ __('global.coupon_apply_btn') }}</button>
+                            <button type="button" @click="applyCoupon(couponCode)" :disabled="couponLoading" class="px-4 py-2.5 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white rounded-xl text-sm font-extrabold transition-all shadow-sm hover:shadow cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span x-show="!couponLoading">{{ __('global.coupon_apply_btn') }}</span>
+                                <svg x-show="couponLoading" class="w-4 h-4 animate-spin mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
                         </div>
                         <div class="mt-2" x-show="appliedCoupon" x-cloak>
                             <div class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl px-3 py-2">
                                 <span class="text-emerald-700 dark:text-emerald-400 font-bold text-sm" x-text="appliedCouponText"></span>
-                                <button type="button" @click="removeCoupon()" class="text-red-500 hover:text-red-700 text-xs font-extrabold px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer">{{ __('global.coupon_remove_btn') }}</button>
+                                <button type="button" @click="removeCoupon()" :disabled="couponLoading" class="text-red-500 hover:text-red-700 text-xs font-extrabold px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer disabled:opacity-50">{{ __('global.coupon_remove_btn') }}</button>
                             </div>
                         </div>
                         <div class="mt-1 text-xs text-red-500 font-semibold" x-show="couponError" x-cloak x-text="couponError"></div>
@@ -154,84 +162,114 @@
                     <div class="space-y-4 mb-6 pt-4 border-t border-slate-200/40 dark:border-slate-800/60">
                         <div class="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
                             <span class="font-semibold">{{ __('global.products_total') }}</span>
-                            <span class="font-bold">{{ (int) round($baseTotal) }} {{ __('global.currency') }}</span>
+                            <span class="font-bold" x-text="formatPrice(baseTotal)"></span>
                         </div>
-                        @if ($discount > 0 && $appliedCoupon)
-                        <div class="flex justify-between text-emerald-600 dark:text-emerald-400 text-sm">
-                            <span class="font-semibold">{{ __('global.coupon_discount_label') }} ({{ $appliedCoupon->code }})</span>
-                            <span class="font-bold">-{{ (int) round($discount) }} {{ __('global.currency') }}</span>
+                        <div class="flex justify-between text-emerald-600 dark:text-emerald-400 text-sm" x-show="discount > 0 && appliedCoupon" x-cloak>
+                            <span class="font-semibold">{{ __('global.coupon_discount_label') }} (<span x-text="appliedCoupon?.code"></span>)</span>
+                            <span class="font-bold" x-text="'-' + formatPrice(discount)"></span>
                         </div>
-                        @endif
                         <div class="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
                             <span class="font-semibold">{{ __('global.shipping_cost_label') }}</span>
-                            @if ($shipping === 0)
-                            <span class="text-emerald-500 font-extrabold">{{ __('global.free') }}</span>
-                            @else
-                            <span class="font-bold">{{ $shipping }} {{ __('global.currency') }}</span>
-                            @endif
+                            <template x-if="shipping === 0">
+                                <span class="text-emerald-500 font-extrabold">{{ __('global.free') }}</span>
+                            </template>
+                            <template x-if="shipping > 0">
+                                <span class="font-bold" x-text="formatPrice(shipping)"></span>
+                            </template>
                         </div>
                     </div>
 
                     <div class="flex justify-between items-baseline pt-4 border-t border-slate-200/40 dark:border-slate-800/60 mb-8">
                         <span class="text-lg font-extrabold text-slate-900 dark:text-white">{{ __('global.final_total') }}</span>
-                        <span class="text-2xl font-black text-brand-primary dark:text-accent">{{ (int) round($finalTotal) }} {{ __('global.currency') }}</span>
+                        <span class="text-2xl font-black text-brand-primary dark:text-accent" x-text="formatPrice(finalTotal)"></span>
                     </div>
 
-                    <button type="submit" class="w-full bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.5)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer">
-                        <span>{{ __('global.confirm_order') }}</span>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <button type="submit" :disabled="submitting" class="w-full bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.5)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                        <span x-show="!submitting">{{ __('global.confirm_order') }}</span>
+                        <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <svg x-show="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span x-show="submitting" x-text="'{{ __('global.processing') }}...'"></span>
                     </button>
                 </div>
             </div>
-
-            @push('scripts')
-            <script>
-                document.addEventListener('alpine:init', () => {
-                    Alpine.data('checkoutCoupon', () => ({
-                        couponCode: '',
-                        appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null),
-                        couponError: '',
-                        get appliedCouponText() {
-                            if (!this.appliedCoupon) return '';
-                            if (this.appliedCoupon.type === 'percent') return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} ${this.appliedCoupon.value}%`;
-                            return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}${this.appliedCoupon.value}`;
-                        },
-                        applyCoupon(code) {
-                            this.couponError = '';
-                            if (!code) return;
-                            fetch('{{ route('coupon.apply') }}', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                body: JSON.stringify({ code })
-                            }).then(async res => {
-                                const data = await res.json();
-                                if (!res.ok) throw new Error(data.message || '{{ __('global.coupon_error') }}');
-                                this.appliedCoupon = data.coupon;
-                                this.couponCode = '';
-                                window.location.reload();
-                            }).catch(err => {
-                                this.couponError = err.message;
-                                window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
-                            });
-                        },
-                        removeCoupon() {
-                            this.couponError = '';
-                            fetch('{{ route('coupon.remove') }}', {
-                                method: 'POST',
-                                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        }
-                    }));
-                });
-            </script>
-            @endpush
         </div>
     </form>
 </div>
 @endsection
 
+@push('scripts')
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('checkoutPage', (initial) => ({
+            baseTotal: initial.baseTotal,
+            discount: initial.discount,
+            shipping: initial.shipping,
+            finalTotal: initial.finalTotal,
+            appliedCoupon: initial.appliedCoupon,
+            couponCode: '',
+            couponError: '',
+            couponLoading: false,
+            submitting: false,
+
+            get appliedCouponText() {
+                if (!this.appliedCoupon) return '';
+                if (this.appliedCoupon.type === 'percent') return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} ${this.appliedCoupon.value}%`;
+                return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}${this.appliedCoupon.value}`;
+            },
+
+            formatPrice(price) {
+                const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
+                const value = Math.round(parseFloat(price || 0));
+                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(value);
+            },
+
+            applyCoupon(code) {
+                this.couponError = '';
+                if (!code) return;
+                this.couponLoading = true;
+                fetch('{{ route('coupon.apply') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ code })
+                }).then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || '{{ __('global.coupon_error') }}');
+                    this.appliedCoupon = data.coupon;
+                    this.baseTotal = Number(data.baseTotal);
+                    this.discount = Number(data.discount);
+                    this.finalTotal = Number(data.total) + this.shipping;
+                    this.couponCode = '';
+                    this.couponLoading = false;
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                }).catch(err => {
+                    this.couponError = err.message;
+                    this.couponLoading = false;
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
+                });
+            },
+
+            removeCoupon() {
+                this.couponError = '';
+                this.couponLoading = true;
+                fetch('{{ route('coupon.remove') }}', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                }).then(async res => {
+                    const data = await res.json();
+                    this.appliedCoupon = null;
+                    this.baseTotal = Number(data.baseTotal);
+                    this.discount = Number(data.discount);
+                    this.finalTotal = Number(data.total) + this.shipping;
+                    this.couponLoading = false;
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                }).catch(() => {
+                    this.couponLoading = false;
+                });
+            }
+        }));
+    });
+</script>
+@endpush

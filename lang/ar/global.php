@@ -370,6 +370,9 @@ return [
     'confirm_delete_cart' => 'هل تريد حذف هذا المنتج من السلة؟',
     'validation_errors' => 'يرجى تصحيح الأخطاء التالية:',
     'error_occurred' => 'حدث خطأ',
+    'adding' => 'جارٍ الإضافة',
+    'redirecting' => 'جارٍ التحويل',
+    'processing' => 'جارٍ المعالجة',
     'error_adding_to_cart' => 'حدث خطأ ما أثناء إضافة المنتج إلى السلة.',
     'error_checkout' => 'حدث خطأ ما أثناء إتمام الشراء.',
 
