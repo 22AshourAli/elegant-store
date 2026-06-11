@@ -32,6 +32,7 @@ return [
     'admin_response' => 'Admin response',
     'no_returns' => 'No return requests',
     'my_exchanges' => 'My Exchanges',
+    'exchange_request_for' => 'Exchange request for order',
     'request_exchange' => 'Request Exchange',
     'exchange_submitted' => 'Exchange request submitted successfully. We will review it shortly.',
     'no_exchanges' => 'No exchange requests',

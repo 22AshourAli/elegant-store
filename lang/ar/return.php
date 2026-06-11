@@ -32,6 +32,7 @@ return [
     'admin_response' => 'رد الإدارة',
     'no_returns' => 'لا توجد طلبات إرجاع',
     'my_exchanges' => 'طلبات الاستبدال',
+    'exchange_request_for' => 'طلب استبدال للطلب',
     'request_exchange' => 'طلب استبدال',
     'exchange_submitted' => 'تم إرسال طلب الاستبدال بنجاح. سنقوم بمراجعته قريباً.',
     'no_exchanges' => 'لا توجد طلبات استبدال',

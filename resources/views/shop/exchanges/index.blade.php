@@ -14,7 +14,7 @@
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
                     <div class="flex items-center justify-between flex-wrap gap-3">
                         <div>
-                            <span class="font-bold">{{ __('return.request_for') }} #{{ $exchange->order_id }}</span>
+                            <span class="font-bold">{{ __('return.exchange_request_for') }} #{{ $exchange->order_id }}</span>
                             <span class="text-sm text-gray-500 block">{{ $exchange->created_at->format('Y-m-d') }}</span>
                         </div>
                         <span class="px-3 py-1 rounded-full text-xs font-bold
