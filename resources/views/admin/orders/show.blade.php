@@ -160,10 +160,17 @@
                             .then(async res => {
                                 const data = await res.json();
                                 if (!res.ok) throw new Error(data.message || 'Error');
-                                var statusKey = 'orders.status_' + data.status;
-                                var locale = @json(app()->getLocale());
-                                var labels = @json(collect(['pending','confirmed','processing','shipped','delivered','cancelled','returned'])->mapWithKeys(fn($s) => [$s => __("orders.status_" . $s)]));
-                                var label = labels[data.status] || data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                                var locale = '{{ app()->getLocale() }}';
+                                var statusLabels = {
+                                    pending: '{{ __("orders.status_pending") }}',
+                                    confirmed: '{{ __("orders.status_confirmed") }}',
+                                    processing: '{{ __("orders.status_processing") }}',
+                                    shipped: '{{ __("orders.status_shipped") }}',
+                                    delivered: '{{ __("orders.status_delivered") }}',
+                                    cancelled: '{{ __("orders.status_cancelled") }}',
+                                    returned: '{{ __("orders.status_returned") }}'
+                                };
+                                var label = statusLabels[data.status] || data.status.charAt(0).toUpperCase() + data.status.slice(1);
                                 this.statusLabel = label;
                                 this.saving = false;
                                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
