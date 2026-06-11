@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class OrderStatusChanged extends Notification
 {
@@ -18,16 +19,19 @@ class OrderStatusChanged extends Notification
         $this->status = $status;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
-        return array_values(array_filter([
-            'database',
-            config('mail.default') !== 'log' && !empty(config('mail.mailers.smtp.host')) && config('mail.mailers.smtp.host') !== '127.0.0.1' ? 'mail' : null,
-        ]));
+        return ['mail', 'database'];
     }
 
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
+        Log::info('OrderStatusChanged: attempting to send mail', [
+            'order_id'   => $this->order->id,
+            'status'     => $this->status,
+            'notifiable' => $notifiable->email ?? $notifiable->id,
+        ]);
+
         $locale = $notifiable->locale ?? app()->getLocale();
         app()->setLocale($locale);
 
@@ -41,18 +45,38 @@ class OrderStatusChanged extends Notification
             $adminNumber = config('store.admin_whatsapp', env('ADMIN_WHATSAPP', env('ADMIN_PHONE')));
             if ($adminNumber) $this->sendWhatsApp($adminNumber, "تم تحديث حالة الطلب #{$this->order->id} إلى {$statusText}.");
         } catch (\Exception $e) {
-            // ignore
+            Log::warning('OrderStatusChanged: WhatsApp alert failed', [
+                'order_id' => $this->order->id,
+                'error'    => $e->getMessage(),
+            ]);
         }
 
-        return (new MailMessage)
-            ->subject(__('تحديث حالة طلبك #:id', ['id' => $this->order->id]))
-            ->greeting(__('مرحباً :name', ['name' => $notifiable->name]))
-            ->line(__('تم تحديث حالة طلبك #:id إلى :status', [
-                'id' => $this->order->id,
-                'status' => $statusText
-            ]))
-            ->action(__('عرض الطلب'), route('orders.show', $this->order->id))
-            ->line(__('شكراً لتسوقك معنا في Elegant Store!'));
+        try {
+            $mail = (new MailMessage)
+                ->subject(__('تحديث حالة طلبك #:id', ['id' => $this->order->id]))
+                ->greeting(__('مرحباً :name', ['name' => $notifiable->name]))
+                ->line(__('تم تحديث حالة طلبك #:id إلى :status', [
+                    'id'     => $this->order->id,
+                    'status' => $statusText,
+                ]))
+                ->action(__('عرض الطلب'), route('orders.show', $this->order->id))
+                ->line(__('شكراً لتسوقك معنا في Elegant Store!'));
+
+            Log::info('OrderStatusChanged: mail message built successfully', [
+                'order_id' => $this->order->id,
+                'status'   => $this->status,
+            ]);
+
+            return $mail;
+        } catch (\Exception $e) {
+            Log::error('OrderStatusChanged: failed to build mail message', [
+                'order_id' => $this->order->id,
+                'status'   => $this->status,
+                'error'    => $e->getMessage(),
+                'trace'    => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     public function toDatabase($notifiable)

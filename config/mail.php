@@ -14,6 +14,8 @@ return [
     |
     */
 
+    // For Gmail SMTP on Railway, set MAIL_MAILER=smtp in environment variables.
+    // The default falls back to 'log' so local dev never accidentally sends real emails.
     'default' => env('MAIL_MAILER', 'log'),
 
     /*
@@ -37,22 +39,38 @@ return [
 
     'mailers' => [
 
+        // Gmail SMTP — required Railway environment variables:
+        //   MAIL_MAILER=smtp
+        //   MAIL_HOST=smtp.gmail.com
+        //   MAIL_PORT=587
+        //   MAIL_USERNAME=your-address@gmail.com
+        //   MAIL_PASSWORD=<16-char Gmail App Password>   (NOT your Google account password)
+        //   MAIL_ENCRYPTION=tls
+        //   MAIL_FROM_ADDRESS=your-address@gmail.com
+        //   MAIL_FROM_NAME="Elegant Store"
+        //
+        // To generate a Gmail App Password:
+        //   Google Account → Security → 2-Step Verification → App passwords
+        //
+        // To verify connectivity after deploy, run:
+        //   php artisan mail:test --to=you@example.com
+        // Or call: POST /api/test-mail  (Header: X-Mail-Token: <MAIL_TEST_TOKEN>)
         'smtp' => [
-            'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
-            'url' => env('MAIL_URL'),
-            'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 587),
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-            'timeout' => 30,
+            'transport'    => 'smtp',
+            'scheme'       => env('MAIL_SCHEME'),
+            'url'          => env('MAIL_URL'),
+            'host'         => env('MAIL_HOST', '127.0.0.1'),
+            'port'         => env('MAIL_PORT', 587),
+            'username'     => env('MAIL_USERNAME'),
+            'password'     => env('MAIL_PASSWORD'),
+            'encryption'   => env('MAIL_ENCRYPTION', 'tls'),
+            'timeout'      => 30,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
             'stream' => [
                 'ssl' => [
                     'allow_self_signed' => true,
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
                 ],
             ],
         ],
