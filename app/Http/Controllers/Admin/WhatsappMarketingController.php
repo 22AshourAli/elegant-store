@@ -38,6 +38,7 @@ class WhatsappMarketingController extends Controller
 
     public function sendBulk(Request $request)
     {
+        set_time_limit(120);
         $request->validate([
             'channel' => 'required|in:whatsapp,email,mixed',
             'audience' => 'required|in:all,online,offline,previous_buyers',
@@ -112,7 +113,10 @@ class WhatsappMarketingController extends Controller
                 continue;
             }
             try {
-                Mail::to($customer->email)->send(new BulkMarketingMail($customer, $message));
+                $start = microtime(true);
+                Mail::mailer('smtp')->to($customer->email)->send(new BulkMarketingMail($customer, $message));
+                $elapsed = round(microtime(true) - $start, 2);
+                \Log::info("Bulk email sent to {$customer->email} in {$elapsed}s");
                 $this->whatsApp->logMessage($customer->id, auth()->id(), $message);
                 $sent++;
             } catch (\Exception $e) {
