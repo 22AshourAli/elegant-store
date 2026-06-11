@@ -20,7 +20,7 @@ class NewOrderAdminNotification extends Notification
     {
         return array_values(array_filter([
             'database',
-            config('mail.default') !== 'log' && !empty(config('mail.mailers.smtp.host')) && config('mail.mailers.smtp.host') !== '127.0.0.1' ? 'mail' : null,
+            in_array(config('mail.default'), ['log', 'array', null]) ? null : 'mail',
         ]));
     }
 
