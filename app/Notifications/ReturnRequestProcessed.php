@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 class ReturnRequestProcessed extends Notification
 {
@@ -19,10 +20,7 @@ class ReturnRequestProcessed extends Notification
 
     public function via($notifiable): array
     {
-        return array_values(array_filter([
-            'database',
-            config('mail.default') !== 'log' && !empty(config('mail.mailers.smtp.host')) && config('mail.mailers.smtp.host') !== '127.0.0.1' ? 'mail' : null,
-        ]));
+        return ['mail', 'database'];
     }
 
     private function getTypeLabel(): string
@@ -37,12 +35,35 @@ class ReturnRequestProcessed extends Notification
 
     public function toMail($notifiable): MailMessage
     {
-        $type = $this->getTypeLabel();
+        $type   = $this->getTypeLabel();
         $action = $this->getActionLabel();
-        return (new MailMessage)
-            ->subject("تم {$action} طلب {$type} #{$this->request->id}")
-            ->line("تم {$action} على طلب {$type} للطلب رقم #{$this->request->order_id}")
-            ->action('عرض التفاصيل', route('returns.index'));
+
+        Log::info('ReturnRequestProcessed: attempting to send mail', [
+            'request_id' => $this->request->id,
+            'type'       => $type,
+            'action'     => $action,
+            'notifiable' => $notifiable->email ?? $notifiable->id,
+        ]);
+
+        try {
+            $mail = (new MailMessage)
+                ->subject("تم {$action} طلب {$type} #{$this->request->id}")
+                ->line("تم {$action} على طلب {$type} للطلب رقم #{$this->request->order_id}")
+                ->action('عرض التفاصيل', route('returns.index'));
+
+            Log::info('ReturnRequestProcessed: mail message built successfully', [
+                'request_id' => $this->request->id,
+            ]);
+
+            return $mail;
+        } catch (\Exception $e) {
+            Log::error('ReturnRequestProcessed: failed to build mail message', [
+                'request_id' => $this->request->id,
+                'error'      => $e->getMessage(),
+                'trace'      => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     public function toArray($notifiable): array
