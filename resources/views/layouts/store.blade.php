@@ -324,7 +324,6 @@
                   transition-all duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]
                   {{ app()->getLocale() === 'ar' ? 'translate-x-full' : '-translate-x-full' }}"
            :class="{ 'translate-x-0': mobileOpen }"
-           @click.away="mobileOpen = false"
            @keydown.escape.window="mobileOpen = false">
 
             <!-- Drawer Header -->
