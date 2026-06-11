@@ -76,7 +76,7 @@
                 {{ __('return.how_to_return_title') }}
             </h3>
             <p class="text-amber-700 dark:text-amber-300 text-sm">{{ __('return.how_to_return_desc') }}</p>
-            <a href="mailto:{{ config('mail.from.address') }}" class="mt-4 inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition">{{ __('return.contact_us_btn') }}</a>
+            <a href="{{ config('store.whatsapp_url') }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg text-sm transition">{{ __('return.contact_us_btn') }}</a>
         </div>
     </div>
 </div>
