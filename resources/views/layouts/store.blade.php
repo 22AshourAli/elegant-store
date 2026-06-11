@@ -309,18 +309,23 @@
         </div>
     </header>
 
-    <!-- Mobile Off-canvas Drawer (Semantic aside) -->
-    <aside x-show="mobileOpen" x-cloak role="dialog" aria-label="Mobile navigation menu" :aria-modal="mobileOpen.toString()" class="fixed inset-0 z-[60] lg:hidden">
-        <div @click="mobileOpen = false" class="fixed inset-0 bg-black/60 backdrop-blur-md transition-opacity"></div>
-        <div class="fixed inset-y-0 {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} w-80 max-w-[85vw] bg-white/95 dark:bg-[#030712]/95 backdrop-blur-2xl shadow-2xl z-10 flex flex-col border-slate-100/60 dark:border-slate-900/40"
-             :class="{'border-l': '{{ app()->getLocale() }}' !== 'ar', 'border-r': '{{ app()->getLocale() }}' === 'ar'}"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 {{ app()->getLocale() === 'ar' ? 'translate-x-8' : '-translate-x-8' }}"
-             x-transition:enter-end="opacity-100 translate-x-0"
-             x-transition:leave="transition ease-in duration-250"
-             x-transition:leave-start="opacity-100 translate-x-0"
-             x-transition:leave-end="opacity-0 {{ app()->getLocale() === 'ar' ? 'translate-x-8' : '-translate-x-8' }}"
-             @click.away="mobileOpen = false">
+    <!-- Mobile Off-canvas Overlay -->
+    <div @click="mobileOpen = false"
+         class="fixed inset-0 z-[55] bg-black/60 backdrop-blur-md lg:hidden transition-opacity duration-300 ease-out opacity-0 pointer-events-none"
+         :class="{ 'opacity-100 pointer-events-auto': mobileOpen }"
+         role="presentation">
+    </div>
+
+    <!-- Mobile Off-canvas Panel -->
+    <aside role="dialog" aria-label="Mobile navigation menu"
+           :aria-modal="mobileOpen.toString()"
+           :aria-hidden="(!mobileOpen).toString()"
+           class="fixed inset-y-0 {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} z-[60] w-80 max-w-[85vw] bg-white/95 dark:bg-[#030712]/95 backdrop-blur-2xl shadow-2xl flex flex-col lg:hidden border-slate-100/60 dark:border-slate-900/40 {{ app()->getLocale() === 'ar' ? 'border-l' : 'border-r' }}
+                  transition-all duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]
+                  {{ app()->getLocale() === 'ar' ? 'translate-x-full' : '-translate-x-full' }}"
+           :class="{ 'translate-x-0': mobileOpen }"
+           @click.away="mobileOpen = false"
+           @keydown.escape.window="mobileOpen = false">
 
             <!-- Drawer Header -->
             <div class="flex items-center justify-between p-4.5 border-b border-slate-100 dark:border-slate-900 shrink-0">
@@ -442,36 +447,35 @@
                 </form>
                 @endauth
             </div>
-        </div>
     </aside>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-t border-slate-200/50 dark:border-slate-800/50 lg:hidden shadow-[0_-2px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_30px_rgba(0,0,0,0.25)]">
-        <div class="grid grid-cols-5 py-0.5">
-            <a href="{{ route('home') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg {{ request()->routeIs('home') && !request()->has('search') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50' }}">
+    <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-t border-slate-200/50 dark:border-slate-800/50 lg:hidden shadow-[0_-2px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_30px_rgba(0,0,0,0.25)] overflow-x-hidden">
+        <div class="grid grid-cols-5 py-1">
+            <a href="{{ route('home') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 text-slate-500 dark:text-slate-400 transition-colors rounded-lg {{ request()->routeIs('home') && !request()->has('search') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50' }}">
                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
                 <span class="text-[8px] font-bold leading-tight">{{ __('global.home') }}</span>
             </a>
-            <a href="{{ route('home') }}#featured" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
+            <a href="{{ route('home') }}#featured" class="flex flex-col items-center justify-center gap-0 min-w-0 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
                 <span class="text-[8px] font-bold leading-tight">{{ __('global.shop') }}</span>
             </a>
-            <button @click="darkMode = !darkMode" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50 cursor-pointer">
+            <button @click="darkMode = !darkMode" class="flex flex-col items-center justify-center gap-0 min-w-0 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50 cursor-pointer">
                 <svg x-show="!darkMode" class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
                 <svg x-show="darkMode" x-cloak class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
                 <span class="text-[8px] font-bold leading-tight">{{ app()->getLocale() === 'ar' ? 'ليلي' : 'Dark' }}</span>
             </button>
-            <a href="{{ route('lang.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
+            <a href="{{ route('lang.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.78.147 2.653.255m-4.589 8.495a18.023 18.023 0 01-3.827-5.802"/></svg>
                 <span class="text-[8px] font-bold leading-tight">{{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}</span>
             </a>
             @auth
-                <a href="{{ route('profile.edit') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg {{ request()->routeIs('profile.edit') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50' }}">
+                <a href="{{ route('profile.edit') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 text-slate-500 dark:text-slate-400 transition-colors rounded-lg {{ request()->routeIs('profile.edit') ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30' : 'hover:bg-slate-100 dark:hover:bg-slate-900/50' }}">
                     <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
                     <span class="text-[8px] font-bold leading-tight">{{ __('global.profile') }}</span>
                 </a>
             @else
-                <a href="{{ route('login') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 px-0.5 py-0.5 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
+                <a href="{{ route('login') }}" class="flex flex-col items-center justify-center gap-0 min-w-0 text-slate-500 dark:text-slate-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900/50">
                     <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
                     <span class="text-[8px] font-bold leading-tight">{{ __('global.login') }}</span>
                 </a>

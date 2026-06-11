@@ -17,7 +17,7 @@
     
     <a href="{{ route('shop.product', $product->slug) }}" class="block relative overflow-hidden aspect-[4/5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 rounded-t-2xl" aria-label="{{ $product->name }} details">
         @php
-            $image = $product->firstImageUrl();
+            $image = $firstVariant?->imageUrl() ?: $product->firstImageUrl();
             $discountPct = $product->isOnSale ? round((1 - $product->current_price / $product->base_price) * 100) : 0;
             $descText = $product->description ? Str::limit(strip_tags($product->description), 60) : __('High-end luxury product');
         @endphp

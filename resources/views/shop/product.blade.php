@@ -45,8 +45,8 @@
     ], JSON_UNESCAPED_UNICODE) !!};
 </script>
 
-<section class="container py-10 md:py-16 mb-10" x-data="productView(window.productData.product, window.productData.colors, window.productData.sizes, window.productData.colorImages)">
-    <div class="grid md:grid-cols-2 gap-10 lg:gap-16">
+<section class="container py-10 md:py-16 mb-10 overflow-x-hidden" x-data="productView(window.productData.product, window.productData.colors, window.productData.sizes, window.productData.colorImages)">
+    <div class="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
 
         {{-- Image Gallery --}}
         <div class="space-y-4">
