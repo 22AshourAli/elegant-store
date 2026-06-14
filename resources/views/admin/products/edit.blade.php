@@ -59,7 +59,14 @@
                         <tbody>
                             @foreach($product->variants as $variant)
                             <tr class="border-t dark:border-gray-700">
-                                <td class="p-2 font-bold">{{ $variant->is_default ? __('global.admin_default_variant') : $variant->color . ' - ' . $variant->size }}</td>
+                                <td class="p-2">
+                                    @if($variant->is_default)
+                                        <span class="font-bold">{{ __('global.admin_default_variant') }}</span>
+                                    @else
+                                        <input type="text" name="variants[{{ $variant->id }}][color]" value="{{ old('variants.'.$variant->id.'.color', $variant->color) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs mb-1" placeholder="اللون">
+                                        <input type="text" name="variants[{{ $variant->id }}][size]" value="{{ old('variants.'.$variant->id.'.size', $variant->size) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="المقاس">
+                                    @endif
+                                </td>
                                 <td class="p-2">
                                     <div class="space-y-1">
                                         <input type="url" name="variants[{{ $variant->id }}][image_url]" value="{{ old('variants.'.$variant->id.'.image_url', $variant->image_url) }}" placeholder="https://example.com/image.jpg" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">

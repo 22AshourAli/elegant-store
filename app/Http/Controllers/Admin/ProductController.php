@@ -153,6 +153,8 @@ class ProductController extends Controller
             'meta_description' => 'nullable|string',
             'variants' => 'nullable|array',
             'variants.*.image_url' => 'nullable|string|max:2048',
+            'variants.*.color' => 'nullable|string|max:255',
+            'variants.*.size' => 'nullable|string|max:255',
             'variants.*.stocks' => 'nullable|array',
             'variants.*.stocks.*' => 'nullable|integer|min:0',
             'variants.*.cost_price' => 'nullable|numeric|min:0',
@@ -186,12 +188,21 @@ class ProductController extends Controller
         if ($request->has('variants')) {
             foreach ($request->input('variants') as $variantId => $vData) {
                 $variant = $product->variants()->findOrFail($variantId);
-                $variant->update([
+                $updateData = [
                     'price_override' => empty($vData['price_override']) ? null : $vData['price_override'],
                     'cost_price' => array_key_exists('cost_price', $vData) && $vData['cost_price'] !== '' && $vData['cost_price'] !== null ? (float) $vData['cost_price'] : null,
                     'sku' => $vData['sku'] ?? null,
                     'image_url' => !empty($vData['image_url']) ? trim($vData['image_url']) : null,
-                ]);
+                ];
+
+                if (isset($vData['color'])) {
+                    $updateData['color'] = $vData['color'];
+                }
+                if (isset($vData['size'])) {
+                    $updateData['size'] = $vData['size'];
+                }
+
+                $variant->update($updateData);
 
                 if (isset($vData['stocks'])) {
                     foreach ($vData['stocks'] as $branchId => $qty) {
