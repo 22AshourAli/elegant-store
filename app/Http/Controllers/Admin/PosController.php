@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\StockUpdated;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Order;
+use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -243,9 +245,31 @@ class PosController extends Controller
 
                     $pivot = $variant->branches()->where('branch_id', 1)->first();
                     if ($pivot && $pivot->pivot->stock >= $item['quantity']) {
+                        $stockBefore = $pivot->pivot->stock;
+                        $stockAfter = $stockBefore - $item['quantity'];
                         $variant->branches()->updateExistingPivot(1, [
-                            'stock' => $pivot->pivot->stock - $item['quantity'],
+                            'stock' => $stockAfter,
                         ]);
+
+                        StockMovement::create([
+                            'product_variant_id' => $variantId,
+                            'branch_id' => 1,
+                            'order_id' => $order->id,
+                            'type' => 'sale',
+                            'quantity' => -$item['quantity'],
+                            'stock_before' => $stockBefore,
+                            'stock_after' => $stockAfter,
+                        ]);
+
+                        StockUpdated::dispatch(
+                            variantId: $variantId,
+                            productId: $variant->product_id,
+                            branchId: 1,
+                            stockBefore: $stockBefore,
+                            stockAfter: $stockAfter,
+                            action: 'sale',
+                            orderId: $order->id,
+                        );
                     } else {
                         throw new \Exception(__('global.pos_insufficient_stock', ['product' => $item['product_name']]));
                     }

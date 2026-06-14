@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Events\OrderDelivered;
-use App\Models\Order;
+use App\Events\StockUpdated;
 use App\Models\Branch;
+use App\Models\Order;
 use App\Models\ReturnRequest;
+use App\Models\StockMovement;
 use App\Notifications\OrderStatusChanged;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -91,9 +93,31 @@ class OrderController extends Controller
                         $branchId = $order->branch_id ?? 1;
                         $pivot = $variant->branches()->where('branch_id', $branchId)->first();
                         if ($pivot) {
+                            $stockBefore = $pivot->pivot->stock;
+                            $stockAfter = $stockBefore + $item->quantity;
                             $variant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $pivot->pivot->stock + $item->quantity,
+                                'stock' => $stockAfter,
                             ]);
+
+                            StockMovement::create([
+                                'product_variant_id' => $variant->id,
+                                'branch_id' => $branchId,
+                                'order_id' => $order->id,
+                                'type' => 'return',
+                                'quantity' => $item->quantity,
+                                'stock_before' => $stockBefore,
+                                'stock_after' => $stockAfter,
+                            ]);
+
+                            StockUpdated::dispatch(
+                                variantId: $variant->id,
+                                productId: $variant->product_id,
+                                branchId: $branchId,
+                                stockBefore: $stockBefore,
+                                stockAfter: $stockAfter,
+                                action: 'return',
+                                orderId: $order->id,
+                            );
                         }
                     }
                 }

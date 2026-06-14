@@ -11,6 +11,7 @@
         "artesaos/seotools": "^1.4",
         "cloudinary/cloudinary_php": "*",
         "laravel/framework": "^13.8",
+        "laravel/reverb": "*",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "3.0",

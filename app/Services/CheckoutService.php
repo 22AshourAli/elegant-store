@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Events\StockUpdated;
 use App\Models\Order;
 use App\Models\ProductVariant;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
@@ -65,10 +67,31 @@ class CheckoutService
                     'total' => $item['price'] * $item['quantity'],
                 ]);
 
+                $stockAfter = $pivot->stock - $item['quantity'];
                 DB::table('branch_product_variant')
                     ->where('product_variant_id', $variantId)
                     ->where('branch_id', $branchId)
-                    ->update(['stock' => $pivot->stock - $item['quantity']]);
+                    ->update(['stock' => $stockAfter]);
+
+                StockMovement::create([
+                    'product_variant_id' => $variantId,
+                    'branch_id' => $branchId,
+                    'order_id' => $order->id,
+                    'type' => 'sale',
+                    'quantity' => -$item['quantity'],
+                    'stock_before' => $pivot->stock,
+                    'stock_after' => $stockAfter,
+                ]);
+
+                StockUpdated::dispatch(
+                    variantId: $variantId,
+                    productId: $variant->product_id,
+                    branchId: $branchId,
+                    stockBefore: $pivot->stock,
+                    stockAfter: $stockAfter,
+                    action: 'sale',
+                    orderId: $order->id,
+                );
             }
 
             // Create initial payment record

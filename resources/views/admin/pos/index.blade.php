@@ -499,6 +499,20 @@ document.addEventListener('alpine:init', () => {
                     this.barcodeTimer = setTimeout(() => { this.barcodeBuffer = ''; }, 200);
                 }
             });
+
+            // Real-time stock updates
+            window.addEventListener('stock-updated', (e) => this.handleStockUpdate(e.detail));
+        },
+
+        handleStockUpdate(data) {
+            for (const product of this.products) {
+                for (const variant of (product.variants || [])) {
+                    if (variant.id === data.variant_id) {
+                        variant.stock = data.stock_after;
+                        return;
+                    }
+                }
+            }
         },
 
         focusSearch() {

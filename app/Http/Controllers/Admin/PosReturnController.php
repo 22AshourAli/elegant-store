@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\StockUpdated;
 use App\Models\Exchange;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -99,9 +101,31 @@ class PosReturnController extends Controller
                     if ($variant) {
                         $pivot = $variant->branches()->where('branch_id', 1)->first();
                         if ($pivot) {
+                            $stockBefore = $pivot->pivot->stock;
+                            $stockAfter = $stockBefore + $item['quantity'];
                             $variant->branches()->updateExistingPivot(1, [
-                                'stock' => $pivot->pivot->stock + $item['quantity'],
+                                'stock' => $stockAfter,
                             ]);
+
+                            StockMovement::create([
+                                'product_variant_id' => $variant->id,
+                                'branch_id' => 1,
+                                'order_id' => $order->id,
+                                'type' => 'return',
+                                'quantity' => $item['quantity'],
+                                'stock_before' => $stockBefore,
+                                'stock_after' => $stockAfter,
+                            ]);
+
+                            StockUpdated::dispatch(
+                                variantId: $variant->id,
+                                productId: $variant->product_id,
+                                branchId: 1,
+                                stockBefore: $stockBefore,
+                                stockAfter: $stockAfter,
+                                action: 'return',
+                                orderId: $order->id,
+                            );
                         }
                     }
 
@@ -139,9 +163,31 @@ class PosReturnController extends Controller
 
                         $pivot = $variant->branches()->where('branch_id', 1)->first();
                         if ($pivot && $pivot->pivot->stock >= $exItem['quantity']) {
+                            $stockBefore = $pivot->pivot->stock;
+                            $stockAfter = $stockBefore - $exItem['quantity'];
                             $variant->branches()->updateExistingPivot(1, [
-                                'stock' => $pivot->pivot->stock - $exItem['quantity'],
+                                'stock' => $stockAfter,
                             ]);
+
+                            StockMovement::create([
+                                'product_variant_id' => $variant->id,
+                                'branch_id' => 1,
+                                'order_id' => $order->id,
+                                'type' => 'exchange',
+                                'quantity' => -$exItem['quantity'],
+                                'stock_before' => $stockBefore,
+                                'stock_after' => $stockAfter,
+                            ]);
+
+                            StockUpdated::dispatch(
+                                variantId: $variant->id,
+                                productId: $variant->product_id,
+                                branchId: 1,
+                                stockBefore: $stockBefore,
+                                stockAfter: $stockAfter,
+                                action: 'exchange',
+                                orderId: $order->id,
+                            );
                         }
 
                         $totalExchange += (float) $variant->current_price * $exItem['quantity'];
