@@ -91,6 +91,40 @@
 </head>
 <body class="bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
+    <!-- Toast Notification (self-contained) -->
+    <div x-data="{ toastItem:null, dismiss(){ this.toastItem=null }, markRead(id){ fetch('{{ url('notifications') }}/'+id+'/read',{method:'POST',headers:{'X-CSRF-TOKEN':'{{ csrf_token() }}'}}); this.dismiss(); window.dispatchEvent(new CustomEvent('toast-read',{detail:id})) } }" @toast-show.window="toastItem=$event.detail; setTimeout(()=>toastItem=null,5000)" x-show="toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
+         class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full pointer-events-auto" style="display:none">
+        <a :href="toastItem.url || '#'" @click="toastItem.read_at ? null : markRead(toastItem.id)"
+           class="flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 hover:shadow-xl transition-shadow">
+            <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                 :class="toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-brand-primary dark:text-accent' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">
+                <template x-if="toastItem.type === 'exchange'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                </template>
+                <template x-if="toastItem.type === 'return'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
+                </template>
+                <template x-if="toastItem.type === 'order'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </template>
+                <template x-if="toastItem.type === 'info'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
+                </template>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-extrabold text-brand-primary dark:text-accent tracking-wide">@lang('global.notification_new')</p>
+                <p class="text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5" x-text="toastItem.title"></p>
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span x-text="toastItem.time"></span>
+                </p>
+            </div>
+            <button @click.prevent="dismiss()" class="flex-shrink-0 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus-visible:outline-none" aria-label="Dismiss">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </a>
+    </div>
+
     <!-- Navbar (Semantic Header) -->
     <header role="banner" class="sticky top-0 z-50 glass-premium nav-blur border-b border-slate-200/40 dark:border-slate-900/60 shadow-[0_4px_30px_rgba(0,0,0,0.02)] dark:shadow-[0_10px_35px_rgba(0,0,0,0.3)] transition-all duration-300">
         <div class="container flex items-center justify-between h-14 sm:h-16 lg:h-20 px-3 sm:px-4">
@@ -202,7 +236,8 @@
 
                 @auth
                 <!-- Notifications Dropdown -->
-                <div x-data="notifications()" x-init="init()" class="relative">
+                <div x-data="notifications()" x-init="init()" class="relative"
+                     @toast-read.window="const id=$event.detail; if(!id)return; const n=items.find(i=>i.id===id); if(n)n.read_at=true; unread=Math.max(0,unread-1); _updateTitle()">
                     <button @click="togglePanel" class="icon-btn relative focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" title="{{ __('global.notifications') }}" aria-label="View notifications" :aria-expanded="open.toString()">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
                         <span x-show="unread > 0" x-text="unread" class="badge-indigo animate-scaleIn" style="display:none"></span>
@@ -251,39 +286,7 @@
                     </div>
                 </div>
 
-                <!-- Toast Notification -->
-                <div x-show="toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
-                     class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
-                    <a :href="toastItem.url || '#'" @click="dismissToast(); toastItem.read_at ? null : markRead(toastItem.id)"
-                       class="flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 hover:shadow-xl transition-shadow">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                                 :class="toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-brand-primary dark:text-accent' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">
-                                <template x-if="toastItem.type === 'exchange'">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                                </template>
-                                <template x-if="toastItem.type === 'return'">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
-                                </template>
-                                <template x-if="toastItem.type === 'order'">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                </template>
-                                <template x-if="toastItem.type === 'info'">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
-                                </template>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs font-extrabold text-brand-primary dark:text-accent tracking-wide">@lang('global.notification_new')</p>
-                                <p class="text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5" x-text="toastItem.title"></p>
-                                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <span x-text="toastItem.time"></span>
-                                </p>
-                            </div>
-                                <button @click.prevent="dismissToast()" class="flex-shrink-0 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus-visible:outline-none" aria-label="Dismiss">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
-                        </a>
-                    </div>
+
                 @endauth
 
                 <!-- Wishlist -->
@@ -686,8 +689,7 @@
                 _retrySec: 3,
                 _bc: null,
                 _baseTitle: '',
-                toastItem: null,
-                toastTimer: null,
+
                 _online: true,
 
                 async init() {
@@ -761,18 +763,11 @@
 
                 togglePanel() {
                     this.open = !this.open;
-                    if (this.open) { this.fetchItems(); this.dismissToast(); }
+                    if (this.open) { this.fetchItems(); }
                 },
 
                 showToast(n) {
-                    this.toastItem = n;
-                    if (this.toastTimer) clearTimeout(this.toastTimer);
-                    this.toastTimer = setTimeout(() => { this.toastItem = null; }, 5000);
-                },
-
-                dismissToast() {
-                    this.toastItem = null;
-                    if (this.toastTimer) { clearTimeout(this.toastTimer); this.toastTimer = null; }
+                    window.dispatchEvent(new CustomEvent('toast-show', { detail: n }));
                 },
 
                 async markRead(id) {
@@ -802,7 +797,6 @@
 
                 destroy() {
                     if (this._pollTimer) clearTimeout(this._pollTimer);
-                    if (this.toastTimer) clearTimeout(this.toastTimer);
                     try { this._bc?.close(); } catch(e) {}
                 }
             }));
