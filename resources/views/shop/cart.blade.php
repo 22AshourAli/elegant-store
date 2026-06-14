@@ -62,19 +62,19 @@
 
                                 {{-- Quantity Stepper --}}
                                 <div class="flex items-center border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm hover:border-brand-primary/60 dark:hover:border-accent/60 transition-colors duration-200"
-                                     :class="{ 'opacity-50 pointer-events-none': isItemLoading(item.variant_id) === 'qty' }"
+                                     :class="{ 'opacity-50 pointer-events-none': loadingItems[item.variant_id] === 'qty' }"
                                      role="group" :aria-label="'Quantity for ' + item.product_name">
-                                    <button @click="alert('- clicked v='+item.variant_id+' q='+item.quantity)"
+                                    <button @click="updateQty(item.variant_id, item.quantity - 1)"
                                             :aria-label="'Decrease quantity of ' + item.product_name"
                                             class="px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-accent/10 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer">−</button>
-                                    <span x-show="isItemLoading(item.variant_id) === 'qty'" class="w-9 flex justify-center">
+                                    <span x-show="loadingItems[item.variant_id] === 'qty'" class="w-9 flex justify-center">
                                         <svg class="w-4 h-4 animate-spin text-brand-primary dark:text-accent" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                     </span>
-                                    <input x-show="!isItemLoading(item.variant_id)" type="number" x-model.number="item.quantity"
+                                    <input x-show="!loadingItems[item.variant_id]" type="number" x-model.number="item.quantity"
                                            @change="updateQty(item.variant_id, $event.target.valueAsNumber || 1)"
                                            :aria-label="'Quantity of ' + item.product_name"
                                            class="w-9 text-center bg-transparent border-0 focus:ring-0 p-0 font-black text-sm text-slate-900 dark:text-slate-100" min="1">
-                                    <button @click="alert('+ clicked v='+item.variant_id)"
+                                    <button @click="updateQty(item.variant_id, item.quantity + 1)"
                                             :aria-label="'Increase quantity of ' + item.product_name"
                                             class="px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-accent/10 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer">+</button>
                                 </div>
@@ -86,11 +86,11 @@
                                 </div>
 
                                 {{-- Remove --}}
-                                <button @click="alert('remove clicked v='+item.variant_id)"
+                                <button @click="removeItem(item.variant_id)"
                                         :aria-label="'Remove ' + item.product_name + ' from cart'"
                                         class="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-600 transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer">
-                                    <svg x-show="isItemLoading(item.variant_id) !== 'remove'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    <svg x-show="isItemLoading(item.variant_id) === 'remove'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                    <svg x-show="loadingItems[item.variant_id] !== 'remove'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <svg x-show="loadingItems[item.variant_id] === 'remove'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                 </button>
                             </div>
                         </article>
@@ -237,10 +237,6 @@
                     console.error('Cart removeItem error:', e);
                     delete vm.loadingItems[variantId];
                 });
-            },
-
-            isItemLoading(variantId) {
-                return this.loadingItems[variantId];
             },
 
             formatPrice(price) {
