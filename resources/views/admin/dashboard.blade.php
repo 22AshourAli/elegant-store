@@ -21,6 +21,10 @@
                     <span>تكلفة: <strong class="text-orange-600">{{ (int) round($monthlyCosts) }}</strong></span>
                     <span>مصروفات: <strong class="text-red-600">{{ (int) round($monthlyExpenses) }}</strong></span>
                 </div>
+                <div class="flex items-center gap-3 text-xs mt-1">
+                    <span>هامش الربح: <strong class="{{ $monthlyProfitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $monthlyProfitMargin }}%</strong></span>
+                    <span>متوسط الطلب: <strong class="text-indigo-600">{{ (int) round($monthlyAov) }} {{ __('global.currency') }}</strong></span>
+                </div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
@@ -34,6 +38,9 @@
                 <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
                     {{ (int) round($netProfit) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
                 </h3>
+                <div class="text-xs mt-1">
+                    <span>هامش الربح: <strong class="{{ $profitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profitMargin }}%</strong></span>
+                </div>
             </div>
             <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
+use App\Notifications\AbandonedCartReminder;
 use App\Services\AbandonedCartService;
 use Illuminate\Console\Command;
 
@@ -20,13 +22,32 @@ class ProcessAbandonedCarts extends Command
         $marked = $service->identifyAbandonedCarts((int) $this->option('idle'));
         $this->info("Marked {$marked} carts as abandoned.");
 
-        $this->info('Generating recovery notifications...');
-        $recovered = $service->processRecovery((int) $this->option('batch'));
-        $this->info("Processed " . count($recovered) . " recovery notifications.");
+        $this->info('Sending recovery notifications...');
+        $reminders = $service->processRecovery((int) $this->option('batch'));
 
-        foreach ($recovered as $r) {
-            $this->line("  [{$r['cart_id']}] #{$r['user_id']} — {$r['total']} EGP — coupon: {$r['coupon_code']}");
+        $sent = 0;
+        foreach ($reminders as $r) {
+            if (!$r['user_id']) {
+                continue;
+            }
+
+            $user = User::find($r['user_id']);
+            if (!$user) {
+                continue;
+            }
+
+            $user->notify(new AbandonedCartReminder(
+                cart: $r['cart'] ?? null,
+                recoveryUrl: $r['recovery_url'],
+                couponCode: $r['coupon_code'],
+                reminderCount: $r['reminder_count'],
+            ));
+            $sent++;
+
+            $this->line("  Sent reminder to user #{$r['user_id']} — {$r['total']} EGP — coupon: {$r['coupon_code']}");
         }
+
+        $this->info("Sent {$sent} recovery notifications.");
 
         return Command::SUCCESS;
     }

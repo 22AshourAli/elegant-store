@@ -88,6 +88,7 @@ class AbandonedCartService
 
             $processed[] = [
                 'cart_id' => $cart->id,
+                'cart' => $cart,
                 'user_id' => $cart->user_id,
                 'total' => (float) $cart->total,
                 'recovery_token' => $cart->recovery_token,

@@ -179,6 +179,35 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/pos/return/search', [\App\Http\Controllers\Admin\PosReturnController::class, 'search'])->name('pos.return.search');
     Route::post('/pos/return/process', [\App\Http\Controllers\Admin\PosReturnController::class, 'process'])->name('pos.return.process');
 
+    // Suppliers
+    Route::resource('suppliers', \App\Http\Controllers\Admin\SupplierController::class);
+
+    // Purchase Orders
+    Route::prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'store'])->name('store');
+        Route::get('/{purchaseOrder}', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'show'])->name('show');
+        Route::get('/{purchaseOrder}/edit', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'edit'])->name('edit');
+        Route::put('/{purchaseOrder}', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'update'])->name('update');
+        Route::post('/{purchaseOrder}/mark-sent', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'markSent'])->name('mark-sent');
+        Route::get('/{purchaseOrder}/receive', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'receiveForm'])->name('receive-form');
+        Route::post('/{purchaseOrder}/receive', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'receive'])->name('receive');
+        Route::post('/{purchaseOrder}/cancel', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'cancel'])->name('cancel');
+        Route::delete('/{purchaseOrder}', [\App\Http\Controllers\Admin\PurchaseOrderController::class, 'destroy'])->name('destroy');
+    });
+
+    // Stock Transfers
+    Route::prefix('stock-transfers')->name('stock-transfers.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\StockTransferController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\StockTransferController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\StockTransferController::class, 'store'])->name('store');
+        Route::get('/{stockTransfer}', [\App\Http\Controllers\Admin\StockTransferController::class, 'show'])->name('show');
+        Route::post('/{stockTransfer}/complete', [\App\Http\Controllers\Admin\StockTransferController::class, 'complete'])->name('complete');
+        Route::post('/{stockTransfer}/cancel', [\App\Http\Controllers\Admin\StockTransferController::class, 'cancel'])->name('cancel');
+        Route::delete('/{stockTransfer}', [\App\Http\Controllers\Admin\StockTransferController::class, 'destroy'])->name('destroy');
+    });
+
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');

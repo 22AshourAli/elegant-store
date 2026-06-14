@@ -25,6 +25,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('carts:process-abandoned --idle=120 --batch=50')
             ->hourly()
             ->withoutOverlapping();
+
+        // Notify about expiring loyalty points daily
+        $schedule->command('loyalty:notify-expiry --days=30 --batch=100')
+            ->dailyAt('09:00')
+            ->withoutOverlapping();
     }
 
     /**

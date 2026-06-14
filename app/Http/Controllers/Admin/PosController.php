@@ -194,8 +194,10 @@ class PosController extends Controller
         $customerPhone = $request->input('phone');
         $paymentMethod = $request->input('payment_method');
 
+        $branchId = auth()->user()->branch_id ?? 1;
+
         try {
-            $order = DB::transaction(function () use ($cartItems, $total, $customerName, $customerPhone, $paymentMethod, $request) {
+            $order = DB::transaction(function () use ($cartItems, $total, $customerName, $customerPhone, $paymentMethod, $request, $branchId) {
                 $userId = null;
 
                 if ($customerPhone) {
@@ -217,7 +219,7 @@ class PosController extends Controller
                 $order = Order::create([
                     'user_id' => $userId,
                     'cashier_id' => auth()->id(),
-                    'branch_id' => 1,
+                    'branch_id' => $branchId,
                     'order_type' => 'offline',
                     'status' => 'confirmed',
                     'payment_method' => $paymentMethod,
@@ -243,17 +245,17 @@ class PosController extends Controller
                         'total' => $item['price'] * $item['quantity'],
                     ]);
 
-                    $pivot = $variant->branches()->where('branch_id', 1)->first();
+                    $pivot = $variant->branches()->where('branch_id', $branchId)->first();
                     if ($pivot && $pivot->pivot->stock >= $item['quantity']) {
                         $stockBefore = $pivot->pivot->stock;
                         $stockAfter = $stockBefore - $item['quantity'];
-                        $variant->branches()->updateExistingPivot(1, [
+                        $variant->branches()->updateExistingPivot($branchId, [
                             'stock' => $stockAfter,
                         ]);
 
                         StockMovement::create([
                             'product_variant_id' => $variantId,
-                            'branch_id' => 1,
+                            'branch_id' => $branchId,
                             'order_id' => $order->id,
                             'type' => 'sale',
                             'quantity' => -$item['quantity'],
@@ -264,7 +266,7 @@ class PosController extends Controller
                         StockUpdated::dispatch(
                             variantId: $variantId,
                             productId: $variant->product_id,
-                            branchId: 1,
+                            branchId: $branchId,
                             stockBefore: $stockBefore,
                             stockAfter: $stockAfter,
                             action: 'sale',

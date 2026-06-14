@@ -178,6 +178,15 @@ class DashboardController extends Controller
         $netProfit = $totalProductRevenue - $totalCosts - $totalExpenses;
         $monthlyNetProfit = $monthlyProductRevenue - $monthlyCosts - $monthlyExpenses;
 
+        // Profit Margins
+        $profitMargin = $totalProductRevenue > 0 ? round(($netProfit / $totalProductRevenue) * 100, 1) : 0;
+        $monthlyProfitMargin = $monthlyProductRevenue > 0 ? round(($monthlyNetProfit / $monthlyProductRevenue) * 100, 1) : 0;
+
+        // Average Order Value
+        $aov = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
+        $monthlyOrdersCount = (clone $monthlyRevenueQuery)->count();
+        $monthlyAov = $monthlyOrdersCount > 0 ? round($monthlyRevenue / $monthlyOrdersCount, 2) : 0;
+
         // 6. Recent Expenses (last 5)
         $recentExpensesQuery = Expense::orderBy('expense_date', 'desc')->orderBy('created_at', 'desc');
         if ($branchId) $recentExpensesQuery->where('branch_id', $branchId);
@@ -205,6 +214,10 @@ class DashboardController extends Controller
             'totalManualExpenses',
             'totalExpenses',
             'netProfit',
+            'profitMargin',
+            'monthlyProfitMargin',
+            'aov',
+            'monthlyAov',
             'monthlyRevenue',
             'monthlyProductRevenue',
             'monthlyShippingCollected',
