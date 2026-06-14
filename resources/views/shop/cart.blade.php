@@ -11,30 +11,28 @@
         <div class="lg:col-span-2 space-y-4">
 
             {{-- Empty state --}}
-            <template x-if="items.length === 0">
-                <div class="bg-white/60 dark:bg-surface-dark/60 rounded-2xl p-14 text-center border border-slate-200/40 dark:border-slate-800/40 shadow-sm backdrop-blur-md">
-                    <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800/60 rounded-full flex items-center justify-center mx-auto mb-5 text-slate-400 dark:text-slate-600">
-                        <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-extrabold text-slate-800 dark:text-slate-200 mb-2">{{ __('global.empty_cart') }}</h3>
-                    <a href="{{ route('home') }}" class="mt-5 inline-flex items-center gap-2 btn-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                        {{ __('global.home') }}
-                    </a>
+            <div x-show="items.length === 0"
+                 class="bg-white/60 dark:bg-surface-dark/60 rounded-2xl p-14 text-center border border-slate-200/40 dark:border-slate-800/40 shadow-sm backdrop-blur-md">
+                <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800/60 rounded-full flex items-center justify-center mx-auto mb-5 text-slate-400 dark:text-slate-600">
+                    <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                 </div>
-            </template>
+                <h3 class="text-xl font-extrabold text-slate-800 dark:text-slate-200 mb-2">{{ __('global.empty_cart') }}</h3>
+                <a href="{{ route('home') }}" class="mt-5 inline-flex items-center gap-2 btn-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    {{ __('global.home') }}
+                </a>
+            </div>
 
             {{-- Item list --}}
-            <template x-if="items.length > 0">
-                <div class="space-y-4">
-                    <template x-for="item in items" :key="item.variant_id">
-                        <article x-transition:enter="transition ease-out duration-500"
-                             x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
-                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave="transition ease-in duration-300"
-                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                             x-transition:leave-end="opacity-0 translate-y-4 scale-95"
-                             class="bg-white/70 dark:bg-surface-dark/60 rounded-2xl p-4 md:p-5 border border-slate-200/40 dark:border-slate-800/40 shadow-sm hover:shadow-md hover:border-brand-primary/20 dark:hover:border-accent/20 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-4 backdrop-blur-sm">
+            <div x-show="items.length > 0" class="space-y-4">
+                <template x-for="item in items" :key="item.variant_id">
+                    <article x-transition:enter="transition ease-out duration-500"
+                         x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave="transition ease-in duration-300"
+                         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+                         class="bg-white/70 dark:bg-surface-dark/60 rounded-2xl p-4 md:p-5 border border-slate-200/40 dark:border-slate-800/40 shadow-sm hover:shadow-md hover:border-brand-primary/20 dark:hover:border-accent/20 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-4 backdrop-blur-sm">
 
                             {{-- Product Image --}}
                             <img :src="item.image || '{{ asset('images/logo.svg') }}'"
@@ -99,9 +97,8 @@
                                 </button>
                             </div>
                         </article>
-                    </template>
-                </div>
-            </template>
+                </template>
+            </div>
         </div>
 
         {{-- Order Summary Sidebar --}}
@@ -177,147 +174,131 @@
     </div>
 </main>
 
-    <script>
-        document.addEventListener('alpine:init', function() {
-            Alpine.data('cartView', function(cartItems, csrfToken, initialTotal, shipping) {
-                return {
-                    items: Object.values(cartItems),
-                    shipping: shipping,
-                    totalPrice: initialTotal + shipping,
-                    csrfToken: csrfToken,
-                    loadingItems: {},
-                    couponLoading: false,
+<script>
+    function cartFactory(cartItems, csrfToken, initialTotal, shipping) {
+        return {
+            items: Object.values(cartItems),
+            shipping: shipping,
+            totalPrice: initialTotal + shipping,
+            csrfToken: csrfToken,
+            loadingItems: {},
+            couponLoading: false,
+            couponCode: '',
+            appliedCoupon: null,
+            couponError: '',
 
-                    init() {
-                        console.log('cartView: init(), items:', this.items.length);
+            init() {
+                console.log('cartView init ok, items:', this.items.length);
+            },
+
+            updateQty(variantId, newQty) {
+                if (newQty <= 0) { this.removeItem(variantId); return; }
+                this.loadingItems[variantId] = 'qty';
+                var vm = this;
+                fetch('/cart/' + variantId, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
                     },
+                    body: JSON.stringify({ quantity: newQty })
+                }).then(async function(res) {
+                    if (!res.ok) { var text = await res.text(); throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 200)); }
+                    return res.json();
+                }).then(function(data) {
+                    var item = vm.items.find(function(i) { return i.variant_id == variantId; });
+                    if (item) item.quantity = newQty;
+                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    delete vm.loadingItems[variantId];
+                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                }).catch(function(e) {
+                    console.error('Cart updateQty error:', e);
+                    delete vm.loadingItems[variantId];
+                });
+            },
 
-                    updateQty(variantId, newQty) {
-                        if (newQty <= 0) {
-                            this.removeItem(variantId);
-                            return;
-                        }
-                        this.loadingItems[variantId] = 'qty';
-                        var vm = this;
-                        fetch('/cart/' + variantId, {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': this.csrfToken,
-                                'Accept': 'application/json',
-                            },
-                            body: JSON.stringify({ quantity: newQty })
-                        })
-                        .then(async function(res) {
-                            if (!res.ok) {
-                                var text = await res.text();
-                                throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 200));
-                            }
-                            return res.json();
-                        })
-                        .then(function(data) {
-                            var item = vm.items.find(function(i) { return i.variant_id == variantId; });
-                            if (item) item.quantity = newQty;
-                            vm.totalPrice = Number(data.total) + vm.shipping;
-                            delete vm.loadingItems[variantId];
-                            window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                        })
-                        .catch(function(e) {
-                            console.error('Cart updateQty error:', e);
-                            delete vm.loadingItems[variantId];
-                        });
+            removeItem(variantId) {
+                if (!confirm(@json(__('global.confirm_delete_cart')))) return;
+                this.loadingItems[variantId] = 'remove';
+                var vm = this;
+                fetch('/cart/' + variantId, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': this.csrfToken,
+                        'Accept': 'application/json',
                     },
+                }).then(async function(res) {
+                    if (!res.ok) { var text = await res.text(); throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 200)); }
+                    return res.json();
+                }).then(function(data) {
+                    vm.items = vm.items.filter(function(i) { return i.variant_id != variantId; });
+                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    delete vm.loadingItems[variantId];
+                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                }).catch(function(e) {
+                    console.error('Cart removeItem error:', e);
+                    delete vm.loadingItems[variantId];
+                });
+            },
 
-                    removeItem(variantId) {
-                        if (!confirm(@json(__('global.confirm_delete_cart')))) return;
-                        this.loadingItems[variantId] = 'remove';
-                        var vm = this;
-                        fetch('/cart/' + variantId, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': this.csrfToken,
-                                'Accept': 'application/json',
-                            },
-                        })
-                        .then(async function(res) {
-                            if (!res.ok) {
-                                var text = await res.text();
-                                throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 200));
-                            }
-                            return res.json();
-                        })
-                        .then(function(data) {
-                            vm.items = vm.items.filter(function(i) { return i.variant_id != variantId; });
-                            vm.totalPrice = Number(data.total) + vm.shipping;
-                            delete vm.loadingItems[variantId];
-                            window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                        })
-                        .catch(function(e) {
-                            console.error('Cart removeItem error:', e);
-                            delete vm.loadingItems[variantId];
-                        });
-                    },
+            isItemLoading(variantId) {
+                return this.loadingItems[variantId];
+            },
 
-                    isItemLoading(variantId) {
-                        return this.loadingItems[variantId];
-                    },
+            formatPrice(price) {
+                var locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
+                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
+            },
 
-                    formatPrice(price) {
-                        var locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
-                        return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
-                    },
+            get appliedCouponText() {
+                if (!this.appliedCoupon) return '';
+                if (this.appliedCoupon.type === 'percent') return this.appliedCoupon.code + ' — {{ __('global.coupon_discount_label') }} ' + this.appliedCoupon.value + '%';
+                return this.appliedCoupon.code + ' — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}' + this.appliedCoupon.value;
+            },
 
-                    couponCode: '',
-                    appliedCoupon: null,
-                    couponError: '',
+            applyCoupon(code) {
+                this.couponError = '';
+                if (!code) return;
+                this.couponLoading = true;
+                var vm = this;
+                fetch(@json(route('coupon.apply')), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @json(csrf_token()) },
+                    body: JSON.stringify({ code: code })
+                }).then(async function(res) {
+                    var data = await res.json();
+                    if (!res.ok) throw new Error(data.message || @json(__('global.coupon_error')));
+                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    vm.appliedCoupon = data.coupon;
+                    vm.couponCode = '';
+                    vm.couponLoading = false;
+                }).catch(function(err) {
+                    vm.couponError = err.message;
+                    vm.couponLoading = false;
+                });
+            },
 
-                    get appliedCouponText() {
-                        if (!this.appliedCoupon) return '';
-                        if (this.appliedCoupon.type === 'percent') return this.appliedCoupon.code + ' — {{ __('global.coupon_discount_label') }} ' + this.appliedCoupon.value + '%';
-                        return this.appliedCoupon.code + ' — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}' + this.appliedCoupon.value;
-                    },
+            removeCoupon() {
+                this.couponError = '';
+                this.couponLoading = true;
+                var vm = this;
+                fetch(@json(route('coupon.remove')), {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': @json(csrf_token()) }
+                }).then(function(res) { return res.json(); }).then(function(data) {
+                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    vm.appliedCoupon = null;
+                    vm.couponLoading = false;
+                }).catch(function() { vm.couponLoading = false; });
+            }
+        };
+    }
 
-                    applyCoupon(code) {
-                        this.couponError = '';
-                        if (!code) return;
-                        this.couponLoading = true;
-                        var vm = this;
-                        fetch(@json(route('coupon.apply')), {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @json(csrf_token()) },
-                            body: JSON.stringify({ code: code })
-                        }).then(async function(res) {
-                            var data = await res.json();
-                            if (!res.ok) throw new Error(data.message || @json(__('global.coupon_error')));
-                            vm.totalPrice = Number(data.total) + vm.shipping;
-                            vm.appliedCoupon = data.coupon;
-                            vm.couponCode = '';
-                            vm.couponLoading = false;
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                        }).catch(function(err) {
-                            vm.couponError = err.message;
-                            vm.couponLoading = false;
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
-                        });
-                    },
-
-                    removeCoupon() {
-                        this.couponError = '';
-                        this.couponLoading = true;
-                        var vm = this;
-                        fetch(@json(route('coupon.remove')), {
-                            method: 'POST',
-                            headers: { 'X-CSRF-TOKEN': @json(csrf_token()) }
-                        }).then(function(res) { return res.json(); }).then(function(data) {
-                            vm.totalPrice = Number(data.total) + vm.shipping;
-                            vm.appliedCoupon = null;
-                            vm.couponLoading = false;
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                        }).catch(function() { vm.couponLoading = false; });
-                    }
-                };
-            });
-        });
-    </script>
+    // Try both registration methods for maximum compatibility
+    document.addEventListener('alpine:init', function() {
+        Alpine.data('cartView', cartFactory);
+    });
+    window.cartView = cartFactory;
+</script>
 @endsection
-
