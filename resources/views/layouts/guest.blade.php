@@ -96,18 +96,26 @@
             {{ $slot }}
         </div>
 
-        @if(session('success'))
-            <script>(()=>{document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>window.dispatchEvent(new CustomEvent('toast',{detail:{type:'success',message:@json(session('success'))}})),100)})})()</script>
-        @endif
-        @if(session('error'))
-            <script>(()=>{document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>window.dispatchEvent(new CustomEvent('toast',{detail:{type:'error',message:@json(session('error'))}})),100)})})()</script>
-        @endif
-        @if($errors->any())
-            <script>(()=>{document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{@foreach($errors->all() as $error)window.dispatchEvent(new CustomEvent('toast',{detail:{type:'error',message:@json($error)}}));@endforeach},100)})})()</script>
-        @endif
-
         <!-- Toast Notifications Component -->
-        <div x-data="{ toasts: [] }"
+        <div x-data="{
+                toasts: [],
+                init() {
+                    @if(session('success'))
+                        this.toasts.push({ type: 'success', message: {!! json_encode(session('success')) !!} });
+                        setTimeout(() => this.toasts.shift(), 4500);
+                    @endif
+                    @if(session('error'))
+                        this.toasts.push({ type: 'error', message: {!! json_encode(session('error')) !!} });
+                        setTimeout(() => this.toasts.shift(), 4500);
+                    @endif
+                    @if($errors->any())
+                        @foreach($errors->all() as $error)
+                            this.toasts.push({ type: 'error', message: {!! json_encode($error) !!} });
+                            setTimeout(() => this.toasts.shift(), 5500);
+                        @endforeach
+                    @endif
+                }
+             }"
              @toast.window="toasts.push($event.detail); setTimeout(() => toasts.shift(), 4500)"
              class="fixed bottom-5 left-5 space-y-3 z-50 max-w-sm">
             <template x-for="(toast, index) in toasts" :key="index">
