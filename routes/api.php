@@ -21,7 +21,7 @@ Route::get('/products/{product}', [ProductController::class, 'show'])->name('api
 
 // === Shipping ===
 Route::get('/shipping/locations', [ShippingController::class, 'locations'])->name('api.shipping.locations');
-Route::post('/shipping/calculate', [ShippingController::class, 'calculate'])->name('api.shipping.calculate');
+Route::match(['get', 'post'], '/shipping/calculate', [ShippingController::class, 'calculate'])->name('api.shipping.calculate');
 
 // === Abandoned Cart Recovery ===
 Route::get('/cart/recover/{token}', [CartController::class, 'recover'])->name('api.cart.recover');

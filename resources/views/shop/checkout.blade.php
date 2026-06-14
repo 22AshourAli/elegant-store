@@ -1,3 +1,8 @@
+@php
+    $locations = $locationsJson ?? [];
+    $freeShippingFirst = $isFirstOrder ?? false;
+@endphp
+
 @extends('layouts.store')
 
 @section('content')
@@ -6,7 +11,9 @@
     discount: {{ (int) round($discount) }},
     shipping: {{ (int) round($shipping) }},
     finalTotal: {{ (int) round($finalTotal) }},
-    appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null)
+    appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null),
+    isFirstOrder: @json($freeShippingFirst),
+    locations: @json($locations)
 })">
     <h1 class="text-3xl font-extrabold mb-8 text-slate-900 dark:text-white">{{ __('global.checkout_title_page') }}</h1>
 
@@ -59,13 +66,59 @@
                             @enderror
                         </div>
 
+                        {{-- Governorate --}}
                         <div>
-                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
-                            <textarea name="shipping_address" required rows="3" placeholder="{{ __('global.address_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('shipping_address') border-red-500 dark:border-red-500 @enderror" @error('shipping_address') aria-invalid="true" aria-describedby="shipping_address-error" @enderror>{{ old('shipping_address') }}</textarea>
-                            @error('shipping_address')
-                                <p id="shipping_address-error" class="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.admin_governorate') }} <span class="text-red-500">*</span></label>
+                            <select name="governorate_id" x-model="selectedGovernorate" required class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                                <option value="">{{ __('global.select_governorate') }}</option>
+                                <template x-for="gov in locations" :key="gov.id">
+                                    <option :value="gov.id" x-text="gov.name"></option>
+                                </template>
+                            </select>
                         </div>
+
+                        {{-- City --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.admin_city') }} <span class="text-red-500">*</span></label>
+                            <select name="city_id" x-model="selectedCity" required class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                                <option value="">{{ __('global.select_city') }}</option>
+                                <template x-for="city in availableCities" :key="city.id">
+                                    <option :value="city.id" x-text="city.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        {{-- District --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.admin_districts') }}</label>
+                            <select name="district_id" x-model="selectedDistrict" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                                <option value="">{{ __('global.select_district') }}</option>
+                                <template x-for="district in availableDistricts" :key="district.id">
+                                    <option :value="district.id" x-text="district.name + (district.type ? ' (' + district.type + ')' : '')"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        {{-- Building --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.building') }}</label>
+                            <input type="text" name="building" x-model="building" placeholder="{{ __('global.building_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                        </div>
+
+                        {{-- Apartment --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.apartment') }}</label>
+                            <input type="text" name="apartment" x-model="apartment" placeholder="{{ __('global.apartment_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                        </div>
+
+                        {{-- Street --}}
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.street') }}</label>
+                            <input type="text" name="street" x-model="street" placeholder="{{ __('global.street_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                        </div>
+
+                        {{-- Hidden shipping address field --}}
+                        <input type="hidden" name="shipping_address" :value="computedAddress">
 
                         <div>
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.order_notes') }}</label>
@@ -170,18 +223,27 @@
                         </div>
                         <div class="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
                             <span class="font-semibold">{{ __('global.shipping_cost_label') }}</span>
-                            <template x-if="shipping === 0">
+                            <template x-if="shippingLoading">
+                                <span class="text-slate-400 italic text-xs">{{ __('global.shipping_calculating') }}...</span>
+                            </template>
+                            <template x-if="!shippingLoading && isFirstOrder">
+                                <span class="text-emerald-500 font-extrabold">{{ __('global.shipping_free_first_order') }}</span>
+                            </template>
+                            <template x-if="!shippingLoading && !isFirstOrder && shippingCost === 0">
                                 <span class="text-emerald-500 font-extrabold">{{ __('global.free') }}</span>
                             </template>
-                            <template x-if="shipping > 0">
-                                <span class="font-bold" x-text="formatPrice(shipping)"></span>
+                            <template x-if="!shippingLoading && !isFirstOrder && shippingCost > 0">
+                                <span class="font-bold" x-text="formatPrice(shippingCost)"></span>
+                            </template>
+                            <template x-if="!shippingLoading && !isFirstOrder && shippingCost === null">
+                                <span class="text-amber-500 font-bold">—</span>
                             </template>
                         </div>
                     </div>
 
                     <div class="flex justify-between items-baseline pt-4 border-t border-slate-200/40 dark:border-slate-800/60 mb-8">
                         <span class="text-lg font-extrabold text-slate-900 dark:text-white">{{ __('global.final_total') }}</span>
-                        <span class="text-2xl font-black text-brand-primary dark:text-accent" x-text="formatPrice(finalTotal)"></span>
+                        <span class="text-2xl font-black text-brand-primary dark:text-accent" x-text="formatPrice(grandTotal)"></span>
                     </div>
 
                     <button type="submit" :disabled="submitting" class="w-full bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.5)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
@@ -201,6 +263,20 @@
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('checkoutPage', (initial) => ({
+            init() {
+                this.$watch('selectedGovernorate', () => {
+                    this.selectedCity = '';
+                    this.selectedDistrict = '';
+                    this.calculateShipping();
+                });
+                this.$watch('selectedCity', () => {
+                    this.selectedDistrict = '';
+                    this.calculateShipping();
+                });
+                this.$watch('selectedDistrict', () => {
+                    this.calculateShipping();
+                });
+            },
             baseTotal: initial.baseTotal,
             discount: initial.discount,
             shipping: initial.shipping,
@@ -210,6 +286,55 @@
             couponError: '',
             couponLoading: false,
             submitting: false,
+            isFirstOrder: initial.isFirstOrder,
+            locations: initial.locations,
+
+            selectedGovernorate: '',
+            selectedCity: '',
+            selectedDistrict: '',
+            building: '',
+            apartment: '',
+            street: '',
+            shippingCost: null,
+            shippingLoading: false,
+
+            get availableCities() {
+                if (!this.selectedGovernorate) return [];
+                const gov = this.locations.find(g => Number(g.id) === Number(this.selectedGovernorate));
+                return gov ? gov.cities : [];
+            },
+
+            get availableDistricts() {
+                if (!this.selectedCity) return [];
+                const gov = this.locations.find(g => Number(g.id) === Number(this.selectedGovernorate));
+                if (!gov) return [];
+                const city = gov.cities.find(c => Number(c.id) === Number(this.selectedCity));
+                return city ? city.districts : [];
+            },
+
+            get computedAddress() {
+                const parts = [];
+                const gov = this.locations.find(g => Number(g.id) === Number(this.selectedGovernorate));
+                if (gov) parts.push(gov.name);
+                if (this.selectedCity) {
+                    const city = gov?.cities.find(c => Number(c.id) === Number(this.selectedCity));
+                    if (city) parts.push(city.name);
+                }
+                if (this.selectedDistrict) {
+                    const dist = gov?.cities.find(c => Number(c.id) === Number(this.selectedCity))?.districts.find(d => Number(d.id) === Number(this.selectedDistrict));
+                    if (dist) parts.push(dist.name);
+                }
+                if (this.street) parts.push(this.street);
+                if (this.building) parts.push('{{ __('global.building') }}: ' + this.building);
+                if (this.apartment) parts.push('{{ __('global.apartment') }}: ' + this.apartment);
+                return parts.join(' - ') || '{{ __('global.address_placeholder') }}';
+            },
+
+            get grandTotal() {
+                const base = this.finalTotal - this.shipping;
+                const cost = (this.isFirstOrder || this.shippingCost === null) ? 0 : this.shippingCost;
+                return base + cost;
+            },
 
             get appliedCouponText() {
                 if (!this.appliedCoupon) return '';
@@ -221,6 +346,31 @@
                 const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
                 const value = Math.round(parseFloat(price || 0));
                 return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(value);
+            },
+
+            async calculateShipping() {
+                if (this.isFirstOrder || !this.selectedGovernorate) {
+                    this.shippingCost = this.isFirstOrder ? 0 : null;
+                    return;
+                }
+                this.shippingLoading = true;
+                try {
+                    const params = new URLSearchParams({
+                        governorate_id: this.selectedGovernorate,
+                        cart_total: Math.round(this.baseTotal - this.discount)
+                    });
+                    if (this.selectedCity) params.set('city_id', this.selectedCity);
+                    if (this.selectedDistrict) params.set('district_id', this.selectedDistrict);
+
+                    const res = await fetch('/api/shipping/calculate?' + params.toString());
+                    if (!res.ok) throw new Error('Failed');
+                    const data = await res.json();
+                    this.shippingCost = Number(data.cost) || 0;
+                } catch {
+                    this.shippingCost = null;
+                } finally {
+                    this.shippingLoading = false;
+                }
             },
 
             applyCoupon(code) {

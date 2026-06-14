@@ -208,6 +208,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{stockTransfer}', [\App\Http\Controllers\Admin\StockTransferController::class, 'destroy'])->name('destroy');
     });
 
+    // Shipping Management
+    Route::resource('governorates', \App\Http\Controllers\Admin\GovernorateController::class);
+    Route::resource('cities', \App\Http\Controllers\Admin\CityController::class);
+    Route::resource('districts', \App\Http\Controllers\Admin\DistrictController::class);
+    Route::resource('shipping-providers', \App\Http\Controllers\Admin\ShippingProviderController::class);
+    Route::resource('shipping-rates', \App\Http\Controllers\Admin\ShippingRateController::class);
+
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');

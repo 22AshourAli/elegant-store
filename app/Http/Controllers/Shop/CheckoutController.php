@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\Governorate;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\ShippingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class CheckoutController extends Controller
 {
-    public function index(CartService $cart)
+    public function index(CartService $cart, ShippingService $shippingService)
     {
         if (!auth()->check()) {
             return redirect()->route('checkout.auth');
@@ -26,9 +28,12 @@ class CheckoutController extends Controller
         $total = $cart->total();
         $appliedCoupon = $cart->getAppliedCoupon();
 
-        // Determine shipping cost for display
         $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
-        $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
+        $isFirstOrder = $previousOrders === 0;
+
+        $governorates = Governorate::where('is_active', true)->orderBy('name')->get();
+
+        $shipping = $isFirstOrder ? 0 : config('store.default_shipping', 30);
         $finalTotal = $total + $shipping;
 
         $hasActiveCoupons = \App\Models\Coupon::where('is_active', true)
@@ -36,7 +41,13 @@ class CheckoutController extends Controller
             ->where(function($q) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()); })
             ->exists();
 
-        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal', 'hasActiveCoupons'));
+        $locationsJson = $shippingService->getCheckoutLocations();
+
+        return view('shop.checkout', compact(
+            'cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon',
+            'shipping', 'finalTotal', 'hasActiveCoupons', 'governorates',
+            'isFirstOrder', 'locationsJson'
+        ));
     }
 
     public function showAuthForm()
@@ -56,7 +67,6 @@ class CheckoutController extends Controller
         $email = $request->email;
         $userExists = \App\Models\User::where('email', $email)->exists();
 
-        // Save checkout as the intended URL for redirection after login or register
         session(['url.intended' => route('checkout')]);
 
         if ($userExists) {
@@ -75,6 +85,12 @@ class CheckoutController extends Controller
             'payment_method' => 'required|in:cash,card,wallet',
             'phone' => ['required', 'string', 'regex:/^(01)[0-9]{9}$/', 'size:11'],
             'notes' => 'nullable|string|max:1000',
+            'governorate_id' => 'nullable|exists:governorates,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'district_id' => 'nullable|exists:districts,id',
+            'building' => 'nullable|string|max:100',
+            'apartment' => 'nullable|string|max:50',
+            'street' => 'nullable|string|max:255',
         ]);
 
         $cartItems = $cart->getEnrichedCart();
@@ -85,16 +101,25 @@ class CheckoutController extends Controller
         try {
             $data = $request->all();
             $data['branch_id'] = 1;
-
-            // compute subtotal, discount, and shipping from cart service
-            $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
             $data['subtotal'] = $cart->baseTotal();
             $data['discount'] = $cart->getDiscount();
-            $data['shipping_cost'] = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
 
-            $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
+            $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
+            if ($previousOrders === 0) {
+                $data['shipping_cost'] = 0;
+            } elseif ($request->governorate_id) {
+                $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
+            } else {
+                $data['shipping_cost'] = config('store.default_shipping', 30);
+                $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
+            }
+
+            if (!isset($order)) {
+                $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
+            }
 
             if ($request->payment_method === 'cash') {
+                session()->forget('cart');
                 return redirect()->route('orders.show', $order)->with('success', 'تم تسجيل طلبك بنجاح! رقم الطلب: ' . $order->id);
             }
 
@@ -107,13 +132,11 @@ class CheckoutController extends Controller
 
     private function initiatePaymobPayment($order, $method, $phone)
     {
-        // Check if Paymob API key is configured. If not, redirect to mock payment gateway
         if (empty(config('services.paymob.api_key')) || config('services.paymob.api_key') === 'your-paymob-api-key') {
             return redirect()->route('payment.mock', ['order' => $order->id, 'method' => $method]);
         }
 
         try {
-            // Step 1: Authentication Request
             $authResponse = Http::post('https://accept.paymob.com/api/auth/tokens', [
                 'api_key' => config('services.paymob.api_key'),
             ])->json();
@@ -123,7 +146,6 @@ class CheckoutController extends Controller
             }
             $authToken = $authResponse['token'];
 
-            // Step 2: Order Registration
             $orderResponse = Http::post('https://accept.paymob.com/api/ecommerce/orders', [
                 'auth_token' => $authToken,
                 'delivery_needed' => "false",
@@ -137,7 +159,6 @@ class CheckoutController extends Controller
             }
             $paymobOrderId = $orderResponse['id'];
 
-            // Step 3: Payment Key Request
             $integrationId = $method === 'card'
                 ? config('services.paymob.integration_id_card')
                 : config('services.paymob.integration_id_wallet');
@@ -148,23 +169,23 @@ class CheckoutController extends Controller
                 'expiration' => 3600,
                 'order_id' => $paymobOrderId,
                 "billing_data" => [
-                    "apartment" => "NA",
+                    "apartment" => $order->apartment ?? "NA",
                     "email" => $order->user->email,
                     "floor" => "NA",
                     "first_name" => $order->user->name,
-                    "street" => "NA",
-                    "building" => "NA",
+                    "street" => $order->street ?? "NA",
+                    "building" => $order->building ?? "NA",
                     "phone_number" => $phone ?? "01000000000",
-                    "shipping_method" => "NA",
+                    "shipping_method" => $order->courier_name ?? "NA",
                     "postal_code" => "NA",
-                    "city" => "NA",
+                    "city" => $order->city?->name ?? "NA",
                     "country" => "EG",
                     "last_name" => "NA",
-                    "state" => "NA"
+                    "state" => $order->governorate?->name ?? "NA",
                 ],
                 'currency' => 'EGP',
                 'integration_id' => $integrationId,
-                "lock_order_when_paid" => "true"
+                "lock_order_when_paid" => "true",
             ])->json();
 
             if (!isset($paymentKeyResponse['token'])) {
@@ -177,13 +198,9 @@ class CheckoutController extends Controller
                 $iframeUrl = config('services.paymob.iframe_url') . $iframeId . '?payment_token=' . $paymentToken;
                 return redirect($iframeUrl);
             } else {
-                // Wallet redirection request
                 $walletResponse = Http::post('https://accept.paymob.com/api/acceptance/payments/pay', [
-                    'source' => [
-                        'identifier' => $phone,
-                        'subtype' => 'WALLET'
-                    ],
-                    'payment_token' => $paymentToken
+                    'source' => ['identifier' => $phone, 'subtype' => 'WALLET'],
+                    'payment_token' => $paymentToken,
                 ])->json();
 
                 if (isset($walletResponse['redirect_url'])) {
@@ -204,44 +221,31 @@ class CheckoutController extends Controller
         if ($order->status !== 'pending' || $order->payment_status === 'paid') {
             return redirect()->route('orders.show', $order);
         }
-
         $method = $request->query('method', 'card');
         return view('shop.payment_mock', compact('order', 'method'));
     }
 
     public function processMockPayment(\App\Models\Order $order, Request $request)
     {
-        $request->validate([
-            'status' => 'required|in:success,failed',
-        ]);
+        $request->validate(['status' => 'required|in:success,failed']);
 
         if ($request->status === 'success') {
-            $order->update([
-                'status' => 'processing',
-                'payment_status' => 'paid'
-            ]);
+            $order->update(['status' => 'processing', 'payment_status' => 'paid']);
             $order->payment()->updateOrCreate([], [
                 'status' => 'success',
                 'transaction_id' => 'MOCK-TXN-' . strtoupper(uniqid()),
                 'amount' => $order->total,
                 'method' => $request->query('method', 'card'),
-                'response' => ['status' => 'mocked_success']
+                'response' => ['status' => 'mocked_success'],
             ]);
-
-            // Clear the cart on successful payment
             session()->forget('cart');
-
             return redirect()->route('orders.show', $order)->with('success', 'تم محاكاة عملية الدفع بنجاح! شكراً لتعاملك معنا.');
         } else {
-            $order->update([
-                'status' => 'cancelled',
-                'payment_status' => 'failed'
-            ]);
+            $order->update(['status' => 'cancelled', 'payment_status' => 'failed']);
             $order->payment()->updateOrCreate([], [
                 'status' => 'failed',
-                'response' => ['status' => 'mocked_failed']
+                'response' => ['status' => 'mocked_failed'],
             ]);
-
             return redirect()->route('cart.index')->with('error', 'تم إلغاء عملية الدفع (محاكاة). يمكنك تجربة الدفع مرة أخرى.');
         }
     }

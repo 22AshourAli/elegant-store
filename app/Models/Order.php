@@ -23,6 +23,16 @@ class Order extends Model
         'notes',
         'tracking_number',
         'delivered_at',
+        'governorate_id',
+        'city_id',
+        'district_id',
+        'shipping_provider_id',
+        'courier_name',
+        'tracking_url',
+        'shipping_status',
+        'building',
+        'apartment',
+        'street',
     ];
 
     protected $casts = [
@@ -66,5 +76,25 @@ class Order extends Model
     public function exchanges()
     {
         return $this->hasMany(Exchange::class);
+    }
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    public function shippingProvider()
+    {
+        return $this->belongsTo(ShippingProvider::class, 'shipping_provider_id');
     }
 }

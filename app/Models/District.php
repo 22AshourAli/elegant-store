@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class City extends Model
+class District extends Model
 {
-    protected $fillable = ['governorate_id', 'name', 'delivery_time', 'is_active'];
+    protected $fillable = [
+        'governorate_id', 'city_id', 'name', 'type', 'is_active',
+    ];
 
     protected function casts(): array
     {
@@ -18,13 +20,13 @@ class City extends Model
         return $this->belongsTo(Governorate::class);
     }
 
-    public function districts()
+    public function city()
     {
-        return $this->hasMany(District::class);
+        return $this->belongsTo(City::class);
     }
 
-    public function shippingRates()
+    public function scopeActive($q)
     {
-        return $this->hasMany(ShippingRate::class);
+        return $q->where('is_active', true);
     }
 }
