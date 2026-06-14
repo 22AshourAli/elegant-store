@@ -76,9 +76,6 @@
 
         {{-- Mobile Sort --}}
         <form action="{{ request()->url() }}" method="GET" class="flex-1">
-            @if(request('in_stock'))
-                <input type="hidden" name="in_stock" value="{{ request('in_stock') }}">
-            @endif
             <select name="sort" onchange="this.form.submit()"
                     class="w-full border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-primary focus:border-brand-primary dark:focus:ring-accent dark:focus:border-accent focus:outline-none transition-all cursor-pointer">
                 <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>{{ __('global.filter_sort_newest') }}</option>
@@ -104,16 +101,12 @@
                     </button>
                 </div>
                 <form action="{{ request()->url() }}" method="GET" class="p-5 space-y-4 overflow-y-auto flex-1" @submit="mobileOpen = false">
-                    <label class="flex items-center gap-3 text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl hover:bg-brand-primary/5 dark:hover:bg-accent/5 border border-slate-200/40 dark:border-slate-800/40 transition-all">
-                        <input type="checkbox" name="in_stock" value="1" {{ request('in_stock') ? 'checked' : '' }} class="rounded border-slate-300 text-brand-primary shadow-sm focus:ring-brand-primary w-5 h-5">
-                        <span>{{ __('global.in_stock') }}</span>
-                    </label>
-                    @if(request()->hasAny(['in_stock', 'sort']))
+                    @if(request('sort'))
                         <a href="{{ request()->url() }}" class="block text-center text-xs text-red-500 hover:text-red-600 font-bold underline py-1 transition-colors">{{ __('global.filter_reset') }}</a>
                     @endif
-                    <div class="flex gap-3 pt-4 border-t border-slate-200/40 dark:border-slate-800/40">
+                    <div class="flex gap-3 pt-4">
                         <button type="submit" class="flex-1 btn-primary py-2.5 px-4 text-xs cursor-pointer">{{ __('global.filter_apply') }}</button>
-                        <a href="{{ request()->url() }}" class="flex-1 block text-center border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-xs font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-900">{{ __('global.filter_reset') }}</a>
+                        <a href="{{ request()->url() }}" class="flex-1 block text-center border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-900">{{ __('global.filter_reset') }}</a>
                     </div>
                 </form>
             </div>
@@ -129,13 +122,7 @@
             @endif
             <h3 class="font-extrabold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5 pb-3 border-b border-slate-200/40 dark:border-slate-800/40">{{ __('global.filter_title') }}</h3>
 
-            <label class="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300 cursor-pointer hover:text-brand-primary dark:hover:text-accent transition-all p-3 rounded-xl hover:bg-brand-primary/5 dark:hover:bg-accent/5">
-                <input type="checkbox" name="in_stock" value="1" onchange="document.getElementById('filter-form').submit()"
-                       class="rounded border-slate-300 dark:border-slate-700 text-brand-primary focus:ring-brand-primary w-4 h-4 cursor-pointer" {{ request('in_stock') ? 'checked' : '' }}>
-                <span class="font-semibold">{{ __('global.in_stock') }}</span>
-            </label>
-
-            @if(request()->hasAny(['in_stock', 'sort']))
+            @if(request('sort'))
                 <a href="{{ request()->url() }}" class="mt-5 w-full block text-center text-xs text-red-500 hover:text-red-600 font-bold underline transition-colors">{{ __('global.filter_reset') }}</a>
             @endif
         </form>
@@ -150,9 +137,6 @@
                 <span class="mx-1">{{ __('global.product') }}</span>
             </p>
             <form action="{{ request()->url() }}" method="GET" id="sort-form-desktop" class="flex items-center gap-3">
-                @if(request('in_stock'))
-                    <input type="hidden" name="in_stock" value="{{ request('in_stock') }}">
-                @endif
                 <label class="text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{{ __('global.filter_sort') }}</label>
                 <select name="sort" onchange="document.getElementById('sort-form-desktop').submit()"
                         class="border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-200 rounded-xl shadow-sm focus:border-brand-primary focus:ring-2 focus:ring-brand-primary dark:focus:border-accent dark:focus:ring-accent text-sm font-bold py-2 px-3.5 cursor-pointer hover:border-brand-primary dark:hover:border-accent transition-all duration-300">

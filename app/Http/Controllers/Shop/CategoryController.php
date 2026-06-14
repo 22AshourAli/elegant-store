@@ -29,12 +29,6 @@ class CategoryController extends Controller
                 ->active()
                 ->with('media', 'variants');
 
-            if (request()->has('in_stock')) {
-                $query->whereHas('variants', function ($q) {
-                    $q->where('stock', '>', 0);
-                });
-            }
-
             $sort = request('sort', 'latest');
             if ($sort === 'price_asc') {
                 $query->orderByRaw('COALESCE(sale_price, base_price) ASC');
