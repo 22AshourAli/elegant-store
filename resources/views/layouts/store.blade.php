@@ -252,11 +252,10 @@
                 </div>
 
                 <!-- Toast Notification -->
-                <template x-teleport="body">
-                    <div x-show="_toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
-                         class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
-                        <a :href="_toastItem.url || '#'" @click="dismissToast(); _toastItem.read_at ? null : markRead(_toastItem.id)"
-                           class="flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 hover:shadow-xl transition-shadow">
+                <div x-show="_toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
+                     class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
+                    <a :href="_toastItem.url || '#'" @click="dismissToast(); _toastItem.read_at ? null : markRead(_toastItem.id)"
+                       class="flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 hover:shadow-xl transition-shadow">
                             <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
                                  :class="_toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : _toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : _toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-brand-primary dark:text-accent' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">
                                 <template x-if="_toastItem.type === 'exchange'">
@@ -285,7 +284,6 @@
                             </button>
                         </a>
                     </div>
-                </template>
                 @endauth
 
                 <!-- Wishlist -->

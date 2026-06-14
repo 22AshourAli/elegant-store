@@ -231,40 +231,38 @@
                         </div>
 
                         <!-- Toast Notification -->
-                        <template x-teleport="body">
-                            <div x-show="_toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
-                                 class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
-                                <a :href="_toastItem.url || '#'" @click="dismissToast(); _toastItem.read_at ? null : markRead(_toastItem.id)"
-                                   class="flex items-start gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/60 p-4 hover:shadow-xl transition-shadow">
-                                    <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                                         :class="_toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : _toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : _toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'">
-                                        <template x-if="_toastItem.type === 'exchange'">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                                        </template>
-                                        <template x-if="_toastItem.type === 'return'">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
-                                        </template>
-                                        <template x-if="_toastItem.type === 'order'">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                        </template>
-                                        <template x-if="_toastItem.type === 'info'">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
-                                        </template>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 tracking-wide">@lang('global.notification_new')</p>
-                                        <p class="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5" x-text="_toastItem.title"></p>
-                                        <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            <span x-text="_toastItem.time"></span>
-                                        </p>
-                                    </div>
-                                    <button @click.prevent="dismissToast()" class="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus-visible:outline-none" aria-label="Dismiss">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    </button>
-                                </a>
-                            </div>
-                        </template>
+                        <div x-show="_toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
+                             class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
+                            <a :href="_toastItem.url || '#'" @click="dismissToast(); _toastItem.read_at ? null : markRead(_toastItem.id)"
+                               class="flex items-start gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/60 p-4 hover:shadow-xl transition-shadow">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                                     :class="_toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : _toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : _toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'">
+                                    <template x-if="_toastItem.type === 'exchange'">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                    </template>
+                                    <template x-if="_toastItem.type === 'return'">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
+                                    </template>
+                                    <template x-if="_toastItem.type === 'order'">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    </template>
+                                    <template x-if="_toastItem.type === 'info'">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
+                                    </template>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 tracking-wide">@lang('global.notification_new')</p>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5" x-text="_toastItem.title"></p>
+                                    <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <span x-text="_toastItem.time"></span>
+                                    </p>
+                                </div>
+                                <button @click.prevent="dismissToast()" class="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus-visible:outline-none" aria-label="Dismiss">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Language Switcher -->
