@@ -615,6 +615,7 @@ return [
 
     // Suppliers
     'admin_suppliers' => 'Suppliers',
+    'admin_supplier' => 'Supplier',
     'admin_add_supplier' => 'Add Supplier',
     'admin_edit_supplier' => 'Edit Supplier',
     'admin_no_suppliers' => 'No suppliers yet',

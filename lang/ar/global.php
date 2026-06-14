@@ -622,6 +622,7 @@ return [
 
     // Suppliers
     'admin_suppliers' => 'الموردين',
+    'admin_supplier' => 'المورد',
     'admin_add_supplier' => 'إضافة مورد',
     'admin_edit_supplier' => 'تعديل المورد',
     'admin_no_suppliers' => 'لا يوجد موردين',
