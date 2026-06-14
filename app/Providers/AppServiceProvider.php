@@ -16,6 +16,21 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (app()->environment('production') && env('R2_ACCESS_KEY_ID')) {
+            config()->set('filesystems.disks.public', [
+                'driver' => 's3',
+                'key' => env('R2_ACCESS_KEY_ID'),
+                'secret' => env('R2_SECRET_ACCESS_KEY'),
+                'region' => 'auto',
+                'bucket' => env('R2_BUCKET', 'elegant-store'),
+                'url' => env('R2_PUBLIC_URL'),
+                'endpoint' => env('R2_ENDPOINT'),
+                'use_path_style_endpoint' => true,
+                'throw' => false,
+                'report' => false,
+            ]);
+        }
+
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) || isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             \Illuminate\Http\Request::setTrustedProxies(
                 [$_SERVER['REMOTE_ADDR']],

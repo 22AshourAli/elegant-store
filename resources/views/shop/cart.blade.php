@@ -66,16 +66,21 @@
                                 <div class="flex items-center border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm hover:border-brand-primary/60 dark:hover:border-accent/60 transition-colors duration-200"
                                      :class="{ 'opacity-50 pointer-events-none': isItemLoading(item.variant_id) === 'qty' }"
                                      role="group" :aria-label="'Quantity for ' + item.product_name">
-                                    <button @click="updateQty(item.variant_id, item.quantity - 1)"
+                                    <button :data-cart-variant="item.variant_id"
+                                            data-cart-action="dec"
                                             :disabled="isItemLoading(item.variant_id)"
                                             :aria-label="'Decrease quantity of ' + item.product_name"
                                             class="px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-accent/10 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer disabled:opacity-40">−</button>
                                     <span x-show="isItemLoading(item.variant_id) === 'qty'" class="w-9 flex justify-center">
                                         <svg class="w-4 h-4 animate-spin text-brand-primary dark:text-accent" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                     </span>
-                                    <input x-show="!isItemLoading(item.variant_id)" type="number" x-model.number="item.quantity" @change="updateQty(item.variant_id, item.quantity)" :aria-label="'Quantity of ' + item.product_name"
+                                    <input x-show="!isItemLoading(item.variant_id)" type="number" x-model.number="item.quantity"
+                                           :data-cart-variant="item.variant_id"
+                                           data-cart-action="qty"
+                                           :aria-label="'Quantity of ' + item.product_name"
                                            class="w-9 text-center bg-transparent border-0 focus:ring-0 p-0 font-black text-sm text-slate-900 dark:text-slate-100" min="1">
-                                    <button @click="updateQty(item.variant_id, item.quantity + 1)"
+                                    <button :data-cart-variant="item.variant_id"
+                                            data-cart-action="inc"
                                             :disabled="isItemLoading(item.variant_id)"
                                             :aria-label="'Increase quantity of ' + item.product_name"
                                             class="px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-accent/10 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer disabled:opacity-40">+</button>
@@ -88,7 +93,8 @@
                                 </div>
 
                                 {{-- Remove --}}
-                                <button @click="removeItem(item.variant_id)"
+                                <button :data-cart-variant="item.variant_id"
+                                        data-cart-action="remove"
                                         :disabled="isItemLoading(item.variant_id)"
                                         :aria-label="'Remove ' + item.product_name + ' from cart'"
                                         class="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-600 transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer disabled:opacity-40 disabled:hover:scale-100">
@@ -176,131 +182,169 @@
 </main>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('cartView', (cartItems, csrfToken, initialTotal, shipping) => ({
-                items: Object.values(cartItems),
-                shipping: shipping,
-                totalPrice: initialTotal + shipping,
-                csrfToken: csrfToken,
-                loadingItems: {},
-                couponLoading: false,
+        document.addEventListener('alpine:init', function() {
+            Alpine.data('cartView', function(cartItems, csrfToken, initialTotal, shipping) {
+                return {
+                    items: Object.values(cartItems),
+                    shipping: shipping,
+                    totalPrice: initialTotal + shipping,
+                    csrfToken: csrfToken,
+                    loadingItems: {},
+                    couponLoading: false,
 
-            updateQty(variantId, newQty) {
-                if (newQty <= 0) {
-                    this.removeItem(variantId);
-                    return;
-                }
-
-                this.loadingItems[variantId] = 'qty';
-
-                const formData = new FormData();
-                formData.append('_method', 'PATCH');
-                formData.append('quantity', newQty);
-
-                fetch(`/cart/${variantId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': this.csrfToken
+                    init() {
+                        console.log('cartView: init(), items:', this.items.length);
+                        var vm = this;
+                        var el = vm.$el;
+                        el.addEventListener('click', function(e) {
+                            var btn = e.target.closest('[data-cart-action]');
+                            if (!btn || btn.disabled) return;
+                            var action = btn.getAttribute('data-cart-action');
+                            var id = parseInt(btn.getAttribute('data-cart-variant'));
+                            if (!action || isNaN(id)) return;
+                            if (action === 'dec' || action === 'inc') {
+                                var item = vm.items.find(function(i) { return i.variant_id == id; });
+                                if (!item) return;
+                                vm.updateQty(id, action === 'dec' ? item.quantity - 1 : item.quantity + 1);
+                            } else if (action === 'remove') {
+                                vm.removeItem(id);
+                            }
+                        });
+                        el.addEventListener('change', function(e) {
+                            var input = e.target.closest('[data-cart-action="qty"]');
+                            if (!input) return;
+                            var id = parseInt(input.getAttribute('data-cart-variant'));
+                            if (isNaN(id)) return;
+                            vm.updateQty(id, parseInt(input.value) || 1);
+                        });
                     },
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    const item = this.items.find(i => i.variant_id == variantId);
-                    if (item) {
-                        item.quantity = newQty;
+
+                    updateQty(variantId, newQty) {
+                        if (newQty <= 0) {
+                            this.removeItem(variantId);
+                            return;
+                        }
+                        this.loadingItems[variantId] = 'qty';
+                        var vm = this;
+                        fetch('/cart/' + variantId, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({ quantity: newQty })
+                        })
+                        .then(async function(res) {
+                            if (!res.ok) {
+                                var text = await res.text();
+                                throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 200));
+                            }
+                            return res.json();
+                        })
+                        .then(function(data) {
+                            var item = vm.items.find(function(i) { return i.variant_id == variantId; });
+                            if (item) item.quantity = newQty;
+                            vm.totalPrice = Number(data.total) + vm.shipping;
+                            delete vm.loadingItems[variantId];
+                            window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                        })
+                        .catch(function(e) {
+                            console.error('Cart updateQty error:', e);
+                            delete vm.loadingItems[variantId];
+                        });
+                    },
+
+                    removeItem(variantId) {
+                        if (!confirm(@json(__('global.confirm_delete_cart')))) return;
+                        this.loadingItems[variantId] = 'remove';
+                        var vm = this;
+                        fetch('/cart/' + variantId, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': this.csrfToken,
+                                'Accept': 'application/json',
+                            },
+                        })
+                        .then(async function(res) {
+                            if (!res.ok) {
+                                var text = await res.text();
+                                throw new Error('HTTP ' + res.status + ': ' + text.slice(0, 200));
+                            }
+                            return res.json();
+                        })
+                        .then(function(data) {
+                            vm.items = vm.items.filter(function(i) { return i.variant_id != variantId; });
+                            vm.totalPrice = Number(data.total) + vm.shipping;
+                            delete vm.loadingItems[variantId];
+                            window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                        })
+                        .catch(function(e) {
+                            console.error('Cart removeItem error:', e);
+                            delete vm.loadingItems[variantId];
+                        });
+                    },
+
+                    isItemLoading(variantId) {
+                        return this.loadingItems[variantId];
+                    },
+
+                    formatPrice(price) {
+                        var locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
+                        return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
+                    },
+
+                    couponCode: '',
+                    appliedCoupon: null,
+                    couponError: '',
+
+                    get appliedCouponText() {
+                        if (!this.appliedCoupon) return '';
+                        if (this.appliedCoupon.type === 'percent') return this.appliedCoupon.code + ' — {{ __('global.coupon_discount_label') }} ' + this.appliedCoupon.value + '%';
+                        return this.appliedCoupon.code + ' — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}' + this.appliedCoupon.value;
+                    },
+
+                    applyCoupon(code) {
+                        this.couponError = '';
+                        if (!code) return;
+                        this.couponLoading = true;
+                        var vm = this;
+                        fetch(@json(route('coupon.apply')), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @json(csrf_token()) },
+                            body: JSON.stringify({ code: code })
+                        }).then(async function(res) {
+                            var data = await res.json();
+                            if (!res.ok) throw new Error(data.message || @json(__('global.coupon_error')));
+                            vm.totalPrice = Number(data.total) + vm.shipping;
+                            vm.appliedCoupon = data.coupon;
+                            vm.couponCode = '';
+                            vm.couponLoading = false;
+                            window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                        }).catch(function(err) {
+                            vm.couponError = err.message;
+                            vm.couponLoading = false;
+                            window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
+                        });
+                    },
+
+                    removeCoupon() {
+                        this.couponError = '';
+                        this.couponLoading = true;
+                        var vm = this;
+                        fetch(@json(route('coupon.remove')), {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': @json(csrf_token()) }
+                        }).then(function(res) { return res.json(); }).then(function(data) {
+                            vm.totalPrice = Number(data.total) + vm.shipping;
+                            vm.appliedCoupon = null;
+                            vm.couponLoading = false;
+                            window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                        }).catch(function() { vm.couponLoading = false; });
                     }
-                    this.totalPrice = Number(data.total) + this.shipping;
-                    delete this.loadingItems[variantId];
-                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                })
-                .catch(() => { delete this.loadingItems[variantId]; });
-            },
-
-            removeItem(variantId) {
-                if (!confirm(@json(__('global.confirm_delete_cart')))) return;
-
-                this.loadingItems[variantId] = 'remove';
-
-                const formData = new FormData();
-                formData.append('_method', 'DELETE');
-
-                fetch(`/cart/${variantId}`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': this.csrfToken
-                    },
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-                    this.items = this.items.filter(i => i.variant_id != variantId);
-                    this.totalPrice = Number(data.total) + this.shipping;
-                    delete this.loadingItems[variantId];
-                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                })
-                .catch(() => { delete this.loadingItems[variantId]; });
-            },
-
-            isItemLoading(variantId) {
-                return this.loadingItems[variantId];
-            },
-
-            formatPrice(price) {
-                const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
-                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 })
-                    .format(Math.round(price));
-            },
-            couponCode: '',
-            appliedCoupon: null,
-            couponError: '',
-            get appliedCouponText() {
-                if (!this.appliedCoupon) return '';
-                if (this.appliedCoupon.type === 'percent') return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} ${this.appliedCoupon.value}%`;
-                return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}${this.appliedCoupon.value}`;
-            },
-
-            applyCoupon(code) {
-                this.couponError = '';
-                if (!code) return;
-                this.couponLoading = true;
-                fetch(@json(route('coupon.apply')), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': @json(csrf_token())
-                    },
-                    body: JSON.stringify({ code })
-                }).then(async res => {
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.message || @json(__('global.coupon_error')));
-                    this.totalPrice = Number(data.total) + this.shipping;
-                    this.appliedCoupon = data.coupon;
-                    this.couponCode = '';
-                    this.couponLoading = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                }).catch(err => {
-                    this.couponError = err.message;
-                    this.couponLoading = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
-                });
-            },
-
-            removeCoupon() {
-                this.couponError = '';
-                this.couponLoading = true;
-                fetch(@json(route('coupon.remove')), {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': @json(csrf_token()) }
-                }).then(res => res.json()).then(data => {
-                    this.totalPrice = Number(data.total) + this.shipping;
-                    this.appliedCoupon = null;
-                    this.couponLoading = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                }).catch(() => { this.couponLoading = false; });
-            }
-        }));
-    });
-</script>
+                };
+            });
+        });
+    </script>
 @endsection
 

@@ -404,6 +404,7 @@ return [
 
     // Notifications
     'admin_notifications' => 'Notifications',
+    'notification_new' => 'New Notification',
     'admin_notifications_all' => 'All Notifications',
     'admin_mark_read' => 'Mark as Read',
     'admin_mark_all_read' => 'Mark All as Read',

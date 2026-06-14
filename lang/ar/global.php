@@ -410,6 +410,7 @@ return [
 
     // Notifications
     'admin_notifications' => 'الإشعارات',
+    'notification_new' => 'إشعار جديد',
     'admin_notifications_all' => 'جميع الإشعارات',
     'admin_mark_read' => 'تحديد كمقروء',
     'admin_mark_all_read' => 'تحديد الكل كمقروء',

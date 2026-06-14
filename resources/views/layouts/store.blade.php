@@ -250,6 +250,42 @@
                         </a>
                     </div>
                 </div>
+
+                <!-- Toast Notification -->
+                <template x-teleport="body">
+                    <div x-show="_toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
+                         class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
+                        <a :href="_toastItem.url || '#'" @click="dismissToast(); _toastItem.read_at ? null : markRead(_toastItem.id)"
+                           class="flex items-start gap-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60 p-4 hover:shadow-xl transition-shadow">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+                                 :class="_toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : _toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : _toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-brand-primary dark:text-accent' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">
+                                <template x-if="_toastItem.type === 'exchange'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                </template>
+                                <template x-if="_toastItem.type === 'return'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
+                                </template>
+                                <template x-if="_toastItem.type === 'order'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                </template>
+                                <template x-if="_toastItem.type === 'info'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
+                                </template>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-extrabold text-brand-primary dark:text-accent tracking-wide">@lang('global.notification_new')</p>
+                                <p class="text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5" x-text="_toastItem.title"></p>
+                                <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span x-text="_toastItem.time"></span>
+                                </p>
+                            </div>
+                                <button @click.prevent="dismissToast()" class="flex-shrink-0 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus-visible:outline-none" aria-label="Dismiss">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </a>
+                    </div>
+                </template>
                 @endauth
 
                 <!-- Wishlist -->
@@ -625,6 +661,8 @@
 
     <script> if ('serviceWorker' in navigator) { navigator.serviceWorker.register(@json(asset('sw.js'))); } </script>
 
+    @stack('cart-scripts')
+
     @push('scripts')
     <script>
         function playNotifSound() {
@@ -647,41 +685,74 @@
                 items: [],
                 latestId: null,
                 _pollTimer: null,
+                _retrySec: 3,
                 _bc: null,
                 _baseTitle: '',
+                _toastItem: null,
+                _toastTimer: null,
+                _online: true,
+
                 async init() {
                     this._baseTitle = document.title.replace(/^\(\d+\) /, '');
-                    await this.fetchUnread();
-                    await this.fetchItems();
-                    this._pollTimer = setInterval(() => this.fetchUnread(), 8000);
+                    await this.syncAll();
+                    this.scheduleNext();
                     try {
                         this._bc = new BroadcastChannel('notifications');
                         this._bc.onmessage = (e) => {
                             if (e.data.type === 'new_notification') {
                                 this.unread = e.data.count;
                                 this.latestId = e.data.latestId;
-                                playNotifSound();
-                                if (this.open) this.fetchItems();
+                                this.fetchItems();
                                 this._updateTitle();
                             }
                         };
                     } catch(e) {}
-                    window.addEventListener('online', () => { this.fetchUnread(); this.fetchItems(); }, { once: false });
+                    window.addEventListener('online', () => { this._online = true; this.syncAll(); this.scheduleNext(); });
+                    window.addEventListener('offline', () => { this._online = false; });
                 },
+
+                async syncAll() {
+                    await this.fetchUnread();
+                    await this.fetchItems();
+                },
+
+                scheduleNext() {
+                    if (this._pollTimer) clearTimeout(this._pollTimer);
+                    const poll = async () => {
+                        const ok = await this.fetchUnread();
+                        if (ok) {
+                            this._retrySec = 3;
+                        } else {
+                            this._retrySec = Math.min(this._retrySec * 2, 30);
+                        }
+                        // always keep items fresh in background
+                        if (this.unread > 0) this.fetchItems();
+                        this.scheduleNext();
+                    };
+                    this._pollTimer = setTimeout(poll, this._retrySec * 1000);
+                },
+
                 async fetchUnread() {
                     try {
                         const res = await fetch("{{ route('notifications.unread-count') }}");
+                        if (!res.ok) return false;
                         const data = await res.json();
-                        if (this.latestId && data.latest_id && data.latest_id !== this.latestId && data.count > 0) {
+                        const isNew = this.latestId && data.latest_id && data.latest_id !== this.latestId && data.count > 0;
+                        if (isNew) {
                             playNotifSound();
-                            if (this.open) this.fetchItems();
+                            this.fetchItems().then(() => {
+                                const first = this.items.find(i => i.id === data.latest_id);
+                                if (first && !first.read_at) this.showToast(first);
+                            });
                             try { this._bc?.postMessage({ type: 'new_notification', count: data.count, latestId: data.latest_id }); } catch(e) {}
                         }
                         this.latestId = data.latest_id || this.latestId;
                         this.unread = data.count;
                         this._updateTitle();
-                    } catch(e) {}
+                        return true;
+                    } catch(e) { return false; }
                 },
+
                 async fetchItems() {
                     try {
                         const res = await fetch("{{ route('notifications.index') }}?json=1");
@@ -689,32 +760,51 @@
                         this.items = data.notifications || [];
                     } catch(e) {}
                 },
+
                 togglePanel() {
                     this.open = !this.open;
-                    if (this.open) this.fetchItems();
+                    if (this.open) { this.fetchItems(); this.dismissToast(); }
                 },
+
+                showToast(n) {
+                    this._toastItem = n;
+                    if (this._toastTimer) clearTimeout(this._toastTimer);
+                    this._toastTimer = setTimeout(() => { this._toastItem = null; }, 5000);
+                },
+
+                dismissToast() {
+                    this._toastItem = null;
+                    if (this._toastTimer) { clearTimeout(this._toastTimer); this._toastTimer = null; }
+                },
+
                 async markRead(id) {
                     try {
-                        await fetch("{{ url('notifications') }}/" + id + "/read", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
+                        const res = await fetch("{{ url('notifications') }}/" + id + "/read", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
+                        if (!res.ok) return;
                         this.unread = Math.max(0, this.unread - 1);
                         const n = this.items.find(i => i.id === id);
                         if (n) n.read_at = true;
                         this._updateTitle();
                     } catch(e) {}
                 },
+
                 async markAllRead() {
                     try {
-                        await fetch("{{ route('notifications.mark-all-read') }}", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
+                        const res = await fetch("{{ route('notifications.mark-all-read') }}", { method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" } });
+                        if (!res.ok) return;
                         this.unread = 0;
                         this.items.forEach(n => n.read_at = true);
                         this._updateTitle();
                     } catch(e) {}
                 },
+
                 _updateTitle() {
                     document.title = this.unread > 0 ? `(${this.unread}) ${this._baseTitle}` : this._baseTitle;
                 },
+
                 destroy() {
-                    if (this._pollTimer) clearInterval(this._pollTimer);
+                    if (this._pollTimer) clearTimeout(this._pollTimer);
+                    if (this._toastTimer) clearTimeout(this._toastTimer);
                     try { this._bc?.close(); } catch(e) {}
                 }
             }));

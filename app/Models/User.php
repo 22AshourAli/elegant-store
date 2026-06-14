@@ -43,7 +43,9 @@ class User extends Authenticatable
             if (str_starts_with($this->avatar, 'http')) {
                 return $this->avatar;
             }
-            return \Storage::disk('public')->url($this->avatar);
+            if (\Storage::disk('public')->exists($this->avatar)) {
+                return \Storage::disk('public')->url($this->avatar);
+            }
         }
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
