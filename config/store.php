@@ -13,4 +13,7 @@ return [
 
     // Default shipping fallback (in EGP)
     'default_shipping' => env('DEFAULT_SHIPPING', 30),
+
+    // Low stock threshold (notify when stock drops to this or below)
+    'low_stock_threshold' => env('LOW_STOCK_THRESHOLD', 1),
 ];
