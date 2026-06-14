@@ -64,18 +64,9 @@
 
 <div class="reveal container py-10 flex flex-col md:flex-row gap-8">
 
-    {{-- Mobile Filter Bar --}}
-    <div class="md:hidden flex items-center gap-3 mb-6" x-data="{ mobileOpen: false }">
-        <button @click="mobileOpen = true"
-                aria-expanded="mobileOpen"
-                aria-controls="mobile-filter-drawer"
-                class="flex items-center justify-center gap-2 px-4 py-3 bg-white dark:bg-surface-dark border border-slate-200/60 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 rounded-xl text-sm font-bold flex-1 transition-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer">
-            <svg class="w-4 h-4 text-brand-primary dark:text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
-            <span>{{ __('global.filter_title') }}</span>
-        </button>
-
-        {{-- Mobile Sort --}}
-        <form action="{{ request()->url() }}" method="GET" class="flex-1">
+    {{-- Sort + Count Bar (mobile) --}}
+    <div class="md:hidden mb-6">
+        <form action="{{ request()->url() }}" method="GET" class="flex items-center gap-3">
             <select name="sort" onchange="this.form.submit()"
                     class="w-full border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-surface-dark text-slate-800 dark:text-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand-primary focus:border-brand-primary dark:focus:ring-accent dark:focus:border-accent focus:outline-none transition-all cursor-pointer">
                 <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>{{ __('global.filter_sort_newest') }}</option>
@@ -83,55 +74,10 @@
                 <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>{{ __('global.filter_sort_price_high') }}</option>
             </select>
         </form>
-
-        {{-- Mobile Filter Drawer --}}
-        <div x-show="mobileOpen" x-cloak class="fixed inset-0 z-50" id="mobile-filter-drawer" role="dialog" aria-modal="true" aria-label="{{ __('global.filter_title') }}">
-            <div @click="mobileOpen = false" class="fixed inset-0 bg-black/70 backdrop-blur-md"></div>
-            <div class="fixed inset-y-0 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-72 sm:w-80 max-w-[85vw] bg-white/95 dark:bg-surface-dark/95 border-s border-slate-200/40 dark:border-slate-800/40 shadow-2xl z-10 flex flex-col backdrop-blur-xl"
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 {{ app()->getLocale() === 'ar' ? '-translate-x-8' : 'translate-x-8' }}"
-                 x-transition:enter-end="opacity-100 translate-x-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-x-0"
-                 x-transition:leave-end="opacity-0 {{ app()->getLocale() === 'ar' ? '-translate-x-8' : 'translate-x-8' }}">
-                <div class="p-5 border-b border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between shrink-0">
-                    <h3 class="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">{{ __('global.filter_title') }}</h3>
-                    <button @click="mobileOpen = false" aria-label="Close filters" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-                <form action="{{ request()->url() }}" method="GET" class="p-5 space-y-4 overflow-y-auto flex-1" @submit="mobileOpen = false">
-                    @if(request('sort'))
-                        <a href="{{ request()->url() }}" class="block text-center text-xs text-red-500 hover:text-red-600 font-bold underline py-1 transition-colors">{{ __('global.filter_reset') }}</a>
-                    @endif
-                    <div class="flex gap-3 pt-4">
-                        <button type="submit" class="flex-1 btn-primary py-2.5 px-4 text-xs cursor-pointer">{{ __('global.filter_apply') }}</button>
-                        <a href="{{ request()->url() }}" class="flex-1 block text-center border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-900">{{ __('global.filter_reset') }}</a>
-                    </div>
-                </form>
-            </div>
-        </div>
     </div>
 
-    {{-- Desktop Sidebar --}}
-    <aside class="hidden md:block w-full md:w-60 flex-shrink-0" aria-label="Product Filters">
-        <form action="{{ request()->url() }}" method="GET" id="filter-form"
-              class="bg-white/60 dark:bg-surface-dark/60 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 p-6 sticky top-24 backdrop-blur-md shadow-[0_8px_32px_0_rgba(31,38,135,0.03)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
-            @if(request('sort'))
-                <input type="hidden" name="sort" value="{{ request('sort') }}">
-            @endif
-            <h3 class="font-extrabold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5 pb-3 border-b border-slate-200/40 dark:border-slate-800/40">{{ __('global.filter_title') }}</h3>
-
-            @if(request('sort'))
-                <a href="{{ request()->url() }}" class="mt-5 w-full block text-center text-xs text-red-500 hover:text-red-600 font-bold underline transition-colors">{{ __('global.filter_reset') }}</a>
-            @endif
-        </form>
-    </aside>
-
-    {{-- Product Grid Column --}}
-    <div class="flex-1 min-w-0">
-        {{-- Sort + Count Bar (desktop) --}}
-        <div class="hidden md:flex justify-between items-center mb-6 px-6 py-4 bg-white/60 dark:bg-surface-dark/60 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md shadow-[0_8px_32px_0_rgba(31,38,135,0.03)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+    {{-- Sort + Count Bar (desktop) --}}
+    <div class="hidden md:flex justify-between items-center mb-6 px-6 py-4 bg-white/60 dark:bg-surface-dark/60 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md shadow-[0_8px_32px_0_rgba(31,38,135,0.03)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
             <p class="text-sm text-slate-600 dark:text-slate-400 font-semibold">
                 <span class="font-extrabold text-brand-primary dark:text-accent text-lg">{{ $products->total() }}</span>
                 <span class="mx-1">{{ __('global.product') }}</span>
@@ -177,6 +123,5 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">{{ __('عذراً، لم نتمكن من العثور على منتجات في هذا القسم حالياً.') }}</p>
             </div>
         @endif
-    </div>
 </div>
 @endsection
