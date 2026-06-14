@@ -193,13 +193,16 @@
 
                 this.loadingItems[variantId] = 'qty';
 
+                const formData = new FormData();
+                formData.append('_method', 'PATCH');
+                formData.append('quantity', newQty);
+
                 fetch(`/cart/${variantId}`, {
-                    method: 'PATCH',
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken
                     },
-                    body: JSON.stringify({ quantity: newQty })
+                    body: formData
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -215,16 +218,19 @@
             },
 
             removeItem(variantId) {
-                const confirmMsg = @json(__('global.confirm_delete_cart'));
-                if (!confirm(confirmMsg)) return;
+                if (!confirm(@json(__('global.confirm_delete_cart')))) return;
 
                 this.loadingItems[variantId] = 'remove';
 
+                const formData = new FormData();
+                formData.append('_method', 'DELETE');
+
                 fetch(`/cart/${variantId}`, {
-                    method: 'DELETE',
+                    method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': this.csrfToken
-                    }
+                    },
+                    body: formData
                 })
                 .then(res => res.json())
                 .then(data => {
