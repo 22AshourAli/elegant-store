@@ -66,8 +66,7 @@
                                 <div class="flex items-center border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm hover:border-brand-primary/60 dark:hover:border-accent/60 transition-colors duration-200"
                                      :class="{ 'opacity-50 pointer-events-none': isItemLoading(item.variant_id) === 'qty' }"
                                      role="group" :aria-label="'Quantity for ' + item.product_name">
-                                    <button :data-cart-variant="item.variant_id"
-                                            data-cart-action="dec"
+                                    <button @click="updateQty(item.variant_id, item.quantity - 1)"
                                             :disabled="isItemLoading(item.variant_id)"
                                             :aria-label="'Decrease quantity of ' + item.product_name"
                                             class="px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-accent/10 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer disabled:opacity-40">−</button>
@@ -75,12 +74,10 @@
                                         <svg class="w-4 h-4 animate-spin text-brand-primary dark:text-accent" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                     </span>
                                     <input x-show="!isItemLoading(item.variant_id)" type="number" x-model.number="item.quantity"
-                                           :data-cart-variant="item.variant_id"
-                                           data-cart-action="qty"
+                                           @change="updateQty(item.variant_id, $event.target.valueAsNumber || 1)"
                                            :aria-label="'Quantity of ' + item.product_name"
                                            class="w-9 text-center bg-transparent border-0 focus:ring-0 p-0 font-black text-sm text-slate-900 dark:text-slate-100" min="1">
-                                    <button :data-cart-variant="item.variant_id"
-                                            data-cart-action="inc"
+                                    <button @click="updateQty(item.variant_id, item.quantity + 1)"
                                             :disabled="isItemLoading(item.variant_id)"
                                             :aria-label="'Increase quantity of ' + item.product_name"
                                             class="px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-accent/10 focus-visible:outline-none transition-all duration-200 font-extrabold text-base cursor-pointer disabled:opacity-40">+</button>
@@ -93,8 +90,7 @@
                                 </div>
 
                                 {{-- Remove --}}
-                                <button :data-cart-variant="item.variant_id"
-                                        data-cart-action="remove"
+                                <button @click="removeItem(item.variant_id)"
                                         :disabled="isItemLoading(item.variant_id)"
                                         :aria-label="'Remove ' + item.product_name + ' from cart'"
                                         class="p-2 rounded-xl text-red-500 hover:text-white hover:bg-red-600 transition-all duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer disabled:opacity-40 disabled:hover:scale-100">
@@ -194,29 +190,6 @@
 
                     init() {
                         console.log('cartView: init(), items:', this.items.length);
-                        var vm = this;
-                        var el = vm.$el;
-                        el.addEventListener('click', function(e) {
-                            var btn = e.target.closest('[data-cart-action]');
-                            if (!btn || btn.disabled) return;
-                            var action = btn.getAttribute('data-cart-action');
-                            var id = parseInt(btn.getAttribute('data-cart-variant'));
-                            if (!action || isNaN(id)) return;
-                            if (action === 'dec' || action === 'inc') {
-                                var item = vm.items.find(function(i) { return i.variant_id == id; });
-                                if (!item) return;
-                                vm.updateQty(id, action === 'dec' ? item.quantity - 1 : item.quantity + 1);
-                            } else if (action === 'remove') {
-                                vm.removeItem(id);
-                            }
-                        });
-                        el.addEventListener('change', function(e) {
-                            var input = e.target.closest('[data-cart-action="qty"]');
-                            if (!input) return;
-                            var id = parseInt(input.getAttribute('data-cart-variant'));
-                            if (isNaN(id)) return;
-                            vm.updateQty(id, parseInt(input.value) || 1);
-                        });
                     },
 
                     updateQty(variantId, newQty) {
