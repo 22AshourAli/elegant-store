@@ -557,26 +557,18 @@
         </div>
     </footer>
 
+    @if(session('success'))
+        <script>(()=>{document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>window.dispatchEvent(new CustomEvent('toast',{detail:{type:'success',message:@json(session('success'))}})),100)})})()</script>
+    @endif
+    @if(session('error'))
+        <script>(()=>{document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>window.dispatchEvent(new CustomEvent('toast',{detail:{type:'error',message:@json(session('error'))}})),100)})})()</script>
+    @endif
+    @if($errors->any())
+        <script>(()=>{document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{@foreach($errors->all() as $error)window.dispatchEvent(new CustomEvent('toast',{detail:{type:'error',message:@json($error)}}));@endforeach},100)})})()</script>
+    @endif
+
     <!-- Toast -->
-    <aside aria-live="polite" aria-label="Notifications" x-data="{
-        toasts: [],
-        init() {
-            @if(session('success'))
-                this.toasts.push({ type: 'success', message: {!! json_encode(session('success')) !!} });
-                setTimeout(() => this.toasts.shift(), 4500);
-            @endif
-            @if(session('error'))
-                this.toasts.push({ type: 'error', message: {!! json_encode(session('error')) !!} });
-                setTimeout(() => this.toasts.shift(), 4500);
-            @endif
-            @if($errors->any())
-                @foreach($errors->all() as $error)
-                    this.toasts.push({ type: 'error', message: {!! json_encode($error) !!} });
-                    setTimeout(() => this.toasts.shift(), 5500);
-                @endforeach
-            @endif
-        }
-    }" @toast.window="toasts.push($event.detail); setTimeout(() => toasts.shift(), 4500)"
+    <aside aria-live="polite" aria-label="Notifications" x-data="{ toasts: [] }" @toast.window="toasts.push($event.detail); setTimeout(() => toasts.shift(), 4500)"
        class="fixed bottom-20 lg:bottom-5 left-3 lg:left-5 right-3 lg:right-auto space-y-2 z-50 max-w-sm w-auto pointer-events-none">
         <template x-for="(toast, index) in toasts" :key="index">
             <div x-transition:enter="transition ease-out duration-300"
