@@ -135,22 +135,13 @@
     <div class="container py-2.5 sm:py-3">
         <div class="hidden md:flex items-center gap-2 lg:gap-3 flex-wrap">
             <span class="text-xs font-bold text-slate-500 dark:text-slate-450">{{ __('global.filter_title') }}</span>
-            <select x-model="filters.category_id" @change="applyFilters()" class="border border-slate-200/50 dark:border-slate-800/80 bg-white/50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-355 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-brand-primary dark:focus:ring-accent focus:outline-none transition-all">
-                <option value="">{{ __('global.filter_all_categories') }}</option>
-                @foreach($categories as $cat)
-                    @if(is_object($cat) && isset($cat->id))
-                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                    @endif
-                @endforeach
-            </select>
             <select x-model="filters.sort" @change="applyFilters()" class="border border-slate-200/50 dark:border-slate-800/80 bg-white/50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-355 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-brand-primary dark:focus:ring-accent focus:outline-none transition-all">
                 <option value="">{{ __('global.filter_sort_newest') }}</option>
                 <option value="price_asc">{{ __('global.filter_sort_price_low') }}</option>
                 <option value="price_desc">{{ __('global.filter_sort_price_high') }}</option>
                 <option value="name_az">{{ __('global.filter_sort_name_az') }}</option>
             </select>
-            <input type="number" x-model="filters.min_price" placeholder="{{ __('global.filter_min_price') }}" class="w-20 border border-slate-200/50 dark:border-slate-800/80 bg-white/50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-355 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-brand-primary dark:focus:ring-accent focus:outline-none transition-all">
-            <input type="number" x-model="filters.max_price" placeholder="{{ __('global.filter_max_price') }}" class="w-20 border border-slate-200/50 dark:border-slate-800/80 bg-white/50 dark:bg-slate-950/60 text-slate-700 dark:text-slate-355 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-brand-primary dark:focus:ring-accent focus:outline-none transition-all">
+
             <button @click="applyFilters()" :disabled="loading" class="bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-brand-primary/10 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-primary">
                 <svg x-show="loading" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" style="display: none;"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                 <span x-show="!loading">{{ __('global.filter_apply') }}</span>
@@ -206,25 +197,7 @@
                             </label>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-extrabold mb-2 text-slate-500 dark:text-slate-450 uppercase tracking-wider">{{ __('global.filter_category') }}</label>
-                        <select x-model="filters.category_id" class="w-full border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 dark:text-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none transition-all">
-                            <option value="">{{ __('global.filter_all_categories') }}</option>
-                            @foreach($categories as $cat)
-                                @if(is_object($cat) && isset($cat->id))
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-extrabold mb-2 text-slate-500 dark:text-slate-450 uppercase tracking-wider">{{ __('global.filter_min_price') }} - {{ __('global.filter_max_price') }}</label>
-                        <div class="flex gap-2 items-center">
-                            <input type="number" x-model="filters.min_price" placeholder="0" class="flex-1 border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 dark:text-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none transition-all">
-                            <span class="text-slate-400 text-xs">—</span>
-                            <input type="number" x-model="filters.max_price" placeholder="1000" class="flex-1 border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-950/50 dark:text-slate-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-primary focus:outline-none transition-all">
-                        </div>
-                    </div>
+
                     <div class="flex gap-3 pt-2">
                         <button @click="applyFilters()" :disabled="loading" class="flex-1 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white px-4 py-3 rounded-xl text-sm font-extrabold transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/10 active:scale-95 focus:outline-none">
                             <svg x-show="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" style="display: none;"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
