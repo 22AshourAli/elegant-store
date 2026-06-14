@@ -231,31 +231,31 @@
                         </div>
 
                         <!-- Toast Notification -->
-                        <div x-show="_toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
+                        <div x-show="toastItem" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-x-0" x-transition:leave-end="opacity-0 translate-x-8"
                              class="fixed top-4 {{ app()->getLocale() === 'ar' ? 'left-4' : 'right-4' }} z-[100] max-w-sm w-full cursor-pointer" style="display:none">
-                            <a :href="_toastItem.url || '#'" @click="dismissToast(); _toastItem.read_at ? null : markRead(_toastItem.id)"
+                            <a :href="toastItem.url || '#'" @click="dismissToast(); toastItem.read_at ? null : markRead(toastItem.id)"
                                class="flex items-start gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/60 dark:border-gray-700/60 p-4 hover:shadow-xl transition-shadow">
                                 <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                                     :class="_toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : _toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : _toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'">
-                                    <template x-if="_toastItem.type === 'exchange'">
+                                     :class="toastItem.type === 'exchange' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : toastItem.type === 'return' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400' : toastItem.type === 'order' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'">
+                                    <template x-if="toastItem.type === 'exchange'">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                     </template>
-                                    <template x-if="_toastItem.type === 'return'">
+                                    <template x-if="toastItem.type === 'return'">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3"/></svg>
                                     </template>
-                                    <template x-if="_toastItem.type === 'order'">
+                                    <template x-if="toastItem.type === 'order'">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                     </template>
-                                    <template x-if="_toastItem.type === 'info'">
+                                    <template x-if="toastItem.type === 'info'">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/></svg>
                                     </template>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 tracking-wide">@lang('global.notification_new')</p>
-                                    <p class="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5" x-text="_toastItem.title"></p>
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5" x-text="toastItem.title"></p>
                                     <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        <span x-text="_toastItem.time"></span>
+                                        <span x-text="toastItem.time"></span>
                                     </p>
                                 </div>
                                 <button @click.prevent="dismissToast()" class="flex-shrink-0 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus-visible:outline-none" aria-label="Dismiss">
@@ -350,8 +350,8 @@
                 _retrySec: 3,
                 _bc: null,
                 _baseTitle: '',
-                _toastItem: null,
-                _toastTimer: null,
+                toastItem: null,
+                toastTimer: null,
                 _online: true,
 
                 async init() {
@@ -428,14 +428,14 @@
                 },
 
                 showToast(n) {
-                    this._toastItem = n;
-                    if (this._toastTimer) clearTimeout(this._toastTimer);
-                    this._toastTimer = setTimeout(() => { this._toastItem = null; }, 5000);
+                    this.toastItem = n;
+                    if (this.toastTimer) clearTimeout(this.toastTimer);
+                    this.toastTimer = setTimeout(() => { this.toastItem = null; }, 5000);
                 },
 
                 dismissToast() {
-                    this._toastItem = null;
-                    if (this._toastTimer) { clearTimeout(this._toastTimer); this._toastTimer = null; }
+                    this.toastItem = null;
+                    if (this.toastTimer) { clearTimeout(this.toastTimer); this.toastTimer = null; }
                 },
 
                 async markRead(id) {
@@ -465,7 +465,7 @@
 
                 destroy() {
                     if (this._pollTimer) clearTimeout(this._pollTimer);
-                    if (this._toastTimer) clearTimeout(this._toastTimer);
+                    if (this.toastTimer) clearTimeout(this.toastTimer);
                     try { this._bc?.close(); } catch(e) {}
                 }
             }));
