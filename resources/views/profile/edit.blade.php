@@ -1,5 +1,9 @@
 @extends('layouts.store')
 
+@push('head')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+@endpush
+
 @section('content')
 <div class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 py-4 mb-8">
     <div class="container mx-auto px-4">
@@ -58,7 +62,7 @@
                             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         </label>
                     </div>
-                    <input type="file" name="avatar" id="avatar-input" class="hidden" onchange="previewAndSubmitAvatar(event)">
+                    <input type="file" name="avatar" id="avatar-input" class="hidden" accept="image/jpeg,image/png,image/jpg,image/webp" onchange="openCropModal(event)">
 
                     <button type="button" onclick="document.getElementById('avatar-input').click()" class="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
                         {{ __('global.change_photo') }}
@@ -67,11 +71,7 @@
                         <p class="text-red-500 text-xs mt-2">{{ $message }}</p>
                     @enderror
 
-                    <div class="mt-4 w-full">
-                        <label class="block text-xs font-medium mb-1">{{ __('global.avatar_url') }}</label>
-                        <input type="url" name="avatar_url" value="{{ old('avatar_url', str_starts_with($user->avatar ?? '', 'http') ? $user->avatar : '') }}" placeholder="https://example.com/avatar.jpg" onchange="document.getElementById('avatar-form').submit()" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">
-                        <p class="text-xs text-gray-500 mt-1">{{ __('global.avatar_url_info') }}</p>
-                    </div>
+
                 </form>
 
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mt-4">{{ $user->name }}</h3>
@@ -276,13 +276,88 @@
     </div>
 </div>
 
+<div id="crop-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 max-w-lg w-full p-6 shadow-2xl text-center">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">تعديل الصورة</h3>
+        <p class="text-sm text-gray-500 mb-4">اسحب الزوايا لتحديد الجزء الذي تريد ظهوره</p>
+        <div class="mb-4 max-h-80 overflow-hidden rounded-xl bg-gray-100">
+            <img id="crop-image" src="" class="max-w-full">
+        </div>
+        <div class="flex justify-center gap-3">
+            <button type="button" onclick="closeCropModal()" class="border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold py-2.5 px-6 rounded-xl transition-all duration-200">
+                إلغاء
+            </button>
+            <button type="button" onclick="confirmCrop()" class="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all duration-200 shadow-md">
+                تأكيد
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script>
-    function previewAndSubmitAvatar(event) {
+    let cropper = null;
+
+    function openCropModal(event) {
         const file = event.target.files[0];
-        if (file) {
-            document.getElementById('avatar-preview').src = window.URL.createObjectURL(file);
-            document.getElementById('avatar-form').submit();
-        }
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('crop-image').src = e.target.result;
+            document.getElementById('crop-modal').classList.remove('hidden');
+            document.getElementById('crop-modal').classList.add('flex');
+
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(document.getElementById('crop-image'), {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                autoCropArea: 1,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+                minCropBoxWidth: 100,
+                minCropBoxHeight: 100,
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function closeCropModal() {
+        document.getElementById('crop-modal').classList.add('hidden');
+        document.getElementById('crop-modal').classList.remove('flex');
+        document.getElementById('avatar-input').value = '';
+        if (cropper) { cropper.destroy(); cropper = null; }
+    }
+
+    function confirmCrop() {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 400,
+            height: 400,
+            imageSmoothingQuality: 'high',
+        });
+
+        canvas.toBlob(function (blob) {
+            const formData = new FormData();
+            formData.append('_method', 'PATCH');
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('name', document.querySelector('input[name="name"]').value);
+            formData.append('email', document.querySelector('input[name="email"]').value);
+            formData.append('phone', document.querySelector('input[name="phone"]').value);
+            formData.append('avatar', blob, 'avatar.jpg');
+
+            fetch('{{ route("profile.update") }}', {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json' },
+            }).then(function () {
+                window.location.reload();
+            }).catch(function () {
+                window.location.reload();
+            });
+        }, 'image/jpeg', 0.9);
     }
 
     function toggleDeleteModal(show) {

@@ -29,6 +29,17 @@
                         <input type="number" step="0.01" name="sale_price" value="{{ old('sale_price', $product->sale_price) }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
                     </div>
                 </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{{ __('global.admin_discount_start') }}</label>
+                        <input type="datetime-local" name="discount_start" value="{{ old('discount_start', $product->discount_start?->format('Y-m-d\TH:i')) }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{{ __('global.admin_discount_end') }}</label>
+                        <input type="datetime-local" name="discount_end" value="{{ old('discount_end', $product->discount_end?->format('Y-m-d\TH:i')) }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded shadow p-6">
@@ -85,6 +96,20 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+
+                <div class="mt-6 p-4 border-t dark:border-gray-700">
+                    <h4 class="text-md font-bold mb-3">إضافة متغيرات جديدة</h4>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">{{ __('global.admin_colors_available') }}</label>
+                            <input type="text" name="new_colors" placeholder="{{ __('global.admin_colors_placeholder') }}" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">{{ __('global.admin_sizes_available') }}</label>
+                            <input type="text" name="new_sizes" placeholder="S, M, L, XL" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

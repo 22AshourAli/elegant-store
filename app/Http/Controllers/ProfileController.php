@@ -33,12 +33,7 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
 
-        if ($request->filled('avatar_url')) {
-            if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
-                \Storage::disk('public')->delete($user->avatar);
-            }
-            $user->avatar = $request->input('avatar_url');
-        } elseif ($request->hasFile('avatar')) {
+        if ($request->hasFile('avatar')) {
             if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
                 \Storage::disk('public')->delete($user->avatar);
             }

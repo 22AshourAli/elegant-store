@@ -156,6 +156,8 @@ class ProductController extends Controller
             'variants.*.stocks' => 'nullable|array',
             'variants.*.stocks.*' => 'nullable|integer|min:0',
             'variants.*.cost_price' => 'nullable|numeric|min:0',
+            'new_colors' => 'nullable|string',
+            'new_sizes' => 'nullable|string',
         ]);
 
         $validated['featured'] = $request->boolean('featured');
@@ -196,6 +198,50 @@ class ProductController extends Controller
                         $variant->branches()->syncWithoutDetaching([
                             $branchId => ['stock' => max(0, (int)$qty)]
                         ]);
+                    }
+                }
+            }
+        }
+
+        if ($request->filled('new_colors') || $request->filled('new_sizes')) {
+            $existingColors = $product->variants->pluck('color')->unique()->filter()->values();
+            $existingSizes = $product->variants->pluck('size')->unique()->filter()->values();
+
+            $newColors = $request->filled('new_colors')
+                ? array_filter(array_map('trim', explode(',', $request->new_colors)))
+                : [];
+            $newSizes = $request->filled('new_sizes')
+                ? array_filter(array_map('trim', explode(',', $request->new_sizes)))
+                : [];
+
+            if (empty($newColors)) {
+                $newColors = $existingColors->toArray();
+            }
+            if (empty($newSizes)) {
+                $newSizes = $existingSizes->toArray();
+            }
+
+            if (!empty($newColors) && !empty($newSizes)) {
+                $product->update(['has_variants' => true]);
+
+                foreach ($newColors as $color) {
+                    foreach ($newSizes as $size) {
+                        $exists = $product->variants()
+                            ->where('color', $color)
+                            ->where('size', $size)
+                            ->exists();
+
+                        if (!$exists) {
+                            $variant = $product->variants()->create([
+                                'color' => $color,
+                                'size' => $size,
+                                'sku' => Str::slug($product->name) . '-' . $color . '-' . $size,
+                            ]);
+
+                            foreach (Branch::all() as $branch) {
+                                $variant->branches()->attach($branch->id, ['stock' => 0]);
+                            }
+                        }
                     }
                 }
             }

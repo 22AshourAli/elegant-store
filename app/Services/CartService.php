@@ -95,10 +95,8 @@ class CartService
                 'color'        => $variant->color,
                 'size'         => $variant->size,
                 'price'        => $variant->current_price,
-                'image'        => $variant->getFirstMediaUrl('variant_images', 'thumb')
-                    ?: ($variant->getFirstMediaUrl('variant_images')
-                        ?: ($variant->product->getFirstMediaUrl('product_images', 'thumb')
-                            ?: $variant->product->getFirstMediaUrl('product_images'))),
+                'image'        => $variant->imageUrl()
+                    ?: $variant->product->firstImageUrl(),
                 'quantity'     => $item['quantity'],
             ];
         }
