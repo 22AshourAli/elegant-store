@@ -8,4 +8,6 @@ return [
     'status_delivered' => 'تم التوصيل',
     'status_cancelled' => 'ملغي',
     'status_returned' => 'مرتجع',
+    'status_out_for_delivery' => 'خرج للتوصيل',
+    'status_collected' => 'تم التحصيل',
 ];

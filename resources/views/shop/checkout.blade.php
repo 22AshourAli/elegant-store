@@ -49,7 +49,7 @@
         </div>
         @endif
 
-        <form action="{{ route('checkout.store') }}" method="POST">
+        <form action="{{ route('checkout.store') }}" method="POST" @submit="submitting = true">
             @csrf
             <div class="grid lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 
@@ -213,7 +213,10 @@
                                         @if($item['color']){{ $item['color'] }}@endif @if($item['color'] && $item['size'])/@endif @if($item['size']){{ $item['size'] }}@endif
                                     </p>
                                 </div>
-                                <span class="font-extrabold text-sm text-slate-900 dark:text-white flex-shrink-0">{{ (int) round($item['price'] * $item['quantity']) }} {{ __('global.currency') }}</span>
+                                <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                                    <span class="text-xs font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">x{{ $item['quantity'] }}</span>
+                                    <span class="font-extrabold text-sm text-slate-900 dark:text-white">{{ (int) round($item['price'] * $item['quantity']) }} {{ __('global.currency') }}</span>
+                                </div>
                             </div>
                             @endforeach
                         </div>
@@ -250,18 +253,25 @@
                         <div class="px-4 sm:px-6 py-4 space-y-3 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.products_total') }}</span>
-                                <span class="font-bold text-slate-900 dark:text-white" x-text="formatPrice(baseTotal)"></span>
+                                <span class="font-bold text-slate-900 dark:text-white">
+                                    <span x-text="formatPrice(baseTotal)">{{ number_format($baseTotal) . ' ' . __('global.currency') }}</span>
+                                </span>
                             </div>
                             <div class="flex justify-between text-sm" x-show="discount > 0 && appliedCoupon" x-cloak>
                                 <span class="text-emerald-600 dark:text-emerald-400">{{ __('global.coupon_discount_label') }}</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400" x-text="'-' + formatPrice(discount)"></span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400">
+                                    <span x-text="'-' + formatPrice(discount)">-{{ number_format($discount) . ' ' . __('global.currency') }}</span>
+                                </span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.shipping_cost_label') }}</span>
                                 <span>
-                                    <span x-show="shippingCalculating" class="text-slate-400 text-xs italic">{{ __('global.shipping_calculating') }}</span>
-                                    <span x-show="!shippingCalculating && shipping === 0" class="text-emerald-500 font-extrabold text-xs">{{ __('global.free') }}</span>
-                                    <span x-show="!shippingCalculating && shipping > 0" class="font-bold text-slate-900 dark:text-white" x-text="formatPrice(shipping)"></span>
+                                    <span x-show="shippingCalculating" x-cloak class="text-slate-400 text-xs italic">{{ __('global.shipping_calculating') }}</span>
+                                    <span x-show="!shippingCalculating" class="font-bold"
+                                          :class="shipping === 0 ? 'text-emerald-500 text-xs' : 'text-slate-900 dark:text-white'"
+                                          x-text="shipping === 0 ? '{{ __('global.free') }}' : formatPrice(shipping)">
+                                        {{ $shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free') }}
+                                    </span>
                                 </span>
                             </div>
                         </div>
@@ -269,7 +279,9 @@
                         <div class="px-4 sm:px-6 py-4 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/30 dark:to-purple-950/30 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex justify-between items-baseline">
                                 <span class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">{{ __('global.final_total') }}</span>
-                                <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400" x-text="formatPrice(finalTotal)"></span>
+                                <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                                    <span x-text="formatPrice(finalTotal)">{{ number_format($finalTotal) . ' ' . __('global.currency') }}</span>
+                                </span>
                             </div>
                         </div>
 
@@ -278,8 +290,8 @@
                                 class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-extrabold py-3.5 sm:py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100">
                                 <span x-show="!submitting">{{ __('global.confirm_order') }}</span>
                                 <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                <span x-show="submitting">{{ __('global.processing') }}...</span>
-                                <svg x-show="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                                <span x-show="submitting" x-cloak>{{ __('global.processing') }}...</span>
+                                <svg x-show="submitting" x-cloak class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
                             </button>
                             <p class="text-xs text-center text-slate-400 dark:text-slate-500 mt-3">{{ __('global.checkout_secure_notice') }}</p>
                         </div>

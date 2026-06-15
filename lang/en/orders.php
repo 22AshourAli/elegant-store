@@ -8,4 +8,6 @@ return [
     'status_delivered' => 'Delivered',
     'status_cancelled' => 'Cancelled',
     'status_returned' => 'Returned',
+    'status_out_for_delivery' => 'Out for Delivery',
+    'status_collected' => 'Collected',
 ];
