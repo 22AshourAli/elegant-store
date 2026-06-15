@@ -107,7 +107,7 @@ var CHECKOUT_DATA = {
                         <div class="grid sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
-                                <select name="governorate_id" id="governorate_id" required x-model="governorateId" @change="onGovernorateChange"
+                                <select name="governorate_id" id="governorate_id" required x-model="governorateId"
                                     class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('governorate_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
@@ -127,7 +127,7 @@ var CHECKOUT_DATA = {
 
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
-                                <select name="city_id" id="city_id" required x-model="cityId" @change="onCityChange"
+                                <select name="city_id" id="city_id" required x-model="cityId"
                                     class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('city_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_city') }}</option>
@@ -336,7 +336,6 @@ function toastHandler() {
     };
 }
 
-/* ===== Vanilla JS (works without Alpine) ===== */
 document.addEventListener('DOMContentLoaded', function () {
     var govSelect = document.getElementById('governorate_id');
     var citySelect = document.getElementById('city_id');
@@ -366,16 +365,19 @@ document.addEventListener('DOMContentLoaded', function () {
             var total = (D.baseTotal - D.discount) + cost;
             ft.textContent = fmtPrice(total);
         }
+        D._shipping = cost;
     }
 
     function fetchShipping(govId, cityId) {
         var sc = document.querySelector('.shipping-calculating');
         if (sc) sc.style.display = 'inline';
-        if (!govId || !cityId) { updateShippingDisplay(0); return; }
+        if (!govId) { updateShippingDisplay(0); return; }
+        var body = { governorate_id: govId, cart_total: D.baseTotal - D.discount };
+        if (cityId) body.city_id = cityId;
         fetch(D.shippingApiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': D.csrfToken },
-            body: JSON.stringify({ governorate_id: govId, city_id: cityId, cart_total: D.baseTotal - D.discount })
+            body: JSON.stringify(body)
         }).then(function(r) { return r.json(); }).then(function(data) {
             updateShippingDisplay(data.final_cost || 0);
         }).catch(function() { updateShippingDisplay(0); });
@@ -389,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
             opt.style.display = show ? '' : 'none';
             opt.disabled = !show;
         });
-        /* Restore old city if matches current governorate */
         if (prevCity) {
             var match = citySelect.querySelector('option[value="' + prevCity + '"][data-gov="' + govId + '"]');
             if (match) { citySelect.value = prevCity; }
@@ -397,41 +398,41 @@ document.addEventListener('DOMContentLoaded', function () {
         } else { citySelect.value = ''; }
     }
 
-    function autoFillAddress() {
-        if (!govSelect || !citySelect || !addrInput) return;
-        var govName = govSelect.options[govSelect.selectedIndex]?.text || '';
-        var cityName = citySelect.options[citySelect.selectedIndex]?.text || '';
-        if (govName && cityName && addrInput.value.trim() === '') {
-            addrInput.value = govName + ' - ' + cityName + '، ';
-        }
+    if (govSelect) {
+        govSelect.addEventListener('change', function () {
+            var g = govSelect.value;
+            filterCities(g);
+            if (addrInput) {
+                addrInput.value = g ? (govSelect.options[govSelect.selectedIndex]?.text || '') + ' - ' : '';
+            }
+            fetchShipping(g, citySelect.value);
+        });
     }
 
-    function onGovChange() {
-        var g = this ? this.value : govSelect.value;
-        filterCities(g);
-        autoFillAddress();
-        fetchShipping(g, citySelect.value);
+    if (citySelect) {
+        citySelect.addEventListener('change', function () {
+            if (addrInput && govSelect && citySelect) {
+                var govName = govSelect.options[govSelect.selectedIndex]?.text || '';
+                var cityName = citySelect.options[citySelect.selectedIndex]?.text || '';
+                if (govName && cityName) {
+                    addrInput.value = govName + ' - ' + cityName + '، ';
+                }
+            }
+            fetchShipping(govSelect.value, citySelect.value);
+        });
     }
 
-    function onCityChange() {
-        autoFillAddress();
-        fetchShipping(govSelect.value, citySelect.value);
-    }
-
-    if (govSelect) { govSelect.addEventListener('change', onGovChange); }
-    if (citySelect) { citySelect.addEventListener('change', onCityChange); }
-
-    /* Init: filter + restore old city + calculate shipping */
     if (govSelect && govSelect.value) {
         filterCities(govSelect.value);
-        /* If old city exists, trigger shipping calc */
         if (D.oldCityId && citySelect) {
             citySelect.value = D.oldCityId;
-            onCityChange();
+            fetchShipping(govSelect.value, citySelect.value);
+        } else if (addrInput && addrInput.value.trim() === '') {
+            var gn = govSelect.options[govSelect.selectedIndex]?.text || '';
+            addrInput.value = gn + ' - ';
         }
     }
 
-    /* ===== Button submit handler ===== */
     var form = document.querySelector('.checkout-form');
     if (form) {
         form.addEventListener('submit', function () {
@@ -450,12 +451,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-/* ===== Alpine checkout (enhance only — all values render from Blade) ===== */
 document.addEventListener('alpine:init', () => {
     Alpine.data('checkoutPage', (initial) => ({
         baseTotal: initial.baseTotal,
         discount: initial.discount,
-        shipping: initial.shipping,
         finalTotal: initial.finalTotal,
         appliedCoupon: initial.appliedCoupon,
         couponCode: '',
@@ -464,12 +463,8 @@ document.addEventListener('alpine:init', () => {
         submitting: false,
         governorates: initial.governorates || [],
         governorateId: '{{ old('governorate_id') }}',
-        governorateName: '',
         cityId: '{{ old('city_id') }}',
-        cityName: '',
-        shippingCalculating: false,
         shippingAddress: '{{ old('shipping_address') }}',
-        addressAutoFilled: false,
 
         get appliedCouponText() {
             if (!this.appliedCoupon) return '';
@@ -482,7 +477,14 @@ document.addEventListener('alpine:init', () => {
             return value.toLocaleString('ar-EG') + ' {{ __('global.currency') }}';
         },
 
-        /* Update visible DOM with current values */
+        get shipping() {
+            return typeof CHECKOUT_DATA !== 'undefined' ? (CHECKOUT_DATA._shipping ?? CHECKOUT_DATA.shipping) : 0;
+        },
+
+        set shipping(v) {
+            if (typeof CHECKOUT_DATA !== 'undefined') CHECKOUT_DATA._shipping = v;
+        },
+
         updateDisplay() {
             var pt = document.querySelector('.product-total-display');
             if (pt) pt.textContent = this.formatPrice(this.baseTotal);
@@ -498,67 +500,11 @@ document.addEventListener('alpine:init', () => {
                 }
             }
 
-            var sd = document.querySelector('.shipping-display');
-            if (sd) {
-                sd.textContent = this.shipping === 0 ? '{{ __('global.free') }}' : this.formatPrice(this.shipping);
-                sd.className = 'font-bold shipping-display';
-                sd.classList.add(this.shipping === 0 ? 'text-emerald-500' : 'text-slate-900', 'dark:text-white');
-                if (this.shipping === 0) sd.classList.add('text-xs');
-            }
-
             var ft = document.querySelector('.final-total-display');
-            if (ft) ft.textContent = this.formatPrice(this.finalTotal);
-        },
-
-        init() {
-            if (this.governorateId && this.cityId) {
-                this.onCityChange();
+            if (ft) {
+                var ship = this.shipping;
+                ft.textContent = this.formatPrice((this.baseTotal - this.discount) + ship);
             }
-        },
-
-        onGovernorateChange() {
-            this.cityId = '';
-            this.cityName = '';
-            this.shipping = 0;
-            this.finalTotal = this.baseTotal - this.discount;
-            this.governorateName = '';
-            if (!this.governorateId) return;
-            var gov = this.governorates.find(function(g) { return g.id == this.governorateId; }.bind(this));
-            this.governorateName = gov ? gov.name : '';
-            this.updateDisplay();
-        },
-
-        async onCityChange() {
-            if (!this.governorateId || !this.cityId) return;
-            var sel = document.querySelector('#city_id option:checked');
-            this.cityName = sel ? sel.textContent : '';
-            if (!this.addressAutoFilled && this.shippingAddress.trim() === '' && this.governorateName && this.cityName) {
-                this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
-                this.addressAutoFilled = true;
-                this.$nextTick(function () {
-                    var ta = document.querySelector('[name=shipping_address]');
-                    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
-                });
-            }
-            this.shippingCalculating = true;
-            try {
-                var res = await fetch('{{ route('api.shipping.calculate') }}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({
-                        governorate_id: this.governorateId,
-                        city_id: this.cityId,
-                        cart_total: this.baseTotal - this.discount,
-                    })
-                });
-                if (res.ok) {
-                    var data = await res.json();
-                    this.shipping = data.final_cost || 0;
-                    this.finalTotal = (this.baseTotal - this.discount) + this.shipping;
-                    this.updateDisplay();
-                }
-            } catch(e) { console.error('Shipping calc error:', e); }
-            this.shippingCalculating = false;
         },
 
         applyCoupon(code) {
@@ -575,7 +521,10 @@ document.addEventListener('alpine:init', () => {
                 this.appliedCoupon = data.coupon;
                 this.baseTotal = Number(data.baseTotal);
                 this.discount = Number(data.discount);
-                this.finalTotal = Number(data.total) + this.shipping;
+                if (typeof CHECKOUT_DATA !== 'undefined') {
+                    CHECKOUT_DATA.baseTotal = Number(data.baseTotal);
+                    CHECKOUT_DATA.discount = Number(data.discount);
+                }
                 this.couponCode = '';
                 this.couponLoading = false;
                 this.updateDisplay();
@@ -598,7 +547,10 @@ document.addEventListener('alpine:init', () => {
                 this.appliedCoupon = null;
                 this.baseTotal = Number(data.baseTotal);
                 this.discount = Number(data.discount);
-                this.finalTotal = Number(data.total) + this.shipping;
+                if (typeof CHECKOUT_DATA !== 'undefined') {
+                    CHECKOUT_DATA.baseTotal = Number(data.baseTotal);
+                    CHECKOUT_DATA.discount = Number(data.discount);
+                }
                 this.couponLoading = false;
                 this.updateDisplay();
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));

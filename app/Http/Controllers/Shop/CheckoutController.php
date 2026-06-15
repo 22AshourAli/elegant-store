@@ -28,9 +28,14 @@ class CheckoutController extends Controller
         $total = $cart->total();
         $appliedCoupon = $cart->getAppliedCoupon();
 
-        // Determine shipping cost for display
-        $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
-        $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
+        $oldGovId = old('governorate_id');
+        $oldCityId = old('city_id');
+        if ($oldGovId) {
+            $result = $shippingService->calculateCost((int) $oldGovId, $oldCityId ? (int) $oldCityId : null, $total);
+            $shipping = $result['final_cost'];
+        } else {
+            $shipping = 0;
+        }
         $finalTotal = $total + $shipping;
 
         $hasActiveCoupons = \App\Models\Coupon::where('is_active', true)
@@ -92,11 +97,9 @@ class CheckoutController extends Controller
             $data = $request->all();
             $data['branch_id'] = 1;
 
-            // compute subtotal, discount, and shipping from cart service
-            $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
             $data['subtotal'] = $cart->baseTotal();
             $data['discount'] = $cart->getDiscount();
-            $data['shipping_cost'] = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
+            $data['shipping_cost'] = 0;
 
             $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
 
