@@ -25,7 +25,7 @@
         </thead>
         <tbody>
             @forelse($orders as $order)
-            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onclick="window.location='{{ route('admin.purchase-orders.show', $order) }}'">
                 <td class="p-3 font-mono text-xs">{{ $order->po_number }}</td>
                 <td class="p-3">{{ $order->supplier->name ?? '-' }}</td>
                 <td class="p-3">{{ $order->branch->name ?? '-' }}</td>
@@ -44,7 +44,7 @@
                 </td>
                 <td class="p-3 text-xs">{{ $order->created_at->format('Y-m-d') }}</td>
                 <td class="p-3 text-center">
-                    <a href="{{ route('admin.purchase-orders.show', $order) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1">{{ __('global.admin_view') }}</a>
+                    <a href="{{ route('admin.purchase-orders.show', $order) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1" onclick="event.stopPropagation()">{{ __('global.admin_view') }}</a>
                 </td>
             </tr>
             @empty

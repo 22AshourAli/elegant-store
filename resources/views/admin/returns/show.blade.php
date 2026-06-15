@@ -42,17 +42,18 @@
                                 $orderItem = $return->order->items->find($exchangeItem['order_item_id']);
                                 $newVariant = \App\Models\ProductVariant::with('product')->find($exchangeItem['new_variant_id']);
                             @endphp
-                            <tr class="border-t dark:border-gray-700">
-                                <td class="p-2">
+                            <tr class="border-t dark:border-gray-700 items-start">
+                                <td class="p-2 break-words whitespace-normal">
                                     {{ $orderItem->product_name ?? '#' . $exchangeItem['order_item_id'] }}
-                                    @if($orderItem && $orderItem->color) ({{ $orderItem->color }}) @endif
+                                    @if($orderItem && $orderItem->color) <span class="whitespace-nowrap">({{ $orderItem->color }})</span> @endif
+                                    @if($orderItem && $orderItem->size) <span class="whitespace-nowrap">| {{ $orderItem->size }}</span> @endif
                                 </td>
-                                <td class="p-2">{{ $orderItem->quantity ?? '-' }}</td>
-                                <td class="p-2">
+                                <td class="p-2 whitespace-nowrap">{{ $orderItem->quantity ?? '-' }}</td>
+                                <td class="p-2 break-words whitespace-normal">
                                     @if($newVariant)
                                         {{ $newVariant->product->name ?? '' }} #{{ $newVariant->id }}
-                                        @if($newVariant->color) ({{ $newVariant->color }}) @endif
-                                        @if($newVariant->size) | {{ $newVariant->size }} @endif
+                                        @if($newVariant->color) <span class="whitespace-nowrap">({{ $newVariant->color }})</span> @endif
+                                        @if($newVariant->size) <span class="whitespace-nowrap">| {{ $newVariant->size }}</span> @endif
                                     @else
                                         <span class="text-red-500">محذوف</span>
                                     @endif
@@ -72,10 +73,10 @@
                 </thead>
                 <tbody>
                     @foreach($return->order->items as $item)
-                    <tr class="border-t dark:border-gray-700">
-                        <td class="p-2">{{ $item->product_name }} @if($item->color) ({{ $item->color }}) @endif</td>
-                        <td class="p-2">{{ $item->quantity }}</td>
-                        <td class="p-2">{{ (int) round($item->total) }} ج.م</td>
+                    <tr class="border-t dark:border-gray-700 items-start">
+                        <td class="p-2 break-words whitespace-normal">{{ $item->product_name }} @if($item->color) <span class="whitespace-nowrap">({{ $item->color }})</span> @endif @if($item->size) <span class="whitespace-nowrap">| {{ $item->size }}</span> @endif</td>
+                        <td class="p-2 whitespace-nowrap">{{ $item->quantity }}</td>
+                        <td class="p-2 whitespace-nowrap">{{ (int) round($item->total) }} ج.م</td>
                     </tr>
                     @endforeach
                 </tbody>

@@ -16,7 +16,7 @@
         </thead>
         <tbody>
             @forelse($returns as $return)
-                <tr class="border-t dark:border-gray-700">
+                <tr class="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onclick="window.location='{{ route('admin.returns.show', $return) }}'">
                     <td class="p-3">{{ $return->id }}</td>
                     <td class="p-3">{{ $return->user->name }}</td>
                     <td class="p-3">#{{ $return->order_id }}</td>
@@ -31,7 +31,7 @@
                     </td>
                     <td class="p-3 text-xs text-gray-500">{{ $return->created_at->format('Y-m-d') }}</td>
                     <td class="p-3">
-                        <a href="{{ route('admin.returns.show', $return) }}" class="text-indigo-600 hover:underline text-xs font-bold">عرض</a>
+                        <a href="{{ route('admin.returns.show', $return) }}" class="text-indigo-600 hover:underline text-xs font-bold" onclick="event.stopPropagation()">عرض</a>
                     </td>
                 </tr>
             @empty

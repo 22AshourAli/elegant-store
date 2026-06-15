@@ -24,7 +24,7 @@
         </thead>
         <tbody>
             @forelse($transfers as $transfer)
-            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onclick="window.location='{{ route('admin.stock-transfers.show', $transfer) }}'">
                 <td class="p-3 font-mono text-xs">{{ $transfer->reference_number }}</td>
                 <td class="p-3">{{ $transfer->fromBranch->name }}</td>
                 <td class="p-3">{{ $transfer->toBranch->name }}</td>
@@ -40,7 +40,7 @@
                 </td>
                 <td class="p-3 text-xs">{{ $transfer->created_at->format('Y-m-d') }}</td>
                 <td class="p-3 text-center">
-                    <a href="{{ route('admin.stock-transfers.show', $transfer) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1">{{ __('global.admin_view') }}</a>
+                    <a href="{{ route('admin.stock-transfers.show', $transfer) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1" onclick="event.stopPropagation()">{{ __('global.admin_view') }}</a>
                 </td>
             </tr>
             @empty
