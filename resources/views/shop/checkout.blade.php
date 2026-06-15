@@ -7,7 +7,6 @@
     shipping: {{ (int) round($shipping) }},
     finalTotal: {{ (int) round($finalTotal) }},
     appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null),
-    governorates: @json($governorates),
 })">
     <div class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
         <!-- Header -->
@@ -86,7 +85,7 @@
                             <!-- Governorate -->
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
-                                <select name="governorate_id" required x-model="governorateId" @change="onGovernorateChange"
+                                <select name="governorate_id" id="governorate_select" required x-model="governorateId" @change="onGovernorateChange"
                                     class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center]"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
@@ -101,13 +100,15 @@
                             <!-- City -->
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
-                                <select name="city_id" required x-model="cityId" @change="onCityChange" :disabled="!governorateId"
+                                <select name="city_id" id="city_select" required x-model="cityId" @change="onCityChange" {{ old('governorate_id') ? '' : 'disabled' }}
                                     class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_city') }}</option>
-                                    <template x-for="city in cities" :key="city.id">
-                                        <option x-bind:value="city.id" x-text="city.name"></option>
-                                    </template>
+                                    @foreach($governorates as $gov)
+                                    @foreach($gov['cities'] ?? [] as $city)
+                                    <option value="{{ $city['id'] }}" data-gov="{{ $gov['id'] }}" style="display:none" {{ old('city_id') == $city['id'] ? 'selected' : '' }}>{{ $city['name'] }}</option>
+                                    @endforeach
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -293,12 +294,10 @@
             couponError: '',
             couponLoading: false,
             submitting: false,
-            governorates: initial.governorates || [],
             governorateId: '{{ old('governorate_id') }}',
             governorateName: '',
             cityId: '{{ old('city_id') }}',
             cityName: '',
-            cities: [],
             shippingCalculating: false,
             shippingAddress: '{{ old('shipping_address') }}',
             addressAutoFilled: false,
@@ -316,11 +315,19 @@
 
             init() {
                 if (this.governorateId) {
-                    this.onGovernorateChange();
+                    this.showCities(this.governorateId);
                     if (this.cityId) {
                         this.onCityChange();
                     }
                 }
+            },
+
+            showCities(govId) {
+                document.querySelectorAll('#city_select option[data-gov]').forEach(opt => {
+                    opt.style.display = opt.dataset.gov == govId ? '' : 'none';
+                    opt.disabled = opt.dataset.gov != govId;
+                });
+                document.querySelector('#city_select').disabled = false;
             },
 
             onGovernorateChange() {
@@ -329,20 +336,20 @@
                 this.shipping = 0;
                 this.finalTotal = this.baseTotal - this.discount;
                 this.governorateName = '';
-                if (!this.governorateId) return;
-                const gov = this.governorates.find(g => g.id == this.governorateId);
-                if (gov) {
-                    this.governorateName = gov.name;
-                    this.cities = gov.cities || [];
-                } else {
-                    this.cities = [];
+                if (!this.governorateId) {
+                    document.querySelectorAll('#city_select option[data-gov]').forEach(opt => { opt.style.display = 'none'; });
+                    document.querySelector('#city_select').disabled = true;
+                    return;
                 }
+                const govSel = document.querySelector('#governorate_select option:checked');
+                this.governorateName = govSel && govSel.value ? govSel.textContent : '';
+                this.showCities(this.governorateId);
             },
 
             async onCityChange() {
                 if (!this.governorateId || !this.cityId) return;
-                const city = this.cities.find(c => c.id == this.cityId);
-                this.cityName = city ? city.name : '';
+                const sel = document.querySelector('#city_select option:checked');
+                this.cityName = sel ? sel.textContent : '';
                 if (!this.addressAutoFilled && this.shippingAddress.trim() === '') {
                     this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
                     this.addressAutoFilled = true;

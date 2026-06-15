@@ -19,6 +19,11 @@
             <label class="block text-sm font-medium mb-1">{{ __('global.city') }}</label>
             <select name="city_id" id="city_id" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white px-3 py-2 border">
                 <option value="">{{ __('global.all_cities') }}</option>
+                @foreach($governorates as $gov)
+                @foreach($gov->cities as $city)
+                <option value="{{ $city->id }}" data-gov="{{ $gov->id }}" style="display:none">{{ $city->name }}</option>
+                @endforeach
+                @endforeach
             </select>
             @error('city_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
         </div>
@@ -46,19 +51,9 @@
 
 <script>
 function loadCities(governorateId) {
-    var citySelect = document.getElementById('city_id');
-    citySelect.innerHTML = '<option value="">@lang('global.all_cities')</option>';
-    if (!governorateId) return;
-    fetch('{{ route('admin.shipping-rates.get-cities') }}?governorate_id=' + governorateId)
-        .then(function(r) { return r.json(); })
-        .then(function(cities) {
-            cities.forEach(function(c) {
-                var opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = c.name;
-                citySelect.appendChild(opt);
-            });
-        });
+    document.querySelectorAll('#city_id option[data-gov]').forEach(function(opt) {
+        opt.style.display = opt.getAttribute('data-gov') == governorateId ? '' : 'none';
+    });
 }
 
 @if(old('governorate_id'))
