@@ -49,7 +49,7 @@
         </div>
         @endif
 
-        <form action="{{ route('checkout.store') }}" method="POST" @submit="submitting = true">
+        <form action="{{ route('checkout.store') }}" method="POST" class="checkout-form">
             @csrf
             <div class="grid lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 
@@ -253,45 +253,32 @@
                         <div class="px-4 sm:px-6 py-4 space-y-3 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.products_total') }}</span>
-                                <span class="font-bold text-slate-900 dark:text-white">
-                                    <span x-text="formatPrice(baseTotal)">{{ number_format($baseTotal) . ' ' . __('global.currency') }}</span>
-                                </span>
+                                <span class="font-bold text-slate-900 dark:text-white product-total-display">{{ number_format($baseTotal) . ' ' . __('global.currency') }}</span>
                             </div>
-                            <div class="flex justify-between text-sm" x-show="discount > 0 && appliedCoupon" x-cloak>
+                            <div class="flex justify-between text-sm discount-row" id="discount-row" @if(!($discount > 0 && $appliedCoupon)) style="display:none" @endif>
                                 <span class="text-emerald-600 dark:text-emerald-400">{{ __('global.coupon_discount_label') }}</span>
-                                <span class="font-bold text-emerald-600 dark:text-emerald-400">
-                                    <span x-text="'-' + formatPrice(discount)">-{{ number_format($discount) . ' ' . __('global.currency') }}</span>
-                                </span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400 discount-display">-{{ number_format($discount) . ' ' . __('global.currency') }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.shipping_cost_label') }}</span>
-                                <span>
-                                    <span x-show="shippingCalculating" x-cloak class="text-slate-400 text-xs italic">{{ __('global.shipping_calculating') }}</span>
-                                    <span x-show="!shippingCalculating" class="font-bold"
-                                          :class="shipping === 0 ? 'text-emerald-500 text-xs' : 'text-slate-900 dark:text-white'"
-                                          x-text="shipping === 0 ? '{{ __('global.free') }}' : formatPrice(shipping)">
-                                        {{ $shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free') }}
-                                    </span>
-                                </span>
+                                <span class="font-bold shipping-display {{ $shipping > 0 ? 'text-slate-900 dark:text-white' : 'text-emerald-500 text-xs' }}">{{ $shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free') }}</span>
                             </div>
                         </div>
 
                         <div class="px-4 sm:px-6 py-4 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/30 dark:to-purple-950/30 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex justify-between items-baseline">
                                 <span class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">{{ __('global.final_total') }}</span>
-                                <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">
-                                    <span x-text="formatPrice(finalTotal)">{{ number_format($finalTotal) . ' ' . __('global.currency') }}</span>
-                                </span>
+                                <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400 final-total-display">{{ number_format($finalTotal) . ' ' . __('global.currency') }}</span>
                             </div>
                         </div>
 
                         <div class="p-4 sm:p-6">
-                            <button type="submit" :disabled="submitting || shippingCalculating"
+                            <button type="submit"
                                 class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-extrabold py-3.5 sm:py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100">
-                                <span x-show="!submitting">{{ __('global.confirm_order') }}</span>
-                                <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                <span x-show="submitting" x-cloak>{{ __('global.processing') }}...</span>
-                                <svg x-show="submitting" x-cloak class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                                <span class="btn-text">{{ __('global.confirm_order') }}</span>
+                                <svg class="btn-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span class="btn-processing" style="display:none">{{ __('global.processing') }}...</span>
+                                <svg class="btn-spinner" style="display:none" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
                             </button>
                             <p class="text-xs text-center text-slate-400 dark:text-slate-500 mt-3">{{ __('global.checkout_secure_notice') }}</p>
                         </div>
@@ -331,11 +318,11 @@ function toastHandler() {
     };
 }
 
-/* ===== City filter (vanilla JS - no Alpine conflict) ===== */
+/* ===== Vanilla JS helpers (work without Alpine) ===== */
 document.addEventListener('DOMContentLoaded', function () {
     var govSelect = document.getElementById('governorate_id');
     var citySelect = document.getElementById('city_id');
-    if (!govSelect || !citySelect) return;
+    var addrInput = document.querySelector('[name=shipping_address]');
 
     function filterCities(govId) {
         citySelect.value = '';
@@ -347,11 +334,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    govSelect.addEventListener('change', function () { filterCities(this.value); });
-    if (govSelect.value) { filterCities(govSelect.value); }
+    function autoFillAddress() {
+        if (!govSelect || !citySelect || !addrInput) return;
+        var govName = govSelect.options[govSelect.selectedIndex]?.text || '';
+        var cityName = citySelect.options[citySelect.selectedIndex]?.text || '';
+        if (govName && cityName && addrInput.value.trim() === '') {
+            addrInput.value = govName + ' - ' + cityName + '، ';
+        }
+    }
+
+    if (govSelect) {
+        govSelect.addEventListener('change', function () {
+            filterCities(this.value);
+            autoFillAddress();
+        });
+    }
+    if (citySelect) {
+        citySelect.addEventListener('change', autoFillAddress);
+    }
+
+    if (govSelect && govSelect.value) { filterCities(govSelect.value); }
+
+    /* ===== Button submit handler (no Alpine) ===== */
+    var form = document.querySelector('.checkout-form');
+    if (form) {
+        form.addEventListener('submit', function () {
+            var btn = this.querySelector('button[type="submit"]');
+            if (!btn) return;
+            var txt = btn.querySelector('.btn-text');
+            var ico = btn.querySelector('.btn-icon');
+            var pro = btn.querySelector('.btn-processing');
+            var spi = btn.querySelector('.btn-spinner');
+            if (txt) txt.style.display = 'none';
+            if (ico) ico.style.display = 'none';
+            if (pro) pro.style.display = 'inline';
+            if (spi) spi.style.display = 'inline';
+            btn.disabled = true;
+        });
+    }
 });
 
-/* ===== Alpine checkout ===== */
+/* ===== Alpine checkout (enhance only — all values render from Blade) ===== */
 document.addEventListener('alpine:init', () => {
     Alpine.data('checkoutPage', (initial) => ({
         baseTotal: initial.baseTotal,
@@ -383,6 +406,34 @@ document.addEventListener('alpine:init', () => {
             return value.toLocaleString('ar-EG') + ' {{ __('global.currency') }}';
         },
 
+        /* Update visible DOM with current values */
+        updateDisplay() {
+            var pt = document.querySelector('.product-total-display');
+            if (pt) pt.textContent = this.formatPrice(this.baseTotal);
+
+            var dr = document.getElementById('discount-row');
+            var dd = document.querySelector('.discount-display');
+            if (dr && dd) {
+                if (this.discount > 0 && this.appliedCoupon) {
+                    dr.style.display = '';
+                    dd.textContent = '-' + this.formatPrice(this.discount);
+                } else {
+                    dr.style.display = 'none';
+                }
+            }
+
+            var sd = document.querySelector('.shipping-display');
+            if (sd) {
+                sd.textContent = this.shipping === 0 ? '{{ __('global.free') }}' : this.formatPrice(this.shipping);
+                sd.className = 'font-bold shipping-display';
+                sd.classList.add(this.shipping === 0 ? 'text-emerald-500' : 'text-slate-900', 'dark:text-white');
+                if (this.shipping === 0) sd.classList.add('text-xs');
+            }
+
+            var ft = document.querySelector('.final-total-display');
+            if (ft) ft.textContent = this.formatPrice(this.finalTotal);
+        },
+
         init() {
             if (this.governorateId && this.cityId) {
                 this.onCityChange();
@@ -398,13 +449,13 @@ document.addEventListener('alpine:init', () => {
             if (!this.governorateId) return;
             var gov = this.governorates.find(function(g) { return g.id == this.governorateId; }.bind(this));
             this.governorateName = gov ? gov.name : '';
+            this.updateDisplay();
         },
 
         async onCityChange() {
             if (!this.governorateId || !this.cityId) return;
             var sel = document.querySelector('#city_id option:checked');
             this.cityName = sel ? sel.textContent : '';
-            /* Auto-fill address */
             if (!this.addressAutoFilled && this.shippingAddress.trim() === '' && this.governorateName && this.cityName) {
                 this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
                 this.addressAutoFilled = true;
@@ -428,6 +479,7 @@ document.addEventListener('alpine:init', () => {
                     var data = await res.json();
                     this.shipping = data.final_cost || 0;
                     this.finalTotal = (this.baseTotal - this.discount) + this.shipping;
+                    this.updateDisplay();
                 }
             } catch(e) { console.error('Shipping calc error:', e); }
             this.shippingCalculating = false;
@@ -450,6 +502,7 @@ document.addEventListener('alpine:init', () => {
                 this.finalTotal = Number(data.total) + this.shipping;
                 this.couponCode = '';
                 this.couponLoading = false;
+                this.updateDisplay();
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
             }.bind(this)).catch(function(err) {
                 this.couponError = err.message;
@@ -471,6 +524,7 @@ document.addEventListener('alpine:init', () => {
                 this.discount = Number(data.discount);
                 this.finalTotal = Number(data.total) + this.shipping;
                 this.couponLoading = false;
+                this.updateDisplay();
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
             }.bind(this)).catch(function() { this.couponLoading = false; }.bind(this));
         }
