@@ -91,7 +91,7 @@
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
                                     @forelse($governorates as $gov)
-                                    <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>{{ $gov->name }}</option>
+                                    <option value="{{ $gov['id'] }}" {{ old('governorate_id') == $gov['id'] ? 'selected' : '' }}>{{ $gov['name'] }}</option>
                                     @empty
                                     <option value="" disabled>⚠️ {{ __('global.no_governorates') }}</option>
                                     @endforelse
@@ -100,19 +100,15 @@
 
                             <!-- City -->
                             <div>
-                                <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.admin_cities') }} <span class="text-red-500">*</span></label>
+                                <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
                                 <select name="city_id" required x-model="cityId" @change="onCityChange" :disabled="!governorateId"
                                     class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
-                                    <option value="" x-text="citiesLoading ? '{{ __('global.loading_cities') }}' : '{{ __('global.select_city') }}'"></option>
+                                    <option value="">{{ __('global.select_city') }}</option>
                                     <template x-for="city in cities" :key="city.id">
                                         <option x-bind:value="city.id" x-text="city.name"></option>
                                     </template>
                                 </select>
-                                <p x-show="citiesLoading" class="mt-1 text-xs text-slate-400 flex items-center gap-1">
-                                    <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                                    {{ __('global.loading_cities') }}
-                                </p>
                             </div>
                         </div>
 
@@ -303,7 +299,6 @@
             cityId: '{{ old('city_id') }}',
             cityName: '',
             cities: [],
-            citiesLoading: false,
             shippingCalculating: false,
             shippingAddress: '{{ old('shipping_address') }}',
             addressAutoFilled: false,
@@ -319,33 +314,29 @@
                 return value.toLocaleString('ar-EG') + ' {{ __('global.currency') }}';
             },
 
-            async init() {
+            init() {
                 if (this.governorateId) {
-                    await this.onGovernorateChange();
+                    this.onGovernorateChange();
                     if (this.cityId) {
-                        await this.onCityChange();
+                        this.onCityChange();
                     }
                 }
             },
 
-            async onGovernorateChange() {
+            onGovernorateChange() {
                 this.cityId = '';
                 this.cityName = '';
-                this.cities = [];
                 this.shipping = 0;
                 this.finalTotal = this.baseTotal - this.discount;
                 this.governorateName = '';
                 if (!this.governorateId) return;
                 const gov = this.governorates.find(g => g.id == this.governorateId);
-                this.governorateName = gov ? gov.name : '';
-                this.citiesLoading = true;
-                try {
-                    const res = await fetch('{{ route('api.shipping.cities') }}?governorate_id=' + this.governorateId);
-                    if (res.ok) {
-                        this.cities = await res.json();
-                    }
-                } catch(e) { console.error('Cities fetch error:', e); }
-                this.citiesLoading = false;
+                if (gov) {
+                    this.governorateName = gov.name;
+                    this.cities = gov.cities || [];
+                } else {
+                    this.cities = [];
+                }
             },
 
             async onCityChange() {

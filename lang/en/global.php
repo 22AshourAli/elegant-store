@@ -732,7 +732,8 @@ return [
     'address_type_home' => 'Home',
     'address_type_work' => 'Work',
     'select_governorate' => '-- Select Governorate --',
-    'select_city' => '-- Select City --',
+    'city' => 'City',
+    'select_city' => 'Select City',
     'loading_cities' => 'Loading cities...',
     'shipping_calculating' => 'Calculating shipping...',
 

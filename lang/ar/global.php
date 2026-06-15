@@ -739,7 +739,8 @@ return [
     'address_type_home' => 'منزل',
     'address_type_work' => 'عمل',
     'select_governorate' => '-- اختر المحافظة --',
-    'select_city' => '-- اختر المدينة --',
+    'city' => 'المدينة',
+    'select_city' => 'اختر المدينة',
     'loading_cities' => 'جاري تحميل المدن...',
     'shipping_calculating' => 'جاري حساب الشحن...',
 

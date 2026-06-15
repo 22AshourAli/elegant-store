@@ -38,7 +38,7 @@ class CheckoutController extends Controller
             ->where(function($q) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()); })
             ->exists();
 
-        $governorates = $shippingService->getActiveGovernorates();
+        $governorates = $shippingService->getCheckoutLocations();
 
         return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal', 'hasActiveCoupons', 'governorates'));
     }
