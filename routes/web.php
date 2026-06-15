@@ -221,6 +221,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('shipping-settings', [ShippingSettingsController::class, 'update'])->name('shipping-settings.update');
     Route::resource('carriers', CarrierController::class);
 
+    // Shipping Rates management
+    Route::resource('shipping-rates', \App\Http\Controllers\Admin\ShippingRateController::class)->except(['show']);
+    Route::get('shipping-rates/get-cities', [\App\Http\Controllers\Admin\ShippingRateController::class, 'getCities'])->name('shipping-rates.get-cities');
+
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');
