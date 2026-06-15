@@ -29,9 +29,9 @@
 </div>
 
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-    <div class="overflow-x-auto">
+    <div>
         <table class="w-full text-sm">
-            <thead>
+            <thead class="hidden md:table-header-group">
                 <tr class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
                     <th class="p-3 text-right font-semibold text-gray-600 dark:text-gray-400">{{ __('global.admin_name') }}</th>
                     <th class="p-3 text-right font-semibold text-gray-600 dark:text-gray-400">{{ __('global.email') }}</th>
@@ -46,8 +46,9 @@
             </thead>
             <tbody>
                 @forelse($users as $user)
-                <tr class="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/20 transition">
-                    <td class="p-3">
+                <tr class="block md:table-row border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/20 transition">
+                    <td class="block md:table-cell p-3">
+                        <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_name') }}</span>
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-full {{ $user->isCustomer() ? 'bg-gray-100 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400' : 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' }} flex items-center justify-center font-bold text-sm shrink-0">
                                 {{ mb_substr($user->name, 0, 2) }}
@@ -58,8 +59,9 @@
                             </div>
                         </div>
                     </td>
-                    <td class="p-3 text-gray-600 dark:text-gray-400">{{ $user->email }}</td>
-                    <td class="p-3">
+                    <td class="block md:table-cell p-3 text-gray-600 dark:text-gray-400"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.email') }}</span>{{ $user->email }}</td>
+                    <td class="block md:table-cell p-3">
+                        <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_role') }}</span>
                         @if($user->isSuperAdmin())
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -77,10 +79,11 @@
                             </span>
                         @endif
                     </td>
-                    <td class="p-3 text-gray-600 dark:text-gray-400">{{ $user->phone ?? '-' }}</td>
-                    <td class="p-3 text-gray-500 dark:text-gray-400 text-xs">{{ $user->created_at->format('Y-m-d') }}</td>
+                    <td class="block md:table-cell p-3 text-gray-600 dark:text-gray-400"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_phone') }}</span>{{ $user->phone ?? '-' }}</td>
+                    <td class="block md:table-cell p-3 text-gray-500 dark:text-gray-400 text-xs"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_date') }}</span>{{ $user->created_at->format('Y-m-d') }}</td>
                     @if($type === 'staff')
-                    <td class="p-3 text-center text-gray-600 dark:text-gray-400">
+                    <td class="block md:table-cell p-3 text-center text-gray-600 dark:text-gray-400">
+                        <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_branch') }}</span>
                         @if($user->branch)
                             <span class="inline-flex items-center gap-1 text-sm">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -91,7 +94,8 @@
                         @endif
                     </td>
                     @endif
-                    <td class="p-3 text-center">
+                    <td class="block md:table-cell p-3 text-right md:text-center">
+                        <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
                         <div class="flex items-center justify-center gap-1.5">
                             <a href="{{ route('admin.users.edit', $user) }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -124,7 +128,7 @@
 
 @if(method_exists($users, 'links'))
 <div class="mt-4">
-    {{ $users->links() }}
+    {{ $users->onEachSide(1)->links('vendor.pagination.admin') }}
 </div>
 @endif
 @endsection

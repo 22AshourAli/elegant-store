@@ -10,9 +10,9 @@
     <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
 @endif
 
-<div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
+<div class="bg-white dark:bg-gray-800 rounded shadow">
     <table class="w-full text-sm">
-        <thead>
+        <thead class="hidden md:table-header-group">
             <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                 <th class="p-3 text-right">{{ __('global.admin_name') }}</th>
                 <th class="p-3 text-right">{{ __('global.admin_address') }}</th>
@@ -23,16 +23,18 @@
         </thead>
         <tbody>
             @forelse($branches as $branch)
-            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="p-3">{{ $branch->name }}</td>
-                <td class="p-3">{{ $branch->address ?? '-' }}</td>
-                <td class="p-3">{{ $branch->phone ?? '-' }}</td>
-                <td class="p-3">
+            <tr class="block md:table-row border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_name') }}</span>{{ $branch->name }}</td>
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_address') }}</span>{{ $branch->address ?? '-' }}</td>
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_phone') }}</span>{{ $branch->phone ?? '-' }}</td>
+                <td class="block md:table-cell p-3">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_status') }}</span>
                     <span class="px-2 py-1 rounded text-xs {{ $branch->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                         {{ $branch->is_active ? __('global.active') : __('global.inactive') }}
                     </span>
                 </td>
-                <td class="p-3 text-center">
+                <td class="block md:table-cell p-3 text-right md:text-center">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
                     <a href="{{ route('admin.branches.edit', $branch) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1">{{ __('global.admin_edit') }}</a>
                     <form action="{{ route('admin.branches.destroy', $branch) }}" method="POST" class="inline">
                         @csrf @method('DELETE')
@@ -51,7 +53,7 @@
 
 @if(method_exists($branches, 'links'))
 <div class="mt-4">
-    {{ $branches->links() }}
+    {{ $branches->onEachSide(1)->links('vendor.pagination.admin') }}
 </div>
 @endif
 @endsection

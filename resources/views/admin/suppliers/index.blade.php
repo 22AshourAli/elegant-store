@@ -10,9 +10,9 @@
     <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
 @endif
 
-<div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
+<div class="bg-white dark:bg-gray-800 rounded shadow">
     <table class="w-full text-sm">
-        <thead>
+        <thead class="hidden md:table-header-group">
             <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                 <th class="p-3 text-right">{{ __('global.admin_name') }}</th>
                 <th class="p-3 text-right">{{ __('global.admin_phone') }}</th>
@@ -24,17 +24,19 @@
         </thead>
         <tbody>
             @forelse($suppliers as $supplier)
-            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="p-3">{{ $supplier->name }}</td>
-                <td class="p-3">{{ $supplier->phone ?? '-' }}</td>
-                <td class="p-3">{{ $supplier->email ?? '-' }}</td>
-                <td class="p-3">{{ $supplier->contact_person ?? '-' }}</td>
-                <td class="p-3">
+            <tr class="block md:table-row border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_name') }}</span>{{ $supplier->name }}</td>
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_phone') }}</span>{{ $supplier->phone ?? '-' }}</td>
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_email') }}</span>{{ $supplier->email ?? '-' }}</td>
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_contact_person') }}</span>{{ $supplier->contact_person ?? '-' }}</td>
+                <td class="block md:table-cell p-3">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_status') }}</span>
                     <span class="px-2 py-1 rounded text-xs {{ $supplier->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                         {{ $supplier->is_active ? __('global.active') : __('global.inactive') }}
                     </span>
                 </td>
-                <td class="p-3 text-center">
+                <td class="block md:table-cell p-3 text-right md:text-center">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
                     <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1">{{ __('global.admin_edit') }}</a>
                     <form action="{{ route('admin.suppliers.destroy', $supplier) }}" method="POST" class="inline">
                         @csrf @method('DELETE')
@@ -49,6 +51,6 @@
     </table>
 </div>
 @if(method_exists($suppliers, 'links'))
-<div class="mt-4">{{ $suppliers->links() }}</div>
+<div class="mt-4">{{ $suppliers->onEachSide(1)->links('vendor.pagination.admin') }}</div>
 @endif
 @endsection

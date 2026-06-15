@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\City;
 use App\Models\Governorate;
 use App\Models\ShippingRate;
+use App\Services\ShippingService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -38,6 +39,9 @@ class SeedGovernoratesCommand extends Command
         }
 
         $this->call('db:seed', ['--class' => 'Database\Seeders\GovernorateCitySeeder', '--force' => true]);
+
+        ShippingService::clearCache();
+        $this->info('Cache cleared.');
 
         $this->info('Seeding complete!');
         $this->table(

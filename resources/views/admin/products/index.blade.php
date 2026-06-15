@@ -10,9 +10,9 @@
     <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
 @endif
 
-<div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
+<div class="bg-white dark:bg-gray-800 rounded shadow">
     <table class="w-full text-sm">
-        <thead>
+        <thead class="hidden md:table-header-group">
             <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                 <th class="p-3 text-right">صورة</th>
                 <th class="p-3 text-right">{{ __('global.admin_name') }}</th>
@@ -25,8 +25,9 @@
         </thead>
         <tbody>
             @forelse($products as $product)
-            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td class="p-3">
+            <tr class="block md:table-row border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <td class="block md:table-cell p-3">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">صورة</span>
                     @php $adminImg = $product->firstImageUrl(); @endphp
                     @if($adminImg !== asset('images/logo.svg'))
                         <img src="{{ $adminImg }}" loading="lazy" class="w-12 h-12 object-cover rounded shadow-sm">
@@ -34,22 +35,25 @@
                         <span class="text-xs text-gray-400">{{ __('global.admin_no_image') }}</span>
                     @endif
                 </td>
-                <td class="p-3 font-semibold">{{ $product->name }}</td>
-                <td class="p-3">{{ $product->category->name ?? '-' }}</td>
-                <td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">{{ $product->base_price }}</td>
-                <td class="p-3">
+                <td class="block md:table-cell p-3 font-semibold"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_name') }}</span>{{ $product->name }}</td>
+                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_categories') }}</span>{{ $product->category->name ?? '-' }}</td>
+                <td class="block md:table-cell p-3 font-bold text-indigo-600 dark:text-indigo-400"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.original_price') }}</span>{{ $product->base_price }}</td>
+                <td class="block md:table-cell p-3">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_has_variants') }}</span>
                     @if($product->has_variants)
                         <span class="text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded">{{ __('global.yes') }}</span>
                     @else
                         <span class="text-gray-500 text-xs bg-gray-100 px-2 py-1 rounded">{{ __('global.no') }}</span>
                     @endif
                 </td>
-                <td class="p-3">
+                <td class="block md:table-cell p-3">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_status') }}</span>
                     <span class="px-2 py-1 rounded text-xs {{ $product->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                         {{ $product->is_active ? __('global.active') : __('global.inactive') }}
                     </span>
                 </td>
-                <td class="p-3 text-center">
+                <td class="block md:table-cell p-3 text-right md:text-center">
+                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
                     <a href="{{ route('admin.products.edit', $product) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1">{{ __('global.admin_edit') }}</a>
                     <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline">
                         @csrf @method('DELETE')
@@ -66,6 +70,6 @@
     </table>
 </div>
 <div class="mt-4">
-    {{ $products->links() }}
+    {{ $products->onEachSide(1)->links('vendor.pagination.admin') }}
 </div>
 @endsection

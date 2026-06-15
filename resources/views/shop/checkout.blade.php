@@ -49,7 +49,7 @@
         </div>
         @endif
 
-        <form action="{{ route('checkout.store') }}" method="POST" @submit="submitting = true">
+        <form action="{{ route('checkout.store') }}" method="POST">
             @csrf
             <div class="grid lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 
@@ -70,8 +70,13 @@
                         <div>
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
                             <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}"
-                                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror">
-                            @error('phone') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                                class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('phone') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40">
+                            @error('phone')
+                            <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ $message }}
+                            </p>
+                            @enderror
                         </div>
                     </div>
 
@@ -88,7 +93,7 @@
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
                                 <select name="governorate_id" id="governorate_id" required x-model="governorateId" @change="onGovernorateChange"
-                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] @error('governorate_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror"
+                                    class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('governorate_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
                                     @forelse($governorates as $gov)
@@ -97,13 +102,18 @@
                                     <option value="" disabled>⚠️ {{ __('global.no_governorates') }}</option>
                                     @endforelse
                                 </select>
-                                @error('governorate_id') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                                @error('governorate_id')
+                                <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ $message }}
+                                </p>
+                                @enderror
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
                                 <select name="city_id" id="city_id" required x-model="cityId" @change="onCityChange"
-                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed @error('city_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror"
+                                    class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('city_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_city') }}</option>
                                     @foreach($governorates as $gov)
@@ -112,17 +122,27 @@
                                     @endforeach
                                     @endforeach
                                 </select>
-                                @error('city_id') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                                @error('city_id')
+                                <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    {{ $message }}
+                                </p>
+                                @enderror
                             </div>
                         </div>
 
                         <div class="mt-3 sm:mt-4">
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
-            <textarea name="shipping_address" required rows="2" placeholder="{{ __('global.address_placeholder') }}"
-                x-model="shippingAddress"
-                @input="addressAutoFilled = false"
-                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all resize-none @error('shipping_address') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror"></textarea>
-                            @error('shipping_address') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                            <textarea name="shipping_address" required rows="2" placeholder="{{ __('global.address_placeholder') }}"
+                                x-model="shippingAddress"
+                                @input="addressAutoFilled = false"
+                                class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all resize-none bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('shipping_address') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"></textarea>
+                            @error('shipping_address')
+                            <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {{ $message }}
+                            </p>
+                            @enderror
                         </div>
 
                         <div class="mt-3 sm:mt-4">
@@ -269,9 +289,8 @@
         </form>
     </div>
 </div>
-@endsection
 
-<!-- Toast notification for success/error messages -->
+<!-- Toast -->
 <div x-data="toastHandler()" @toast.window="show($event.detail)" x-show="visible" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4"
      class="fixed bottom-6 right-6 z-[100] max-w-sm w-full pointer-events-auto" style="display:none">
     <div class="flex items-start gap-3 rounded-2xl shadow-2xl border p-4 backdrop-blur-xl"
@@ -294,25 +313,17 @@
 <script>
 function toastHandler() {
     return {
-        visible: false,
-        message: '',
-        type: 'success',
-        timer: null,
-        show(detail) {
-            this.message = detail.message || '';
-            this.type = detail.type || 'success';
-            this.visible = true;
-            clearTimeout(this.timer);
-            this.timer = setTimeout(() => { this.visible = false; }, 5000);
-        },
+        visible: false, message: '', type: 'success', timer: null,
+        show(detail) { this.message = detail.message || ''; this.type = detail.type || 'success'; this.visible = true; clearTimeout(this.timer); this.timer = setTimeout(() => { this.visible = false; }, 5000); },
         dismiss() { this.visible = false; clearTimeout(this.timer); }
     };
 }
 
-/* ===== City filter (pure vanilla JS, no Alpine conflict) ===== */
+/* ===== City filter (vanilla JS - no Alpine conflict) ===== */
 document.addEventListener('DOMContentLoaded', function () {
     var govSelect = document.getElementById('governorate_id');
     var citySelect = document.getElementById('city_id');
+    if (!govSelect || !citySelect) return;
 
     function filterCities(govId) {
         citySelect.value = '';
@@ -324,18 +335,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (govSelect) {
-        govSelect.addEventListener('change', function () {
-            filterCities(this.value);
-        });
-        /* Initial load (old values) */
-        if (govSelect.value) {
-            filterCities(govSelect.value);
-        }
-    }
+    govSelect.addEventListener('change', function () { filterCities(this.value); });
+    if (govSelect.value) { filterCities(govSelect.value); }
 });
 
-/* ===== Alpine checkout component ===== */
+/* ===== Alpine checkout ===== */
 document.addEventListener('alpine:init', () => {
     Alpine.data('checkoutPage', (initial) => ({
         baseTotal: initial.baseTotal,
@@ -368,11 +372,8 @@ document.addEventListener('alpine:init', () => {
         },
 
         init() {
-            if (this.governorateId) {
-                /* city select already handled by vanilla JS filterCities in DOMContentLoaded */
-                if (this.cityId) {
-                    this.onCityChange();
-                }
+            if (this.governorateId && this.cityId) {
+                this.onCityChange();
             }
         },
 
@@ -391,7 +392,8 @@ document.addEventListener('alpine:init', () => {
             if (!this.governorateId || !this.cityId) return;
             var sel = document.querySelector('#city_id option:checked');
             this.cityName = sel ? sel.textContent : '';
-            if (!this.addressAutoFilled && this.shippingAddress.trim() === '') {
+            /* Auto-fill address */
+            if (!this.addressAutoFilled && this.shippingAddress.trim() === '' && this.governorateName && this.cityName) {
                 this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
                 this.addressAutoFilled = true;
                 this.$nextTick(function () {
@@ -464,3 +466,4 @@ document.addEventListener('alpine:init', () => {
 });
 </script>
 @endpush
+@endsection

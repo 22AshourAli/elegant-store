@@ -15,9 +15,9 @@
     </div>
 
     {{-- Table --}}
-    <div class="overflow-x-auto">
+    <div>
         <table class="w-full text-sm">
-            <thead>
+            <thead class="hidden md:table-header-group">
                 <tr class="bg-slate-50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
                     <th class="text-right px-4 py-3">{{ __('global.admin_name') }}</th>
                     <th class="text-right px-4 py-3">{{ __('global.admin_phone') }}</th>
@@ -30,9 +30,10 @@
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 @forelse ($customers as $customer)
-                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition cursor-pointer"
+                    <tr class="block md:table-row hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition cursor-pointer"
                         onclick="openCustomerModal({{ $customer->id }})">
-                        <td class="px-4 py-3">
+                        <td class="block md:table-cell px-4 py-3">
+                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_name') }}</span>
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-brand-primary/10 text-brand-primary dark:bg-accent/20 dark:text-accent flex items-center justify-center text-xs font-black flex-shrink-0">
                                     {{ mb_substr($customer->name, 0, 2) }}
@@ -54,12 +55,13 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-slate-500 text-xs">{{ $customer->phone ?? '---' }}</td>
-                        <td class="px-4 py-3 text-slate-500 text-xs">{{ $customer->email ?? '---' }}</td>
-                        <td class="px-4 py-3 text-center font-bold">{{ $customer->orders_count ?? 0 }}</td>
-                        <td class="px-4 py-3 text-center font-black text-brand-primary">{{ number_format($customer->total_spent ?? 0) }} {{ __('global.currency') }}</td>
-                        <td class="px-4 py-3 text-center text-xs text-slate-500">{{ $customer->created_at->format('Y-m-d') }}</td>
-                        <td class="px-4 py-3 text-center">
+                        <td class="block md:table-cell px-4 py-3 text-slate-500 text-xs"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_phone') }}</span>{{ $customer->phone ?? '---' }}</td>
+                        <td class="block md:table-cell px-4 py-3 text-slate-500 text-xs"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.email') }}</span>{{ $customer->email ?? '---' }}</td>
+                        <td class="block md:table-cell px-4 py-3 text-center font-bold"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_orders') }}</span>{{ $customer->orders_count ?? 0 }}</td>
+                        <td class="block md:table-cell px-4 py-3 text-center font-black text-brand-primary"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_total_spent') }}</span>{{ number_format($customer->total_spent ?? 0) }} {{ __('global.currency') }}</td>
+                        <td class="block md:table-cell px-4 py-3 text-center text-xs text-slate-500"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_date') }}</span>{{ $customer->created_at->format('Y-m-d') }}</td>
+                        <td class="block md:table-cell px-4 py-3 text-right md:text-center">
+                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
                             <a href="{{ route('admin.orders.index') }}?user_id={{ $customer->id }}" class="text-[10px] text-indigo-500 hover:text-indigo-700 font-bold transition">{{ __('global.admin_view_orders') }}</a>
                         </td>
                     </tr>
@@ -74,7 +76,7 @@
 
     {{-- Pagination --}}
     <div class="p-4 border-t border-slate-200 dark:border-slate-700">
-        {{ $customers->links() }}
+        {{ $customers->onEachSide(1)->links('vendor.pagination.admin') }}
     </div>
 </div>
 

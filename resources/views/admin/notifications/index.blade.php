@@ -77,7 +77,7 @@
 
         @if($notifications->hasPages())
             <div class="p-4 border-t border-gray-100 dark:border-gray-700">
-                {{ $notifications->links() }}
+                {{ $notifications->onEachSide(1)->links('vendor.pagination.admin') }}
             </div>
         @endif
     @endif
