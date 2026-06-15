@@ -10,7 +10,7 @@
     governorates: @json($governorates),
 })">
     <div class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
-        <!-- Header -->
+
         <div class="flex items-center gap-3 mb-6 sm:mb-8">
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -22,26 +22,29 @@
         </div>
 
         @if(session('error'))
-        <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 mb-6 shadow-sm" x-data="{ show: true }" x-show="show">
-            <div class="flex items-start gap-3">
-                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p class="text-sm font-medium text-red-700 dark:text-red-400 flex-1">{{ session('error') }}</p>
-                <button @click="show = false" class="text-red-400 hover:text-red-600 transition">&times;</button>
-            </div>
+        <div class="flex items-start gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 mb-6 shadow-sm" x-data="{ show: true }" x-show="show">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-sm font-medium text-red-700 dark:text-red-400 flex-1">{{ session('error') }}</p>
+            <button @click="show = false" class="text-red-400 hover:text-red-600 transition">&times;</button>
         </div>
         @endif
+
         @if($errors->any())
         <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 mb-6 shadow-sm" x-data="{ show: true }" x-show="show">
             <div class="flex items-start gap-3">
                 <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="flex-1">
-                    <ul class="text-sm text-red-700 dark:text-red-400 list-disc list-inside space-y-1 font-medium">
+                    <p class="text-sm font-bold text-red-700 dark:text-red-400 mb-1.5">تأكد من البيانات التالية:</p>
+                    <ul class="text-sm text-red-600 dark:text-red-300 space-y-1">
                         @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <span>{{ $error }}</span>
+                        </li>
                         @endforeach
                     </ul>
                 </div>
-                <button @click="show = false" class="text-red-400 hover:text-red-600 transition">&times;</button>
+                <button @click="show = false" class="text-red-400 hover:text-red-600 transition shrink-0">&times;</button>
             </div>
         </div>
         @endif
@@ -50,7 +53,7 @@
             @csrf
             <div class="grid lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 
-                <!-- ===== LEFT: Form (3/5) ===== -->
+                <!-- LEFT -->
                 <div class="lg:col-span-3 space-y-4 sm:space-y-6">
 
                     <!-- Contact -->
@@ -67,12 +70,12 @@
                         <div>
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
                             <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}"
-                                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-400 dark:border-red-500 @enderror">
-                            @error('phone') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror">
+                            @error('phone') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                         </div>
                     </div>
 
-                    <!-- Shipping Address -->
+                    <!-- Shipping -->
                     <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-sm backdrop-blur-sm">
                         <div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100 dark:border-slate-700/60">
                             <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center flex-shrink-0">
@@ -82,11 +85,10 @@
                         </div>
 
                         <div class="grid sm:grid-cols-2 gap-3 sm:gap-4">
-                            <!-- Governorate -->
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
-                                <select name="governorate_id" required x-model="governorateId" @change="onGovernorateChange"
-                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] @error('governorate_id') border-red-400 dark:border-red-500 @enderror"
+                                <select name="governorate_id" id="governorate_id" required x-model="governorateId" @change="onGovernorateChange"
+                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] @error('governorate_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
                                     @forelse($governorates as $gov)
@@ -95,35 +97,34 @@
                                     <option value="" disabled>⚠️ {{ __('global.no_governorates') }}</option>
                                     @endforelse
                                 </select>
-                                @error('governorate_id') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                                @error('governorate_id') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                             </div>
 
-                            <!-- City -->
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
-                                <select name="city_id" required x-model="cityId" @change="onCityChange" :disabled="!governorateId"
-                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed @error('city_id') border-red-400 dark:border-red-500 @enderror"
+                                <select name="city_id" id="city_id" required x-model="cityId" @change="onCityChange"
+                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed @error('city_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_city') }}</option>
-                                    <template x-for="city in cities" :key="city.id">
-                                        <option x-bind:value="city.id" x-text="city.name"></option>
-                                    </template>
+                                    @foreach($governorates as $gov)
+                                    @foreach($gov['cities'] ?? [] as $city)
+                                    <option value="{{ $city['id'] }}" data-gov="{{ $gov['id'] }}" style="display:none" {{ old('city_id') == $city['id'] ? 'selected' : '' }}>{{ $city['name'] }}</option>
+                                    @endforeach
+                                    @endforeach
                                 </select>
-                                @error('city_id') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                                @error('city_id') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                             </div>
                         </div>
 
-                        <!-- Address -->
                         <div class="mt-3 sm:mt-4">
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
             <textarea name="shipping_address" required rows="2" placeholder="{{ __('global.address_placeholder') }}"
                 x-model="shippingAddress"
                 @input="addressAutoFilled = false"
-                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all resize-none @error('shipping_address') border-red-400 dark:border-red-500 @enderror"></textarea>
-                            @error('shipping_address') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all resize-none @error('shipping_address') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror"></textarea>
+                            @error('shipping_address') <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Notes -->
                         <div class="mt-3 sm:mt-4">
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.order_notes') }}</label>
                             <textarea name="notes" rows="1" placeholder="{{ __('global.order_notes_placeholder') }}"
@@ -131,7 +132,7 @@
                         </div>
                     </div>
 
-                    <!-- Payment Method -->
+                    <!-- Payment -->
                     <div class="bg-white dark:bg-gray-800/80 rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-sm backdrop-blur-sm">
                         <div class="flex items-center gap-2.5 mb-5 pb-3 border-b border-slate-100 dark:border-slate-700/60">
                             <div class="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center flex-shrink-0">
@@ -163,14 +164,14 @@
                                 </label>
                             </template>
                         </div>
-                        @error('payment_method') <p class="mt-2 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
+                        @error('payment_method') <p class="mt-2 text-xs text-red-500 font-semibold flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                <!-- ===== RIGHT: Summary (2/5) ===== -->
+                <!-- RIGHT: Summary -->
                 <div class="lg:col-span-2">
                     <div class="bg-white dark:bg-gray-800/80 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/30 sticky top-24 overflow-hidden backdrop-blur-sm">
-                        <!-- Summary header -->
+
                         <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-700/60">
                             <div class="flex items-center justify-between">
                                 <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -181,7 +182,6 @@
                             </div>
                         </div>
 
-                        <!-- Products -->
                         <div class="max-h-48 sm:max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/60 no-scrollbar">
                             @foreach($cartItems as $item)
                             <div class="flex items-center gap-3 p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
@@ -198,7 +198,6 @@
                             @endforeach
                         </div>
 
-                        <!-- Coupon -->
                         @if($hasActiveCoupons)
                         <div class="px-4 sm:px-6 py-3 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex gap-2">
@@ -228,7 +227,6 @@
                         </div>
                         @endif
 
-                        <!-- Totals -->
                         <div class="px-4 sm:px-6 py-4 space-y-3 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.products_total') }}</span>
@@ -241,20 +239,13 @@
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.shipping_cost_label') }}</span>
                                 <span>
-                                    <template x-if="shippingCalculating">
-                                        <span class="text-slate-400 text-xs italic">{{ __('global.shipping_calculating') }}</span>
-                                    </template>
-                                    <template x-if="!shippingCalculating && shipping === 0">
-                                        <span class="text-emerald-500 font-extrabold text-xs">{{ __('global.free') }}</span>
-                                    </template>
-                                    <template x-if="!shippingCalculating && shipping > 0">
-                                        <span class="font-bold text-slate-900 dark:text-white" x-text="formatPrice(shipping)"></span>
-                                    </template>
+                                    <span x-show="shippingCalculating" class="text-slate-400 text-xs italic">{{ __('global.shipping_calculating') }}</span>
+                                    <span x-show="!shippingCalculating && shipping === 0" class="text-emerald-500 font-extrabold text-xs">{{ __('global.free') }}</span>
+                                    <span x-show="!shippingCalculating && shipping > 0" class="font-bold text-slate-900 dark:text-white" x-text="formatPrice(shipping)"></span>
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Final Total -->
                         <div class="px-4 sm:px-6 py-4 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/30 dark:to-purple-950/30 border-t border-slate-100 dark:border-slate-700/60">
                             <div class="flex justify-between items-baseline">
                                 <span class="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">{{ __('global.final_total') }}</span>
@@ -262,14 +253,13 @@
                             </div>
                         </div>
 
-                        <!-- Submit -->
                         <div class="p-4 sm:p-6">
                             <button type="submit" :disabled="submitting || shippingCalculating"
                                 class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-extrabold py-3.5 sm:py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100">
                                 <span x-show="!submitting">{{ __('global.confirm_order') }}</span>
                                 <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span x-show="submitting">{{ __('global.processing') }}...</span>
                                 <svg x-show="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                                <span x-show="submitting" x-text="'{{ __('global.processing') }}...'"></span>
                             </button>
                             <p class="text-xs text-center text-slate-400 dark:text-slate-500 mt-3">{{ __('global.checkout_secure_notice') }}</p>
                         </div>
@@ -281,139 +271,196 @@
 </div>
 @endsection
 
+<!-- Toast notification for success/error messages -->
+<div x-data="toastHandler()" @toast.window="show($event.detail)" x-show="visible" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4"
+     class="fixed bottom-6 right-6 z-[100] max-w-sm w-full pointer-events-auto" style="display:none">
+    <div class="flex items-start gap-3 rounded-2xl shadow-2xl border p-4 backdrop-blur-xl"
+         :class="type === 'error' ? 'bg-red-50 dark:bg-red-950/90 border-red-200 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-950/90 border-emerald-200 dark:border-emerald-800'">
+        <div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+             :class="type === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'">
+            <svg x-show="type === 'error'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg x-show="type !== 'error'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold" :class="type === 'error' ? 'text-red-800 dark:text-red-300' : 'text-emerald-800 dark:text-emerald-300'" x-text="message"></p>
+        </div>
+        <button @click="dismiss()" class="flex-shrink-0 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+</div>
+
 @push('scripts')
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('checkoutPage', (initial) => ({
-            baseTotal: initial.baseTotal,
-            discount: initial.discount,
-            shipping: initial.shipping,
-            finalTotal: initial.finalTotal,
-            appliedCoupon: initial.appliedCoupon,
-            couponCode: '',
-            couponError: '',
-            couponLoading: false,
-            submitting: false,
-            governorates: initial.governorates || [],
-            governorateId: '{{ old('governorate_id') }}',
-            governorateName: '',
-            cityId: '{{ old('city_id') }}',
-            cityName: '',
-            cities: [],
-            shippingCalculating: false,
-            shippingAddress: '{{ old('shipping_address') }}',
-            addressAutoFilled: false,
+function toastHandler() {
+    return {
+        visible: false,
+        message: '',
+        type: 'success',
+        timer: null,
+        show(detail) {
+            this.message = detail.message || '';
+            this.type = detail.type || 'success';
+            this.visible = true;
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => { this.visible = false; }, 5000);
+        },
+        dismiss() { this.visible = false; clearTimeout(this.timer); }
+    };
+}
 
-            get appliedCouponText() {
-                if (!this.appliedCoupon) return '';
-                if (this.appliedCoupon.type === 'percent') return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} ${this.appliedCoupon.value}%`;
-                return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}${this.appliedCoupon.value}`;
-            },
+/* ===== City filter (pure vanilla JS, no Alpine conflict) ===== */
+document.addEventListener('DOMContentLoaded', function () {
+    var govSelect = document.getElementById('governorate_id');
+    var citySelect = document.getElementById('city_id');
 
-            formatPrice(price) {
-                const value = Math.round(parseFloat(price || 0));
-                return value.toLocaleString('ar-EG') + ' {{ __('global.currency') }}';
-            },
+    function filterCities(govId) {
+        citySelect.value = '';
+        citySelect.disabled = !govId;
+        citySelect.querySelectorAll('option[data-gov]').forEach(function (opt) {
+            var show = opt.getAttribute('data-gov') == govId;
+            opt.style.display = show ? '' : 'none';
+            opt.disabled = !show;
+        });
+    }
 
-            init() {
-                if (this.governorateId) {
-                    this.onGovernorateChange();
-                    if (this.cityId) {
-                        this.onCityChange();
-                    }
+    if (govSelect) {
+        govSelect.addEventListener('change', function () {
+            filterCities(this.value);
+        });
+        /* Initial load (old values) */
+        if (govSelect.value) {
+            filterCities(govSelect.value);
+        }
+    }
+});
+
+/* ===== Alpine checkout component ===== */
+document.addEventListener('alpine:init', () => {
+    Alpine.data('checkoutPage', (initial) => ({
+        baseTotal: initial.baseTotal,
+        discount: initial.discount,
+        shipping: initial.shipping,
+        finalTotal: initial.finalTotal,
+        appliedCoupon: initial.appliedCoupon,
+        couponCode: '',
+        couponError: '',
+        couponLoading: false,
+        submitting: false,
+        governorates: initial.governorates || [],
+        governorateId: '{{ old('governorate_id') }}',
+        governorateName: '',
+        cityId: '{{ old('city_id') }}',
+        cityName: '',
+        shippingCalculating: false,
+        shippingAddress: '{{ old('shipping_address') }}',
+        addressAutoFilled: false,
+
+        get appliedCouponText() {
+            if (!this.appliedCoupon) return '';
+            if (this.appliedCoupon.type === 'percent') return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} ${this.appliedCoupon.value}%`;
+            return `${this.appliedCoupon.code} — {{ __('global.coupon_discount_label') }} {{ __('global.currency') }}${this.appliedCoupon.value}`;
+        },
+
+        formatPrice(price) {
+            var value = Math.round(parseFloat(price || 0));
+            return value.toLocaleString('ar-EG') + ' {{ __('global.currency') }}';
+        },
+
+        init() {
+            if (this.governorateId) {
+                /* city select already handled by vanilla JS filterCities in DOMContentLoaded */
+                if (this.cityId) {
+                    this.onCityChange();
                 }
-            },
+            }
+        },
 
-            onGovernorateChange() {
-                this.cityId = '';
-                this.cityName = '';
-                this.shipping = 0;
-                this.finalTotal = this.baseTotal - this.discount;
-                this.governorateName = '';
-                if (!this.governorateId) return;
-                const gov = this.governorates.find(g => g.id == this.governorateId);
-                if (gov) {
-                    this.governorateName = gov.name;
-                    this.cities = gov.cities || [];
-                } else {
-                    this.cities = [];
-                }
-            },
+        onGovernorateChange() {
+            this.cityId = '';
+            this.cityName = '';
+            this.shipping = 0;
+            this.finalTotal = this.baseTotal - this.discount;
+            this.governorateName = '';
+            if (!this.governorateId) return;
+            var gov = this.governorates.find(function(g) { return g.id == this.governorateId; }.bind(this));
+            this.governorateName = gov ? gov.name : '';
+        },
 
-            async onCityChange() {
-                if (!this.governorateId || !this.cityId) return;
-                const city = this.cities.find(c => c.id == this.cityId);
-                this.cityName = city ? city.name : '';
-                if (!this.addressAutoFilled && this.shippingAddress.trim() === '') {
-                    this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
-                    this.addressAutoFilled = true;
-                    this.$nextTick(() => {
-                        const ta = document.querySelector('[name=shipping_address]');
-                        if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
-                    });
-                }
-                this.shippingCalculating = true;
-                try {
-                    const res = await fetch('{{ route('api.shipping.calculate') }}', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                        body: JSON.stringify({
-                            governorate_id: this.governorateId,
-                            city_id: this.cityId,
-                            cart_total: this.baseTotal - this.discount,
-                        })
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        this.shipping = data.final_cost || 0;
-                        this.finalTotal = (this.baseTotal - this.discount) + this.shipping;
-                    }
-                } catch(e) { console.error('Shipping calc error:', e); }
-                this.shippingCalculating = false;
-            },
-
-            applyCoupon(code) {
-                this.couponError = '';
-                if (!code) return;
-                this.couponLoading = true;
-                fetch('{{ route('coupon.apply') }}', {
+        async onCityChange() {
+            if (!this.governorateId || !this.cityId) return;
+            var sel = document.querySelector('#city_id option:checked');
+            this.cityName = sel ? sel.textContent : '';
+            if (!this.addressAutoFilled && this.shippingAddress.trim() === '') {
+                this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
+                this.addressAutoFilled = true;
+                this.$nextTick(function () {
+                    var ta = document.querySelector('[name=shipping_address]');
+                    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+                });
+            }
+            this.shippingCalculating = true;
+            try {
+                var res = await fetch('{{ route('api.shipping.calculate') }}', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ code })
-                }).then(async res => {
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.message || '{{ __('global.coupon_error') }}');
-                    this.appliedCoupon = data.coupon;
-                    this.baseTotal = Number(data.baseTotal);
-                    this.discount = Number(data.discount);
-                    this.finalTotal = Number(data.total) + this.shipping;
-                    this.couponCode = '';
-                    this.couponLoading = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                }).catch(err => {
-                    this.couponError = err.message;
-                    this.couponLoading = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
+                    body: JSON.stringify({
+                        governorate_id: this.governorateId,
+                        city_id: this.cityId,
+                        cart_total: this.baseTotal - this.discount,
+                    })
                 });
-            },
+                if (res.ok) {
+                    var data = await res.json();
+                    this.shipping = data.final_cost || 0;
+                    this.finalTotal = (this.baseTotal - this.discount) + this.shipping;
+                }
+            } catch(e) { console.error('Shipping calc error:', e); }
+            this.shippingCalculating = false;
+        },
 
-            removeCoupon() {
-                this.couponError = '';
-                this.couponLoading = true;
-                fetch('{{ route('coupon.remove') }}', {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                }).then(async res => {
-                    const data = await res.json();
-                    this.appliedCoupon = null;
-                    this.baseTotal = Number(data.baseTotal);
-                    this.discount = Number(data.discount);
-                    this.finalTotal = Number(data.total) + this.shipping;
-                    this.couponLoading = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                }).catch(() => { this.couponLoading = false; });
-            }
-        }));
-    });
+        applyCoupon(code) {
+            this.couponError = '';
+            if (!code) return;
+            this.couponLoading = true;
+            fetch('{{ route('coupon.apply') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ code })
+            }).then(async function(res) {
+                var data = await res.json();
+                if (!res.ok) throw new Error(data.message || '{{ __('global.coupon_error') }}');
+                this.appliedCoupon = data.coupon;
+                this.baseTotal = Number(data.baseTotal);
+                this.discount = Number(data.discount);
+                this.finalTotal = Number(data.total) + this.shipping;
+                this.couponCode = '';
+                this.couponLoading = false;
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+            }.bind(this)).catch(function(err) {
+                this.couponError = err.message;
+                this.couponLoading = false;
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message, type: 'error' } }));
+            }.bind(this));
+        },
+
+        removeCoupon() {
+            this.couponError = '';
+            this.couponLoading = true;
+            fetch('{{ route('coupon.remove') }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            }).then(async function(res) {
+                var data = await res.json();
+                this.appliedCoupon = null;
+                this.baseTotal = Number(data.baseTotal);
+                this.discount = Number(data.discount);
+                this.finalTotal = Number(data.total) + this.shipping;
+                this.couponLoading = false;
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+            }.bind(this)).catch(function() { this.couponLoading = false; }.bind(this));
+        }
+    }));
+});
 </script>
 @endpush

@@ -41,15 +41,37 @@ class GovernorateCitySeeder extends Seeder
 
     public function run(): void
     {
-        if (Governorate::count() > 0) {
-            $this->command->info('Governorates already seeded. Skipping.');
+        $govCount = Governorate::count();
+        $cityCount = City::count();
+
+        if ($govCount > 0 && $cityCount > 0) {
+            $this->command->info('Governorates and cities already seeded. Skipping.');
             return;
         }
 
-        foreach ($this->governorates as $govData) {
-            $gov = Governorate::create($govData);
-            $this->seedCities($gov);
+        if ($govCount === 0) {
+            $this->command->info('Seeding governorates and cities...');
+            foreach ($this->governorates as $govData) {
+                $gov = Governorate::create($govData);
+                $this->seedCities($gov);
+            }
+            return;
         }
+
+        $this->command->info('Governorates exist. Seeding cities only...');
+        $govMap = collect($this->governorates)->keyBy('name');
+        Governorate::all()->each(function (Governorate $gov) use ($govMap) {
+            $data = $govMap->get($gov->name);
+            if ($data && (is_null($gov->name_ar) || !$gov->base_shipping_cost)) {
+                $gov->update([
+                    'name_ar' => $data['name_ar'] ?? $gov->name_ar,
+                    'base_shipping_cost' => $data['base_shipping_cost'] ?? $gov->base_shipping_cost,
+                ]);
+            }
+            if ($gov->cities()->count() === 0) {
+                $this->seedCities($gov);
+            }
+        });
     }
 
     protected function seedCities(Governorate $gov): void
