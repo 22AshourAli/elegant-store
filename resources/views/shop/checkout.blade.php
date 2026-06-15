@@ -130,12 +130,12 @@
 
                     <div class="max-h-60 overflow-y-auto mb-6 divide-y divide-slate-200/40 dark:divide-slate-800/60 no-scrollbar">
                         @foreach($cartItems as $item)
-                        <div class="flex justify-between py-3">
-                            <div class="min-w-0 flex-1 ml-4 text-start">
-                                <p class="font-bold text-sm text-slate-900 dark:text-white truncate">{{ $item['product_name'] }}</p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ __('global.qty_label') }} {{ $item['quantity'] }} | {{ $item['color'] }} / {{ $item['size'] }}</p>
+                        <div class="flex justify-between py-3 gap-2">
+                            <div class="min-w-0 flex-1 text-start">
+                                <p class="font-bold text-sm text-slate-900 dark:text-white break-words leading-snug">{{ $item['product_name'] }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 break-words">{{ __('global.qty_label') }} {{ $item['quantity'] }} | {{ $item['color'] }} / {{ $item['size'] }}</p>
                             </div>
-                            <span class="font-extrabold text-sm text-slate-900 dark:text-white flex-shrink-0">{{ (int) round($item['price'] * $item['quantity']) }} {{ __('global.currency') }}</span>
+                            <span class="font-extrabold text-sm text-slate-900 dark:text-white flex-shrink-0 whitespace-nowrap">{{ (int) round($item['price'] * $item['quantity']) }} {{ __('global.currency') }}</span>
                         </div>
                         @endforeach
                     </div>
