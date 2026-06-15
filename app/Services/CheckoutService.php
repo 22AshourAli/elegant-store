@@ -22,8 +22,10 @@ class CheckoutService
             $subtotal = $data['subtotal'] ?? 0;
             $discount = $data['discount'] ?? 0;
 
-            // Dynamic shipping cost via ShippingService when governorate is selected
-            if (!empty($data['governorate_id'])) {
+            $previousOrders = $user->orders()->where('status', '!=', 'cancelled')->count();
+            if ($previousOrders === 0) {
+                $shipping = 0;
+            } elseif (!empty($data['governorate_id'])) {
                 $shippingResult = $this->shippingService->calculateCost(
                     governorateId: $data['governorate_id'],
                     cityId: $data['city_id'] ?? null,
@@ -31,8 +33,7 @@ class CheckoutService
                 );
                 $shipping = $shippingResult['final_cost'];
             } else {
-                $previousOrders = $user->orders()->where('status', '!=', 'cancelled')->count();
-                $shipping = ($previousOrders === 0) ? 0 : ($data['shipping_cost'] ?? config('store.default_shipping', 30));
+                $shipping = $data['shipping_cost'] ?? config('store.default_shipping', 30);
             }
 
             $total = $subtotal + $shipping - $discount;

@@ -14,6 +14,7 @@ var CHECKOUT_DATA = {
     shippingCalcText: '{{ __('global.shipping_calculating') }}',
     csrfToken: '{{ csrf_token() }}',
     shippingApiUrl: '{{ route('api.shipping.calculate') }}',
+    isFirstOrder: {{ auth()->user()->orders()->where('status', '!=', 'cancelled')->count() === 0 ? 'true' : 'false' }},
 };
 </script>
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950/20 py-6 sm:py-10" x-data="checkoutPage({
@@ -369,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fetchShipping(govId, cityId) {
+        if (D.isFirstOrder) { updateShippingDisplay(0); return; }
         var sc = document.querySelector('.shipping-calculating');
         if (sc) sc.style.display = 'inline';
         if (!govId) { updateShippingDisplay(0); return; }

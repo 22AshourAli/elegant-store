@@ -28,13 +28,18 @@ class CheckoutController extends Controller
         $total = $cart->total();
         $appliedCoupon = $cart->getAppliedCoupon();
 
-        $oldGovId = old('governorate_id');
-        $oldCityId = old('city_id');
-        if ($oldGovId) {
-            $result = $shippingService->calculateCost((int) $oldGovId, $oldCityId ? (int) $oldCityId : null, $total);
-            $shipping = $result['final_cost'];
-        } else {
+        $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
+        if ($previousOrders === 0) {
             $shipping = 0;
+        } else {
+            $oldGovId = old('governorate_id');
+            $oldCityId = old('city_id');
+            if ($oldGovId) {
+                $result = $shippingService->calculateCost((int) $oldGovId, $oldCityId ? (int) $oldCityId : null, $total);
+                $shipping = $result['final_cost'];
+            } else {
+                $shipping = 0;
+            }
         }
         $finalTotal = $total + $shipping;
 

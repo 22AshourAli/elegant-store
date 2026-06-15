@@ -12,7 +12,6 @@ class ShippingService
     {
         $governorate = Governorate::findOrFail($governorateId);
         $fuelSurcharge = $this->getFuelSurcharge();
-        $freeThreshold = $this->getFreeShippingThreshold();
 
         $rate = ShippingRate::where('governorate_id', $governorateId)
             ->where('is_active', true)
@@ -32,17 +31,6 @@ class ShippingService
                 'final_cost' => 0,
                 'is_free' => true,
                 'reason' => 'cart_threshold',
-            ];
-        }
-
-        if ($freeThreshold > 0 && $cartTotal >= $freeThreshold) {
-            return [
-                'cost' => 0,
-                'base_cost' => $baseCost,
-                'fuel_surcharge' => 0,
-                'final_cost' => 0,
-                'is_free' => true,
-                'reason' => 'global_threshold',
             ];
         }
 
