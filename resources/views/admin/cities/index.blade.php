@@ -10,9 +10,9 @@
     <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
 @endif
 
-<div class="bg-white dark:bg-gray-800 rounded shadow">
+<div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
     <table class="w-full text-sm">
-        <thead class="hidden md:table-header-group">
+        <thead>
             <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                 <th class="p-3 text-right">{{ __('global.admin_name') }}</th>
                 <th class="p-3 text-right">{{ __('global.governorate') }}</th>
@@ -22,15 +22,15 @@
         </thead>
         <tbody>
             @forelse($cities as $city)
-            <tr class="block md:table-row border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-3 md:p-0">
-                <td class="block md:table-cell p-1 md:p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_name') }}</span><span class="font-semibold">{{ $city->name }}</span></td>
-                <td class="block md:table-cell p-1 md:p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.governorate') }}</span>{{ $city->governorate->name ?? '-' }}</td>
-                <td class="block md:table-cell p-1 md:p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_status') }}</span>
+            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 even:bg-gray-50/50 dark:even:bg-gray-700/20">
+                <td class="p-3"><span class="font-semibold">{{ $city->name }}</span></td>
+                <td class="p-3">{{ $city->governorate->name ?? '-' }}</td>
+                <td class="p-3">
                     <span class="px-2 py-1 rounded text-xs {{ $city->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                         {{ $city->is_active ? __('global.active') : __('global.inactive') }}
                     </span>
                 </td>
-                <td class="block md:table-cell p-1 md:p-3 text-right md:text-center"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
+                <td class="p-3 text-center">
                     <a href="{{ route('admin.cities.edit', $city) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1 text-xs sm:text-sm">{{ __('global.admin_edit') }}</a>
                     <a href="{{ route('admin.cities.toggle-active', $city) }}" class="text-amber-600 dark:text-amber-400 hover:underline mx-1 text-xs sm:text-sm" onclick="return confirm('{{ __("global.confirm_toggle") }}')">
                         {{ $city->is_active ? __('global.deactivate') : __('global.activate') }}

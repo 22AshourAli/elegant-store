@@ -10,13 +10,13 @@
     <div class="bg-green-100 text-green-800 p-3 rounded mb-4">{{ session('success') }}</div>
 @endif
 
-<div class="bg-white dark:bg-gray-800 rounded shadow">
+<div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
     <table class="w-full text-sm">
-        <thead class="hidden md:table-header-group">
+        <thead>
             <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                 <th class="p-3 text-right">{{ __('global.admin_po_number') }}</th>
-                <th class="p-3 text-right">{{ __('global.admin_supplier') }}</th>
-                <th class="p-3 text-right">{{ __('global.admin_branch') }}</th>
+                <th class="p-3 text-right hidden md:table-cell">{{ __('global.admin_supplier') }}</th>
+                <th class="p-3 text-right hidden md:table-cell">{{ __('global.admin_branch') }}</th>
                 <th class="p-3 text-right">{{ __('global.admin_total') }}</th>
                 <th class="p-3 text-right">{{ __('global.admin_status') }}</th>
                 <th class="p-3 text-right">{{ __('global.admin_date') }}</th>
@@ -25,13 +25,12 @@
         </thead>
         <tbody>
             @forelse($orders as $order)
-            <tr class="block md:table-row border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer" onclick="window.location='{{ route('admin.purchase-orders.show', $order) }}'">
-                <td class="block md:table-cell p-3 font-mono text-xs"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_po_number') }}</span>{{ $order->po_number }}</td>
-                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_supplier') }}</span>{{ $order->supplier->name ?? '-' }}</td>
-                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_branch') }}</span>{{ $order->branch->name ?? '-' }}</td>
-                <td class="block md:table-cell p-3"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_total') }}</span>{{ number_format($order->total, 2) }}</td>
-                <td class="block md:table-cell p-3">
-                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_status') }}</span>
+            <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer even:bg-gray-50/50 dark:even:bg-gray-700/20" onclick="window.location='{{ route('admin.purchase-orders.show', $order) }}'">
+                <td class="p-3 font-mono text-xs">{{ $order->po_number }}</td>
+                <td class="p-3 hidden md:table-cell">{{ $order->supplier->name ?? '-' }}</td>
+                <td class="p-3 hidden md:table-cell">{{ $order->branch->name ?? '-' }}</td>
+                <td class="p-3">{{ number_format($order->total, 2) }}</td>
+                <td class="p-3">
                     <span class="px-2 py-1 rounded text-xs @switch($order->status)
                         @case('pending') bg-yellow-100 text-yellow-800 @break
                         @case('sent') bg-blue-100 text-blue-800 @break
@@ -43,9 +42,8 @@
                         {{ __('global.po_status_' . $order->status) }}
                     </span>
                 </td>
-                <td class="block md:table-cell p-3 text-xs"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_date') }}</span>{{ $order->created_at->format('Y-m-d') }}</td>
-                <td class="block md:table-cell p-3 text-right md:text-center">
-                    <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
+                <td class="p-3 text-xs">{{ $order->created_at->format('Y-m-d') }}</td>
+                <td class="p-3 text-center">
                     <a href="{{ route('admin.purchase-orders.show', $order) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1" onclick="event.stopPropagation()">{{ __('global.admin_view') }}</a>
                 </td>
             </tr>

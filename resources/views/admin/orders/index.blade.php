@@ -43,26 +43,25 @@
     @if($orders->isEmpty())
         <div class="p-12 text-center text-gray-500">{{ __('global.admin_no_orders') }}</div>
     @else
-        <div>
+        <div class="overflow-x-auto">
             <table class="w-full text-right border-collapse">
-                <thead class="hidden md:table-header-group">
+                <thead>
                     <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600 text-sm font-semibold text-gray-500 dark:text-gray-300">
                         <th class="p-4">{{ __('global.admin_order_no') }}</th>
                         <th class="p-4">{{ __('global.admin_customer') }}</th>
-                        <th class="p-4">{{ __('global.admin_branch') }}</th>
-                        <th class="p-4">{{ __('global.admin_payment_method') }}</th>
+                        <th class="p-4 hidden md:table-cell">{{ __('global.admin_branch') }}</th>
+                        <th class="p-4 hidden md:table-cell">{{ __('global.admin_payment_method') }}</th>
                         <th class="p-4">{{ __('global.admin_status') }}</th>
                         <th class="p-4">{{ __('global.admin_total') }}</th>
-                        <th class="p-4">{{ __('global.admin_date') }}</th>
+                        <th class="p-4 hidden md:table-cell">{{ __('global.admin_date') }}</th>
                         <th class="p-4 text-left">{{ __('global.admin_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y dark:divide-gray-700">
                     @foreach($orders as $order)
-                    <tr class="block md:table-row hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm text-gray-900 dark:text-gray-200 cursor-pointer transition-colors"
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm text-gray-900 dark:text-gray-200 cursor-pointer transition-colors even:bg-gray-50/50 dark:even:bg-gray-700/20"
                         onclick="window.location='{{ route('admin.orders.show', $order) }}'">
-                        <td class="block md:table-cell p-4">
-                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_order_no') }}</span>
+                        <td class="p-4">
                             <div class="flex items-center gap-2">
                                 <span class="font-bold">#{{ $order->id }}</span>
                                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full {{ $order->order_type === 'offline' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' }}">
@@ -70,8 +69,7 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="block md:table-cell p-4">
-                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_customer') }}</span>
+                        <td class="p-4">
                             <div class="flex items-center gap-1.5">
                                 <span>{{ $order->user->name }}</span>
                                 @if(!empty($order->user->email))
@@ -81,9 +79,8 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="block md:table-cell p-4"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_branch') }}</span>{{ $order->branch->name ?? __('global.admin_not_specified') }}</td>
-                        <td class="block md:table-cell p-4">
-                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_payment_method') }}</span>
+                        <td class="p-4 hidden md:table-cell">{{ $order->branch->name ?? __('global.admin_not_specified') }}</td>
+                        <td class="p-4 hidden md:table-cell">
                             @if($order->payment_method === 'cash')
                                 {{ __('global.admin_cash') }}
                             @elseif($order->payment_method === 'card')
@@ -92,8 +89,7 @@
                                 {{ __('global.admin_wallet') }}
                             @endif
                         </td>
-                        <td class="block md:table-cell p-4">
-                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_status') }}</span>
+                        <td class="p-4">
                              <span class="px-2.5 py-1 rounded-full text-xs font-semibold
                                 @if($order->status === 'delivered') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
                                 @elseif($order->status === 'pending') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
@@ -109,10 +105,9 @@
                                 @endphp
                             </span>
                         </td>
-                        <td class="block md:table-cell p-4 font-bold"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_total') }}</span>{{ (int) round($order->total) }} {{ __('global.currency') }}</td>
-                        <td class="block md:table-cell p-4"><span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_date') }}</span>{{ $order->created_at->format('Y-m-d H:i') }}</td>
-                        <td class="block md:table-cell p-4 text-right md:text-left">
-                            <span class="md:hidden font-bold text-xs text-gray-500 dark:text-gray-400 block">{{ __('global.admin_actions') }}</span>
+                        <td class="p-4 font-bold">{{ (int) round($order->total) }} {{ __('global.currency') }}</td>
+                        <td class="p-4 hidden md:table-cell">{{ $order->created_at->format('Y-m-d H:i') }}</td>
+                        <td class="p-4 text-right md:text-left">
                             <a href="{{ route('admin.orders.show', $order) }}" onclick="event.stopPropagation()" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">
                                 {{ __('global.admin_view_update') }}
                             </a>
