@@ -55,12 +55,6 @@ class CheckoutService
             if (isset($data['governorate_id'])) {
                 $orderData['governorate_id'] = $data['governorate_id'];
                 $orderData['city_id'] = $data['city_id'] ?? null;
-                $orderData['address_street'] = $data['address_street'] ?? '';
-                $orderData['address_building'] = $data['address_building'] ?? '';
-                $orderData['address_floor'] = $data['address_floor'] ?? '';
-                $orderData['address_apartment'] = $data['address_apartment'] ?? '';
-                $orderData['address_landmark'] = $data['address_landmark'] ?? '';
-                $orderData['address_type'] = $data['address_type'] ?? 'home';
             }
 
             $order = Order::create($orderData);

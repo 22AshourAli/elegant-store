@@ -304,6 +304,10 @@ return [
 
     // Checkout
     'checkout_title_page' => 'Checkout',
+    'checkout_subtitle' => 'You\'re just a few steps away from completing your order',
+    'contact_info' => 'Contact Information',
+    'items_count' => 'items',
+    'checkout_secure_notice' => '🔒 Secure checkout · Your information is protected',
     'shipping_info' => 'Shipping Information',
     'full_name' => 'Full Name',
     'phone_contact' => 'Contact Phone',

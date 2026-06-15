@@ -310,6 +310,10 @@ return [
 
     // Checkout
     'checkout_title_page' => 'إتمام الشراء',
+    'checkout_subtitle' => 'أنت على بعد خطوات قليلة من إتمام طلبك',
+    'contact_info' => 'معلومات الاتصال',
+    'items_count' => 'منتج',
+    'checkout_secure_notice' => '🔒 إتمام آمن · معلوماتك محمية',
     'shipping_info' => 'بيانات الشحن',
     'full_name' => 'الاسم الكامل',
     'phone_contact' => 'رقم الهاتف للتواصل',
