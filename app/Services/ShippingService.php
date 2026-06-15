@@ -72,11 +72,6 @@ class ShippingService
         );
     }
 
-    public function getActiveGovernorates()
-    {
-        return $this->getActiveGovernoratesForCheckout();
-    }
-
     public function getFuelSurcharge(): float
     {
         $val = \App\Models\Setting::getValue('fuel_surcharge_percentage', '0');
@@ -97,16 +92,6 @@ class ShippingService
 
     public static function clearCache(): void
     {
-        Cache::forget('active_governorates');
         Cache::forget('checkout_locations');
-    }
-
-    public function getActiveGovernoratesForCheckout()
-    {
-        return Cache::remember('active_governorates', 3600, fn() =>
-            Governorate::where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
     }
 }
