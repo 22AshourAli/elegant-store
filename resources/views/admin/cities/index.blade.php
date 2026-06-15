@@ -35,6 +35,10 @@
                     <a href="{{ route('admin.cities.toggle-active', $city) }}" class="text-amber-600 dark:text-amber-400 hover:underline mx-1" onclick="return confirm('{{ __("global.confirm_toggle") }}')">
                         {{ $city->is_active ? __('global.deactivate') : __('global.activate') }}
                     </a>
+                    <form action="{{ route('admin.cities.destroy', $city) }}" method="POST" class="inline" onsubmit="return confirm('{{ __("global.confirm_delete_city") }}')">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="text-red-600 dark:text-red-400 hover:underline mx-1">{{ __('global.admin_delete') }}</button>
+                    </form>
                 </td>
             </tr>
             @empty

@@ -59,7 +59,7 @@ class ShippingService
 
     public function getCheckoutLocations()
     {
-        return Cache::remember('checkout_locations', 86400, fn() =>
+        return Cache::remember('checkout_locations', 3600, fn() =>
             Governorate::where('is_active', true)
                 ->with(['cities' => fn($q) => $q->where('is_active', true)->orderBy('name')])
                 ->orderBy('name')
@@ -74,11 +74,7 @@ class ShippingService
 
     public function getActiveGovernorates()
     {
-        return Cache::remember('active_governorates', 86400, fn() =>
-            Governorate::where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-        );
+        return $this->getActiveGovernoratesForCheckout();
     }
 
     public function getFuelSurcharge(): float
@@ -102,5 +98,15 @@ class ShippingService
     public static function clearCache(): void
     {
         Cache::forget('active_governorates');
+        Cache::forget('checkout_locations');
+    }
+
+    public function getActiveGovernoratesForCheckout()
+    {
+        return Cache::remember('active_governorates', 3600, fn() =>
+            Governorate::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
     }
 }

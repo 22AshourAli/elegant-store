@@ -72,4 +72,12 @@ class CityController extends Controller
 
         return back()->with('success', __('global.updated_success'));
     }
+
+    public function destroy(City $city)
+    {
+        $city->delete();
+        ShippingService::clearCache();
+
+        return redirect()->route('admin.cities.index')->with('success', 'تم حذف المدينة بنجاح.');
+    }
 }

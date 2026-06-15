@@ -64,4 +64,15 @@ class GovernorateController extends Controller
 
         return back()->with('success', __('global.updated_success'));
     }
+
+    public function destroy(Governorate $governorate)
+    {
+        if ($governorate->cities()->count() > 0) {
+            return back()->with('error', 'لا يمكن حذف المحافظة لأنها تحتوي على مدن. قم بحذف المدن أولاً أو تعطيل المحافظة بدلاً من ذلك.');
+        }
+        $governorate->delete();
+        ShippingService::clearCache();
+
+        return redirect()->route('admin.governorates.index')->with('success', 'تم حذف المحافظة بنجاح.');
+    }
 }

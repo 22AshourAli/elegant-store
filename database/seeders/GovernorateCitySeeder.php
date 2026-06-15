@@ -335,34 +335,36 @@ class GovernorateCitySeeder extends Seeder
                     ['name' => 'سيدي سالم', 'delivery_time' => '1-3 أيام'],
                 ],
             ],
-            'الأقصر' => [
-                'base_cost' => 60,
-            ],
+            // الأقصر already defined above with its cities
         ];
 
         foreach ($data as $govName => $govData) {
-            $gov = Governorate::create([
-                'name' => $govName,
-                'is_active' => true,
-                'base_shipping_cost' => $govData['base_cost'],
-            ]);
+            $gov = Governorate::firstOrCreate(
+                ['name' => $govName],
+                [
+                    'is_active' => true,
+                    'base_shipping_cost' => $govData['base_cost'],
+                ]
+            );
 
             foreach ($govData['cities'] ?? [] as $cityData) {
-                $city = City::create([
-                    'governorate_id' => $gov->id,
-                    'name' => $cityData['name'],
-                    'delivery_time' => $cityData['delivery_time'] ?? '1-3 أيام',
-                    'is_active' => true,
-                ]);
+                $city = City::firstOrCreate(
+                    ['governorate_id' => $gov->id, 'name' => $cityData['name']],
+                    [
+                        'delivery_time' => $cityData['delivery_time'] ?? '1-3 أيام',
+                        'is_active' => true,
+                    ]
+                );
 
                 if (isset($cityData['min_cart_amount'])) {
-                    ShippingRate::create([
-                        'governorate_id' => $gov->id,
-                        'city_id' => $city->id,
-                        'min_cart_amount' => $cityData['min_cart_amount'],
-                        'rate' => 0,
-                        'is_active' => true,
-                    ]);
+                    ShippingRate::firstOrCreate(
+                        ['governorate_id' => $gov->id, 'city_id' => $city->id],
+                        [
+                            'min_cart_amount' => $cityData['min_cart_amount'],
+                            'rate' => 0,
+                            'is_active' => true,
+                        ]
+                    );
                 }
             }
         }

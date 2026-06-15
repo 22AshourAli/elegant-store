@@ -113,6 +113,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\GovernorateController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\ShippingSettingsController;
+use App\Http\Controllers\Admin\CarrierController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -212,12 +213,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Shipping Management
-    Route::resource('governorates', GovernorateController::class)->except(['show', 'destroy']);
+    Route::resource('governorates', GovernorateController::class)->except(['show']);
     Route::get('governorates/{governorate}/toggle-active', [GovernorateController::class, 'toggleActive'])->name('governorates.toggle-active');
-    Route::resource('cities', CityController::class)->except(['show', 'destroy']);
+    Route::resource('cities', CityController::class)->except(['show']);
     Route::get('cities/{city}/toggle-active', [CityController::class, 'toggleActive'])->name('cities.toggle-active');
     Route::get('shipping-settings', [ShippingSettingsController::class, 'index'])->name('shipping-settings.index');
     Route::post('shipping-settings', [ShippingSettingsController::class, 'update'])->name('shipping-settings.update');
+    Route::resource('carriers', CarrierController::class);
 
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {

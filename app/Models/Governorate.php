@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Governorate extends Model
 {
-    protected $fillable = ['name', 'is_active', 'base_shipping_cost'];
+    protected $fillable = ['name', 'name_ar', 'is_active', 'base_shipping_cost'];
 
     protected function casts(): array
     {

@@ -117,8 +117,10 @@
                         <!-- Address -->
                         <div class="mt-3 sm:mt-4">
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
-                            <textarea name="shipping_address" required rows="2" placeholder="{{ __('global.address_placeholder') }}"
-                                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all resize-none @error('shipping_address') border-red-400 dark:border-red-500 @enderror">{{ old('shipping_address') }}</textarea>
+            <textarea name="shipping_address" required rows="2" placeholder="{{ __('global.address_placeholder') }}"
+                x-model="shippingAddress"
+                @input="addressAutoFilled = false"
+                class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all resize-none @error('shipping_address') border-red-400 dark:border-red-500 @enderror"></textarea>
                             @error('shipping_address') <p class="mt-1 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
                         </div>
 
@@ -296,10 +298,14 @@
             submitting: false,
             governorates: initial.governorates || [],
             governorateId: '',
+            governorateName: '',
             cityId: '',
+            cityName: '',
             cities: [],
             citiesLoading: false,
             shippingCalculating: false,
+            shippingAddress: '{{ old('shipping_address') }}',
+            addressAutoFilled: false,
 
             get appliedCouponText() {
                 if (!this.appliedCoupon) return '';
@@ -314,10 +320,14 @@
 
             async onGovernorateChange() {
                 this.cityId = '';
+                this.cityName = '';
                 this.cities = [];
                 this.shipping = 0;
                 this.finalTotal = this.baseTotal - this.discount;
+                this.governorateName = '';
                 if (!this.governorateId) return;
+                const gov = this.governorates.find(g => g.id == this.governorateId);
+                this.governorateName = gov ? gov.name : '';
                 this.citiesLoading = true;
                 try {
                     const res = await fetch('{{ route('api.shipping.cities') }}?governorate_id=' + this.governorateId);
@@ -330,6 +340,16 @@
 
             async onCityChange() {
                 if (!this.governorateId || !this.cityId) return;
+                const city = this.cities.find(c => c.id == this.cityId);
+                this.cityName = city ? city.name : '';
+                if (!this.addressAutoFilled && this.shippingAddress.trim() === '') {
+                    this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
+                    this.addressAutoFilled = true;
+                    this.$nextTick(() => {
+                        const ta = document.querySelector('[name=shipping_address]');
+                        if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+                    });
+                }
                 this.shippingCalculating = true;
                 try {
                     const res = await fetch('{{ route('api.shipping.calculate') }}', {
