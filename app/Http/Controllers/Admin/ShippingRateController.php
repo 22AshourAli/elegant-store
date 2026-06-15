@@ -20,7 +20,7 @@ class ShippingRateController extends Controller
 
     public function create()
     {
-        $governorates = Governorate::orderBy('name')->with(['cities' => fn($q) => $q->where('is_active', true)->orderBy('name')])->get();
+        $governorates = Governorate::orderBy('name')->get();
         return view('admin.shipping-rates.create', compact('governorates'));
     }
 
@@ -43,8 +43,9 @@ class ShippingRateController extends Controller
 
     public function edit(ShippingRate $shippingRate)
     {
-        $governorates = Governorate::orderBy('name')->with(['cities' => fn($q) => $q->where('is_active', true)->orderBy('name')])->get();
-        return view('admin.shipping-rates.edit', compact('shippingRate', 'governorates'));
+        $governorates = Governorate::orderBy('name')->get();
+        $cities = City::where('governorate_id', $shippingRate->governorate_id)->where('is_active', true)->orderBy('name')->get();
+        return view('admin.shipping-rates.edit', compact('shippingRate', 'governorates', 'cities'));
     }
 
     public function update(Request $request, ShippingRate $shippingRate)

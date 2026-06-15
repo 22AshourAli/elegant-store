@@ -7,6 +7,7 @@
     shipping: {{ (int) round($shipping) }},
     finalTotal: {{ (int) round($finalTotal) }},
     appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null),
+    governorates: @json($governorates),
 })">
     <div class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6">
         <!-- Header -->
@@ -30,18 +31,17 @@
         </div>
         @endif
         @if($errors->any())
-        <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4 mb-6 shadow-sm" x-data="{ show: true }" x-show="show">
+        <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 mb-6 shadow-sm" x-data="{ show: true }" x-show="show">
             <div class="flex items-start gap-3">
-                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="flex-1">
-                    <p class="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">{{ __('global.validation_errors') }}</p>
-                    <ul class="text-sm text-amber-600 dark:text-amber-300 list-disc list-inside space-y-0.5">
+                    <ul class="text-sm text-red-700 dark:text-red-400 list-disc list-inside space-y-1 font-medium">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
-                <button @click="show = false" class="text-amber-400 hover:text-amber-600 transition">&times;</button>
+                <button @click="show = false" class="text-red-400 hover:text-red-600 transition">&times;</button>
             </div>
         </div>
         @endif
@@ -68,7 +68,7 @@
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
                             <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}"
                                 class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-400 dark:border-red-500 @enderror">
-                            @error('phone') <p class="mt-1 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                            @error('phone') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -85,8 +85,8 @@
                             <!-- Governorate -->
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
-                                <select name="governorate_id" id="governorate_select" required x-model="governorateId" @change="onGovernorateChange"
-                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center]"
+                                <select name="governorate_id" required x-model="governorateId" @change="onGovernorateChange"
+                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] @error('governorate_id') border-red-400 dark:border-red-500 @enderror"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
                                     @forelse($governorates as $gov)
@@ -95,21 +95,21 @@
                                     <option value="" disabled>⚠️ {{ __('global.no_governorates') }}</option>
                                     @endforelse
                                 </select>
+                                @error('governorate_id') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                             </div>
 
                             <!-- City -->
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
-                                <select name="city_id" id="city_select" required x-model="cityId" @change="onCityChange" {{ old('governorate_id') ? '' : 'disabled' }}
-                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed"
+                                <select name="city_id" required x-model="cityId" @change="onCityChange" :disabled="!governorateId"
+                                    class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed @error('city_id') border-red-400 dark:border-red-500 @enderror"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_city') }}</option>
-                                    @foreach($governorates as $gov)
-                                    @foreach($gov['cities'] ?? [] as $city)
-                                    <option value="{{ $city['id'] }}" data-gov="{{ $gov['id'] }}" style="display:none" {{ old('city_id') == $city['id'] ? 'selected' : '' }}>{{ $city['name'] }}</option>
-                                    @endforeach
-                                    @endforeach
+                                    <template x-for="city in cities" :key="city.id">
+                                        <option x-bind:value="city.id" x-text="city.name"></option>
+                                    </template>
                                 </select>
+                                @error('city_id') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                             </div>
                         </div>
 
@@ -120,7 +120,7 @@
                 x-model="shippingAddress"
                 @input="addressAutoFilled = false"
                 class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all resize-none @error('shipping_address') border-red-400 dark:border-red-500 @enderror"></textarea>
-                            @error('shipping_address') <p class="mt-1 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                            @error('shipping_address') <p class="mt-1.5 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                         </div>
 
                         <!-- Notes -->
@@ -163,7 +163,7 @@
                                 </label>
                             </template>
                         </div>
-                        @error('payment_method') <p class="mt-2 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                        @error('payment_method') <p class="mt-2 text-xs text-red-500 font-medium flex items-center gap-1"><svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>{{ $message }}</p> @enderror
                     </div>
                 </div>
 
@@ -294,10 +294,12 @@
             couponError: '',
             couponLoading: false,
             submitting: false,
+            governorates: initial.governorates || [],
             governorateId: '{{ old('governorate_id') }}',
             governorateName: '',
             cityId: '{{ old('city_id') }}',
             cityName: '',
+            cities: [],
             shippingCalculating: false,
             shippingAddress: '{{ old('shipping_address') }}',
             addressAutoFilled: false,
@@ -315,19 +317,11 @@
 
             init() {
                 if (this.governorateId) {
-                    this.showCities(this.governorateId);
+                    this.onGovernorateChange();
                     if (this.cityId) {
                         this.onCityChange();
                     }
                 }
-            },
-
-            showCities(govId) {
-                document.querySelectorAll('#city_select option[data-gov]').forEach(opt => {
-                    opt.style.display = opt.dataset.gov == govId ? '' : 'none';
-                    opt.disabled = opt.dataset.gov != govId;
-                });
-                document.querySelector('#city_select').disabled = false;
             },
 
             onGovernorateChange() {
@@ -336,20 +330,20 @@
                 this.shipping = 0;
                 this.finalTotal = this.baseTotal - this.discount;
                 this.governorateName = '';
-                if (!this.governorateId) {
-                    document.querySelectorAll('#city_select option[data-gov]').forEach(opt => { opt.style.display = 'none'; });
-                    document.querySelector('#city_select').disabled = true;
-                    return;
+                if (!this.governorateId) return;
+                const gov = this.governorates.find(g => g.id == this.governorateId);
+                if (gov) {
+                    this.governorateName = gov.name;
+                    this.cities = gov.cities || [];
+                } else {
+                    this.cities = [];
                 }
-                const govSel = document.querySelector('#governorate_select option:checked');
-                this.governorateName = govSel && govSel.value ? govSel.textContent : '';
-                this.showCities(this.governorateId);
             },
 
             async onCityChange() {
                 if (!this.governorateId || !this.cityId) return;
-                const sel = document.querySelector('#city_select option:checked');
-                this.cityName = sel ? sel.textContent : '';
+                const city = this.cities.find(c => c.id == this.cityId);
+                this.cityName = city ? city.name : '';
                 if (!this.addressAutoFilled && this.shippingAddress.trim() === '') {
                     this.shippingAddress = this.governorateName + ' - ' + this.cityName + '، ';
                     this.addressAutoFilled = true;

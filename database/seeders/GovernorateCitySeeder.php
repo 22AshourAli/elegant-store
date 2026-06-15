@@ -41,9 +41,10 @@ class GovernorateCitySeeder extends Seeder
 
     public function run(): void
     {
-        Governorate::truncate();
-        City::truncate();
-        ShippingRate::truncate();
+        if (Governorate::count() > 0) {
+            $this->command->info('Governorates already seeded. Skipping.');
+            return;
+        }
 
         foreach ($this->governorates as $govData) {
             $gov = Governorate::create($govData);
