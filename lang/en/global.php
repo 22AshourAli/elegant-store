@@ -740,4 +740,5 @@ return [
     'offline_title' => 'Connection Lost',
     'offline_desc' => 'Unable to connect to the server. Please check your internet connection and try again.',
     'try_again' => 'Try Again',
+    'no_governorates' => 'No governorates available',
 ];

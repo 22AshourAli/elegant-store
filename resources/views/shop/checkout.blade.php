@@ -90,9 +90,11 @@
                                     class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center]"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
-                                    @foreach($governorates as $gov)
+                                    @forelse($governorates as $gov)
                                     <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>{{ $gov->name }}</option>
-                                    @endforeach
+                                    @empty
+                                    <option value="" disabled>⚠️ {{ __('global.no_governorates') }}</option>
+                                    @endforelse
                                 </select>
                             </div>
 
@@ -296,9 +298,9 @@
             couponLoading: false,
             submitting: false,
             governorates: initial.governorates || [],
-            governorateId: '',
+            governorateId: '{{ old('governorate_id') }}',
             governorateName: '',
-            cityId: '',
+            cityId: '{{ old('city_id') }}',
             cityName: '',
             cities: [],
             citiesLoading: false,
@@ -315,6 +317,15 @@
             formatPrice(price) {
                 const value = Math.round(parseFloat(price || 0));
                 return value.toLocaleString('ar-EG') + ' {{ __('global.currency') }}';
+            },
+
+            async init() {
+                if (this.governorateId) {
+                    await this.onGovernorateChange();
+                    if (this.cityId) {
+                        await this.onCityChange();
+                    }
+                }
             },
 
             async onGovernorateChange() {
