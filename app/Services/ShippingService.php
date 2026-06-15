@@ -4,108 +4,103 @@ namespace App\Services;
 
 use App\Models\Governorate;
 use App\Models\ShippingRate;
+use Illuminate\Support\Facades\Cache;
 
 class ShippingService
 {
-    /**
-     * Calculate shipping cost for a given governorate/city and cart total.
-     *
-     * Priority:
-     * 1. City-specific rate (most specific)
-     * 2. Governorate-wide rate
-     * 3. Default fallback rate
-     */
-    public function calculateCost(
-        int $governorateId,
-        ?int $cityId,
-        float $cartTotal = 0
-    ): array {
-        $rate = null;
+    public function calculateCost(int $governorateId, ?int $cityId = null, float $cartTotal = 0): array
+    {
+        $governorate = Governorate::with('shippingRates')->findOrFail($governorateId);
+        $fuelSurcharge = $this->getFuelSurcharge();
+        $freeThreshold = $this->getFreeShippingThreshold();
 
-        // Try city-specific rate first
-        if ($cityId) {
-            $rate = ShippingRate::where('governorate_id', $governorateId)
-                ->where('city_id', $cityId)
-                ->where('is_active', true)
-                ->first();
-        }
+        $rate = ShippingRate::where('governorate_id', $governorateId)
+            ->where('is_active', true)
+            ->when($cityId, fn($q) => $q->where('city_id', $cityId))
+            ->orderBy('city_id', 'desc')
+            ->first();
 
-        // Fall back to governorate-wide rate
-        if (!$rate) {
-            $rate = ShippingRate::where('governorate_id', $governorateId)
-                ->whereNull('city_id')
-                ->where('is_active', true)
-                ->first();
-        }
+        $baseCost = $rate?->rate ?? $governorate->base_shipping_cost;
 
-        // Fall back to any rate for this governorate
-        if (!$rate) {
-            $rate = ShippingRate::where('governorate_id', $governorateId)
-                ->where('is_active', true)
-                ->first();
-        }
-
-        // Check for free shipping eligibility
         if ($rate && $rate->min_cart_amount && $cartTotal >= $rate->min_cart_amount) {
             return [
-                'cost' => 0.0,
-                'method' => 'free',
-                'label' => 'Free Shipping',
-                'rate_id' => $rate->id,
+                'cost' => 0,
+                'base_cost' => $baseCost,
+                'fuel_surcharge' => 0,
+                'final_cost' => 0,
+                'is_free' => true,
+                'reason' => 'cart_threshold',
             ];
         }
 
-        $cost = $rate ? (float) $rate->rate : config('shipping.default_rate', 50);
+        if ($freeThreshold > 0 && $cartTotal >= $freeThreshold) {
+            return [
+                'cost' => 0,
+                'base_cost' => $baseCost,
+                'fuel_surcharge' => 0,
+                'final_cost' => 0,
+                'is_free' => true,
+                'reason' => 'global_threshold',
+            ];
+        }
+
+        $surchargeAmount = $baseCost * ($fuelSurcharge / 100);
+        $finalCost = $baseCost + $surchargeAmount;
 
         return [
-            'cost' => $cost,
-            'method' => $cost > 0 ? 'flat' : 'free',
-            'label' => $cost > 0 ? "Shipping: {$cost} EGP" : 'Free Shipping',
-            'rate_id' => $rate?->id,
+            'cost' => round($finalCost, 2),
+            'base_cost' => round($baseCost, 2),
+            'fuel_surcharge' => round($surchargeAmount, 2),
+            'final_cost' => round($finalCost, 2),
+            'is_free' => false,
+            'reason' => null,
         ];
     }
 
-    /**
-     * Get all active governorates with their cities for checkout dropdowns.
-     */
-    public function getCheckoutLocations(): array
+    public function getCheckoutLocations()
     {
-        return Governorate::with(['cities' => fn($q) => $q->where('is_active', true)])
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get()
-            ->map(fn($g) => [
-                'id' => $g->id,
-                'name' => $g->name,
-                'cities' => $g->cities->map(fn($c) => [
-                    'id' => $c->id,
-                    'name' => $c->name,
-                    'delivery_time' => $c->delivery_time,
-                ]),
-            ])
-            ->toArray();
+        return Cache::remember('checkout_locations', 86400, fn() =>
+            Governorate::where('is_active', true)
+                ->with(['cities' => fn($q) => $q->where('is_active', true)->orderBy('name')])
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn($gov) => [
+                    'id' => $gov->id,
+                    'name' => $gov->name,
+                    'cities' => $gov->cities->map(fn($c) => ['id' => $c->id, 'name' => $c->name]),
+                ])
+        );
     }
 
-    /**
-     * Placeholder for future courier API integration.
-     * Implement specific courier logic in dedicated classes (e.g., BostaCourier, AramexCourier).
-     */
-    public function createShipment(array $orderData): array
+    public function getActiveGovernorates()
     {
-        // Future: dispatch to CourierServiceFactory::driver($courierName)->createShipment($orderData);
-        return [
-            'tracking_number' => null,
-            'tracking_url' => null,
-            'courier_name' => null,
-        ];
+        return Cache::remember('active_governorates', 86400, fn() =>
+            Governorate::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
     }
 
-    /**
-     * Placeholder for tracking status updates via courier webhook/polling.
-     */
-    public function trackShipment(string $trackingNumber, string $courier): ?array
+    public function getFuelSurcharge(): float
     {
-        // Future: CourierServiceFactory::driver($courier)->track($trackingNumber);
-        return null;
+        $val = \App\Models\Setting::getValue('fuel_surcharge_percentage', '0');
+        return max(0, (float) $val);
+    }
+
+    public function getFreeShippingThreshold(): float
+    {
+        $val = \App\Models\Setting::getValue('free_shipping_threshold', '500');
+        return max(0, (float) $val);
+    }
+
+    public function getDefaultShippingCost(): float
+    {
+        $val = \App\Models\Setting::getValue('default_shipping_cost', '30');
+        return max(0, (float) $val);
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forget('active_governorates');
     }
 }

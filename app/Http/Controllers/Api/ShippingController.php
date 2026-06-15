@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Services\ShippingService;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,18 @@ class ShippingController extends Controller
         return response()->json([
             'data' => $this->shippingService->getCheckoutLocations(),
         ]);
+    }
+
+    public function cities(Request $request)
+    {
+        $request->validate(['governorate_id' => 'required|exists:governorates,id']);
+
+        return response()->json(
+            City::where('governorate_id', $request->governorate_id)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
     }
 
     public function calculate(Request $request)

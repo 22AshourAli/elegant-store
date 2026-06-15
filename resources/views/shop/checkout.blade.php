@@ -6,7 +6,10 @@
     discount: {{ (int) round($discount) }},
     shipping: {{ (int) round($shipping) }},
     finalTotal: {{ (int) round($finalTotal) }},
-    appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null)
+    appliedCoupon: @json($appliedCoupon ? ['code' => $appliedCoupon->code, 'type' => $appliedCoupon->type, 'value' => $appliedCoupon->value] : null),
+    governorates: @json($governorates ?? []),
+    shippingCostUrl: '{{ route('api.shipping.calculate') }}',
+    citiesUrl: '{{ route('api.shipping.cities') }}'
 })">
     <h1 class="text-3xl font-extrabold mb-8 text-slate-900 dark:text-white">{{ __('global.checkout_title_page') }}</h1>
 
@@ -42,6 +45,7 @@
 
             <!-- Shipping Info Form (Left Side) -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Contact Info -->
                 <div class="bg-white/70 dark:bg-surface-dark/60 rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 shadow-sm backdrop-blur-sm">
                     <h2 class="text-xl font-bold mb-6 pb-2 border-b border-slate-200/40 dark:border-slate-800/60 text-slate-900 dark:text-white">{{ __('global.shipping_info') }}</h2>
 
@@ -53,18 +57,69 @@
 
                         <div>
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
-                            <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-500 dark:border-red-500 @enderror" @error('phone') aria-invalid="true" aria-describedby="phone-error" @enderror>
-                            @error('phone')
-                                <p id="phone-error" class="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
-                            @enderror
+                            <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('phone') border-red-500 dark:border-red-500 @enderror">
+                            @error('phone') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- Governorate -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
+                            <select name="governorate_id" required x-model="governorateId" @change="onGovernorateChange" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                                <option value="">{{ __('global.select_governorate') }}</option>
+                                <template x-for="gov in governorates" :key="gov.id">
+                                    <option x-bind:value="gov.id" x-text="gov.name"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <!-- City -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.admin_cities') }} <span class="text-red-500">*</span></label>
+                            <select name="city_id" required x-model="cityId" @change="onCityChange" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                                <option value="">{{ __('global.select_city') }}</option>
+                                <template x-for="city in cities" :key="city.id">
+                                    <option x-bind:value="city.id" x-text="city.name"></option>
+                                </template>
+                            </select>
+                            <p x-show="citiesLoading" class="mt-1 text-xs text-slate-500" x-text="'{{ __('global.loading_cities') }}'"></p>
+                        </div>
+
+                        <!-- Detailed Address -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.address_street') }} <span class="text-red-500">*</span></label>
+                                <input type="text" name="address_street" required value="{{ old('address_street') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.address_building') }} <span class="text-red-500">*</span></label>
+                                <input type="text" name="address_building" required value="{{ old('address_building') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.address_floor') }}</label>
+                                <input type="text" name="address_floor" value="{{ old('address_floor') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.address_apartment') }}</label>
+                                <input type="text" name="address_apartment" value="{{ old('address_apartment') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
-                            <textarea name="shipping_address" required rows="3" placeholder="{{ __('global.address_placeholder') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all @error('shipping_address') border-red-500 dark:border-red-500 @enderror" @error('shipping_address') aria-invalid="true" aria-describedby="shipping_address-error" @enderror>{{ old('shipping_address') }}</textarea>
-                            @error('shipping_address')
-                                <p id="shipping_address-error" class="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.address_landmark') }}</label>
+                            <input type="text" name="address_landmark" value="{{ old('address_landmark') }}" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.address_type') }}</label>
+                            <select name="address_type" class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-brand-primary dark:focus:border-accent focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-accent/20 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all">
+                                <option value="home" {{ old('address_type', 'home') === 'home' ? 'selected' : '' }}>{{ __('global.address_type_home') }}</option>
+                                <option value="work" {{ old('address_type') === 'work' ? 'selected' : '' }}>{{ __('global.address_type_work') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Legacy shipping_address hidden field for backward compatibility -->
+                        <div class="hidden">
+                            <textarea name="shipping_address" x-model="compositeAddress"></textarea>
                         </div>
 
                         <div>
@@ -74,14 +129,14 @@
                     </div>
                 </div>
 
+                <!-- Payment Method -->
                 <div class="bg-white/70 dark:bg-surface-dark/60 rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 shadow-sm backdrop-blur-sm @error('payment_method') !border-red-500 dark:!border-red-500 @enderror" x-data="{ selectedMethod: 'cash' }">
                     <h2 class="text-xl font-bold mb-6 pb-2 border-b border-slate-200/40 dark:border-slate-800/60 text-slate-900 dark:text-white">{{ __('global.payment_method_title') }}</h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="payment-method-group" role="radiogroup" aria-label="{{ __('global.payment_method_title') }}">
-                        <!-- Cash on Delivery -->
                         <label class="relative flex flex-col items-center justify-center p-5 border-2 rounded-xl cursor-pointer transition-all duration-300"
                                :class="selectedMethod === 'cash' ? 'border-brand-primary bg-brand-primary/5 dark:bg-accent/10 dark:border-accent shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]' : 'border-slate-200/60 dark:border-slate-800/60 hover:border-brand-primary/40 dark:hover:border-accent/40 hover:shadow-sm bg-white/40 dark:bg-slate-900/30'">
-                            <input type="radio" name="payment_method" value="cash" x-model="selectedMethod" class="sr-only" aria-describedby="payment-method-error">
+                            <input type="radio" name="payment_method" value="cash" x-model="selectedMethod" class="sr-only">
                             <svg class="w-8 h-8 mb-2 transition-colors duration-300" :class="selectedMethod === 'cash' ? 'text-brand-primary dark:text-accent' : 'text-slate-400 dark:text-slate-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             <span class="font-bold text-sm transition-colors duration-300" :class="selectedMethod === 'cash' ? 'text-brand-primary dark:text-accent' : 'text-slate-700 dark:text-slate-300'">{{ __('global.cash_on_delivery_label') }}</span>
                             <template x-if="selectedMethod === 'cash'">
@@ -91,10 +146,9 @@
                             </template>
                         </label>
 
-                        <!-- Credit Card -->
                         <label class="relative flex flex-col items-center justify-center p-5 border-2 rounded-xl cursor-pointer transition-all duration-300"
                                :class="selectedMethod === 'card' ? 'border-brand-primary bg-brand-primary/5 dark:bg-accent/10 dark:border-accent shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]' : 'border-slate-200/60 dark:border-slate-800/60 hover:border-brand-primary/40 dark:hover:border-accent/40 hover:shadow-sm bg-white/40 dark:bg-slate-900/30'">
-                            <input type="radio" name="payment_method" value="card" x-model="selectedMethod" class="sr-only" aria-describedby="payment-method-error">
+                            <input type="radio" name="payment_method" value="card" x-model="selectedMethod" class="sr-only">
                             <svg class="w-8 h-8 mb-2 transition-colors duration-300" :class="selectedMethod === 'card' ? 'text-brand-primary dark:text-accent' : 'text-slate-400 dark:text-slate-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                             <span class="font-bold text-sm transition-colors duration-300" :class="selectedMethod === 'card' ? 'text-brand-primary dark:text-accent' : 'text-slate-700 dark:text-slate-300'">{{ __('global.credit_card_label') }}</span>
                             <template x-if="selectedMethod === 'card'">
@@ -104,10 +158,9 @@
                             </template>
                         </label>
 
-                        <!-- Wallet -->
                         <label class="relative flex flex-col items-center justify-center p-5 border-2 rounded-xl cursor-pointer transition-all duration-300"
                                :class="selectedMethod === 'wallet' ? 'border-brand-primary bg-brand-primary/5 dark:bg-accent/10 dark:border-accent shadow-[0_0_25px_rgba(79,70,229,0.15)] scale-[1.02]' : 'border-slate-200/60 dark:border-slate-800/60 hover:border-brand-primary/40 dark:hover:border-accent/40 hover:shadow-sm bg-white/40 dark:bg-slate-900/30'">
-                            <input type="radio" name="payment_method" value="wallet" x-model="selectedMethod" class="sr-only" aria-describedby="payment-method-error">
+                            <input type="radio" name="payment_method" value="wallet" x-model="selectedMethod" class="sr-only">
                             <svg class="w-8 h-8 mb-2 transition-colors duration-300" :class="selectedMethod === 'wallet' ? 'text-brand-primary dark:text-accent' : 'text-slate-400 dark:text-slate-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                             <span class="font-bold text-sm transition-colors duration-300" :class="selectedMethod === 'wallet' ? 'text-brand-primary dark:text-accent' : 'text-slate-700 dark:text-slate-300'">{{ __('global.wallet_label') }}</span>
                             <template x-if="selectedMethod === 'wallet'">
@@ -117,9 +170,7 @@
                             </template>
                         </label>
                     </div>
-                    @error('payment_method')
-                        <p id="payment-method-error" class="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">{{ $message }}</p>
-                    @enderror
+                    @error('payment_method') <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 </div>
             </div>
 
@@ -170,10 +221,13 @@
                         </div>
                         <div class="flex justify-between text-slate-600 dark:text-slate-400 text-sm">
                             <span class="font-semibold">{{ __('global.shipping_cost_label') }}</span>
-                            <template x-if="shipping === 0">
+                            <template x-if="shippingCalculating">
+                                <span class="text-slate-400 italic text-xs">{{ __('global.shipping_calculating') }}</span>
+                            </template>
+                            <template x-if="!shippingCalculating && shipping === 0">
                                 <span class="text-emerald-500 font-extrabold">{{ __('global.free') }}</span>
                             </template>
-                            <template x-if="shipping > 0">
+                            <template x-if="!shippingCalculating && shipping > 0">
                                 <span class="font-bold" x-text="formatPrice(shipping)"></span>
                             </template>
                         </div>
@@ -184,7 +238,7 @@
                         <span class="text-2xl font-black text-brand-primary dark:text-accent" x-text="formatPrice(finalTotal)"></span>
                     </div>
 
-                    <button type="submit" :disabled="submitting" class="w-full bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.5)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
+                    <button type="submit" :disabled="submitting || shippingCalculating" class="w-full bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(79,70,229,0.3)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.5)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0">
                         <span x-show="!submitting">{{ __('global.confirm_order') }}</span>
                         <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <svg x-show="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -210,6 +264,33 @@
             couponError: '',
             couponLoading: false,
             submitting: false,
+            governorates: initial.governorates || [],
+            governorateId: '',
+            cityId: '',
+            cities: [],
+            citiesLoading: false,
+            shippingCalculating: false,
+            shippingCostUrl: initial.shippingCostUrl,
+            citiesUrl: initial.citiesUrl,
+
+            get compositeAddress() {
+                const gov = this.governorates.find(g => g.id == this.governorateId);
+                const city = this.cities.find(c => c.id == this.cityId);
+                const parts = [];
+                if (gov) parts.push(gov.name);
+                if (city) parts.push(city.name);
+                const els = [];
+                const street = document.querySelector('[name="address_street"]')?.value;
+                const building = document.querySelector('[name="address_building"]')?.value;
+                const floor = document.querySelector('[name="address_floor"]')?.value;
+                const apt = document.querySelector('[name="address_apartment"]')?.value;
+                if (street) els.push(street);
+                if (building) els.push(building);
+                if (floor) els.push(`Floor ${floor}`);
+                if (apt) els.push(`Apt ${apt}`);
+                if (els.length) parts.push(els.join(', '));
+                return parts.join(' - ') || '';
+            },
 
             get appliedCouponText() {
                 if (!this.appliedCoupon) return '';
@@ -223,16 +304,47 @@
                 return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(value);
             },
 
+            async onGovernorateChange() {
+                this.cityId = '';
+                this.cities = [];
+                this.shipping = 0;
+                this.finalTotal = this.baseTotal - this.discount;
+                if (!this.governorateId) return;
+                this.citiesLoading = true;
+                try {
+                    const res = await fetch(`${this.citiesUrl}?governorate_id=${this.governorateId}`);
+                    this.cities = await res.json();
+                } catch(e) {}
+                this.citiesLoading = false;
+            },
+
+            async onCityChange() {
+                if (!this.governorateId) return;
+                this.shippingCalculating = true;
+                try {
+                    const res = await fetch(this.shippingCostUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({
+                            governorate_id: this.governorateId,
+                            city_id: this.cityId || null,
+                            cart_total: this.baseTotal - this.discount,
+                        })
+                    });
+                    const data = await res.json();
+                    this.shipping = data.final_cost || 0;
+                    this.finalTotal = (this.baseTotal - this.discount) + this.shipping;
+                } catch(e) {}
+                this.shippingCalculating = false;
+            },
+
             applyCoupon(code) {
                 this.couponError = '';
                 if (!code) return;
                 this.couponLoading = true;
                 fetch('{{ route('coupon.apply') }}', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                     body: JSON.stringify({ code })
                 }).then(async res => {
                     const data = await res.json();
@@ -265,9 +377,7 @@
                     this.finalTotal = Number(data.total) + this.shipping;
                     this.couponLoading = false;
                     window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                }).catch(() => {
-                    this.couponLoading = false;
-                });
+                }).catch(() => { this.couponLoading = false; });
             }
         }));
     });

@@ -6,11 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Governorate extends Model
 {
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['name', 'is_active', 'base_shipping_cost'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            'base_shipping_cost' => 'decimal:2',
+        ];
     }
 
     public function cities()

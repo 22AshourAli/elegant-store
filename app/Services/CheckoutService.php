@@ -6,27 +6,38 @@ use App\Events\StockUpdated;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
+use App\Services\ShippingService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class CheckoutService
 {
+    public function __construct(
+        protected ShippingService $shippingService
+    ) {}
+
     public function createOrder($user, $cartItems, $data)
     {
         return DB::transaction(function () use ($user, $cartItems, $data) {
             $subtotal = $data['subtotal'] ?? 0;
             $discount = $data['discount'] ?? 0;
 
-            $previousOrders = $user->orders()->where('status', '!=', 'cancelled')->count();
-            if ($previousOrders === 0) {
-                $shipping = 0;
+            // Dynamic shipping cost via ShippingService when governorate is selected
+            if (!empty($data['governorate_id'])) {
+                $shippingResult = $this->shippingService->calculateCost(
+                    governorateId: $data['governorate_id'],
+                    cityId: $data['city_id'] ?? null,
+                    cartTotal: $subtotal - $discount,
+                );
+                $shipping = $shippingResult['final_cost'];
             } else {
-                $shipping = $data['shipping_cost'] ?? config('store.default_shipping', 30);
+                $previousOrders = $user->orders()->where('status', '!=', 'cancelled')->count();
+                $shipping = ($previousOrders === 0) ? 0 : ($data['shipping_cost'] ?? config('store.default_shipping', 30));
             }
 
             $total = $subtotal + $shipping - $discount;
 
-            $order = Order::create([
+            $orderData = [
                 'user_id' => $user->id,
                 'branch_id' => $data['branch_id'] ?? 1,
                 'status' => 'pending',
@@ -39,7 +50,20 @@ class CheckoutService
                 'shipping_address' => $data['shipping_address'],
                 'phone' => $data['phone'] ?? null,
                 'notes' => $data['notes'] ?? '',
-            ]);
+            ];
+
+            if (isset($data['governorate_id'])) {
+                $orderData['governorate_id'] = $data['governorate_id'];
+                $orderData['city_id'] = $data['city_id'] ?? null;
+                $orderData['address_street'] = $data['address_street'] ?? '';
+                $orderData['address_building'] = $data['address_building'] ?? '';
+                $orderData['address_floor'] = $data['address_floor'] ?? '';
+                $orderData['address_apartment'] = $data['address_apartment'] ?? '';
+                $orderData['address_landmark'] = $data['address_landmark'] ?? '';
+                $orderData['address_type'] = $data['address_type'] ?? 'home';
+            }
+
+            $order = Order::create($orderData);
 
             $branchId = $data['branch_id'] ?? 1;
 

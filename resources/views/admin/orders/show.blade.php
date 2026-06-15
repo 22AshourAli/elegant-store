@@ -117,7 +117,7 @@
                     </label>
 
                     <select name="status" x-model="selectedStatus" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 border p-2">
-                        @foreach(['pending','confirmed','processing','shipped','delivered','cancelled','returned'] as $st)
+                        @foreach(['pending','confirmed','processing','shipped','out_for_delivery','delivered','returned','collected','cancelled'] as $st)
                             @php
                                 $k = 'orders.status_' . $st;
                                 $t = __($k);
@@ -166,9 +166,11 @@
                                     confirmed: '{{ __("orders.status_confirmed") }}',
                                     processing: '{{ __("orders.status_processing") }}',
                                     shipped: '{{ __("orders.status_shipped") }}',
+                                    out_for_delivery: '{{ __("orders.status_out_for_delivery") }}',
                                     delivered: '{{ __("orders.status_delivered") }}',
-                                    cancelled: '{{ __("orders.status_cancelled") }}',
-                                    returned: '{{ __("orders.status_returned") }}'
+                                    returned: '{{ __("orders.status_returned") }}',
+                                    collected: '{{ __("orders.status_collected") }}',
+                                    cancelled: '{{ __("orders.status_cancelled") }}'
                                 };
                                 var label = statusLabels[data.status] || data.status.charAt(0).toUpperCase() + data.status.slice(1);
                                 this.statusLabel = label;

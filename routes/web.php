@@ -110,6 +110,9 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\GovernorateController;
+use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\ShippingSettingsController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -207,6 +210,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/{stockTransfer}/cancel', [\App\Http\Controllers\Admin\StockTransferController::class, 'cancel'])->name('cancel');
         Route::delete('/{stockTransfer}', [\App\Http\Controllers\Admin\StockTransferController::class, 'destroy'])->name('destroy');
     });
+
+    // Shipping Management
+    Route::resource('governorates', GovernorateController::class)->except(['show', 'destroy']);
+    Route::get('governorates/{governorate}/toggle-active', [GovernorateController::class, 'toggleActive'])->name('governorates.toggle-active');
+    Route::resource('cities', CityController::class)->except(['show', 'destroy']);
+    Route::get('cities/{city}/toggle-active', [CityController::class, 'toggleActive'])->name('cities.toggle-active');
+    Route::get('shipping-settings', [ShippingSettingsController::class, 'index'])->name('shipping-settings.index');
+    Route::post('shipping-settings', [ShippingSettingsController::class, 'update'])->name('shipping-settings.update');
 
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {

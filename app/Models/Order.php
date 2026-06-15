@@ -19,9 +19,20 @@ class Order extends Model
         'shipping_cost',
         'total',
         'shipping_address',
+        'governorate_id',
+        'city_id',
+        'address_street',
+        'address_building',
+        'address_floor',
+        'address_apartment',
+        'address_landmark',
+        'address_type',
         'phone',
         'notes',
         'tracking_number',
+        'courier_name',
+        'tracking_url',
+        'shipping_status',
         'delivered_at',
     ];
 
@@ -66,5 +77,15 @@ class Order extends Model
     public function exchanges()
     {
         return $this->hasMany(Exchange::class);
+    }
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

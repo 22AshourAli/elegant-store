@@ -21,6 +21,7 @@ Route::get('/products/{product}', [ProductController::class, 'show'])->name('api
 
 // === Shipping ===
 Route::get('/shipping/locations', [ShippingController::class, 'locations'])->name('api.shipping.locations');
+Route::get('/shipping/cities', [ShippingController::class, 'cities'])->name('api.shipping.cities');
 Route::post('/shipping/calculate', [ShippingController::class, 'calculate'])->name('api.shipping.calculate');
 
 // === Abandoned Cart Recovery ===

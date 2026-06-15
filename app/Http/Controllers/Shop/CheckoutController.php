@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Models\Governorate;
 use App\Services\CartService;
 use App\Services\CheckoutService;
+use App\Services\ShippingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class CheckoutController extends Controller
 {
-    public function index(CartService $cart)
+    public function index(CartService $cart, ShippingService $shippingService)
     {
         if (!auth()->check()) {
             return redirect()->route('checkout.auth');
@@ -36,7 +38,9 @@ class CheckoutController extends Controller
             ->where(function($q) { $q->whereNull('valid_until')->orWhere('valid_until', '>=', now()); })
             ->exists();
 
-        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal', 'hasActiveCoupons'));
+        $governorates = $shippingService->getActiveGovernorates();
+
+        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal', 'hasActiveCoupons', 'governorates'));
     }
 
     public function showAuthForm()
@@ -72,6 +76,14 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'shipping_address' => 'required|string|max:1000',
+            'governorate_id' => 'nullable|exists:governorates,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'address_street' => 'nullable|string|max:255',
+            'address_building' => 'nullable|string|max:255',
+            'address_floor' => 'nullable|string|max:50',
+            'address_apartment' => 'nullable|string|max:50',
+            'address_landmark' => 'nullable|string|max:255',
+            'address_type' => 'nullable|in:home,work',
             'payment_method' => 'required|in:cash,card,wallet',
             'phone' => ['required', 'string', 'regex:/^(01)[0-9]{9}$/', 'size:11'],
             'notes' => 'nullable|string|max:1000',
