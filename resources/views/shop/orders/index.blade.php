@@ -30,7 +30,8 @@
                     </thead>
                     <tbody class="divide-y dark:divide-gray-700">
                         @foreach($orders as $order)
-                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm text-gray-900 dark:text-gray-200">
+                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm text-gray-900 dark:text-gray-200 cursor-pointer transition-colors"
+                            onclick="window.location='{{ route('orders.show', $order) }}'">
                             <td class="p-4 font-bold">#{{ $order->id }}</td>
                             <td class="p-4">{{ $order->created_at->format('Y-m-d H:i') }}</td>
                             <td class="p-4">
@@ -67,7 +68,7 @@
                             </td>
                             <td class="p-4 font-bold">{{ (int) round($order->total) }} {{ __('global.currency') }}</td>
                             <td class="p-4 text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}">
-                                <a href="{{ route('orders.show', $order) }}" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">{{ __('global.order_details') }} {!! app()->getLocale() === 'ar' ? '&larr;' : '&rarr;' !!}</a>
+                                <a href="{{ route('orders.show', $order) }}" onclick="event.stopPropagation()" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold">{{ __('global.order_details') }} {!! app()->getLocale() === 'ar' ? '&larr;' : '&rarr;' !!}</a>
                             </td>
                         </tr>
                         @endforeach
