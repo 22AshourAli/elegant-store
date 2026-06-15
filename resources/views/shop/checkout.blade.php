@@ -1,6 +1,21 @@
 @extends('layouts.store')
 
 @section('content')
+<script>
+var CHECKOUT_DATA = {
+    baseTotal: {{ (int) round($baseTotal) }},
+    discount: {{ (int) round($discount) }},
+    shipping: {{ (int) round($shipping) }},
+    finalTotal: {{ (int) round($finalTotal) }},
+    oldGovId: '{{ old('governorate_id') }}',
+    oldCityId: '{{ old('city_id') }}',
+    currency: '{{ __('global.currency') }}',
+    freeText: '{{ __('global.free') }}',
+    shippingCalcText: '{{ __('global.shipping_calculating') }}',
+    csrfToken: '{{ csrf_token() }}',
+    shippingApiUrl: '{{ route('api.shipping.calculate') }}',
+};
+</script>
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950/20 py-6 sm:py-10" x-data="checkoutPage({
     baseTotal: {{ (int) round($baseTotal) }},
     discount: {{ (int) round($discount) }},
@@ -261,7 +276,10 @@
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.shipping_cost_label') }}</span>
-                                <span class="font-bold shipping-display {{ $shipping > 0 ? 'text-slate-900 dark:text-white' : 'text-emerald-500 text-xs' }}">{{ $shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free') }}</span>
+                                <span>
+                                    <span class="shipping-calculating font-bold text-slate-400 dark:text-slate-500 text-xs italic" style="display:none">{{ __('global.shipping_calculating') }}</span>
+                                    <span class="font-bold shipping-display {{ $shipping > 0 ? 'text-slate-900 dark:text-white' : 'text-emerald-500 text-xs' }}">{{ $shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free') }}</span>
+                                </span>
                             </div>
                         </div>
 
@@ -318,20 +336,65 @@ function toastHandler() {
     };
 }
 
-/* ===== Vanilla JS helpers (work without Alpine) ===== */
+/* ===== Vanilla JS (works without Alpine) ===== */
 document.addEventListener('DOMContentLoaded', function () {
     var govSelect = document.getElementById('governorate_id');
     var citySelect = document.getElementById('city_id');
     var addrInput = document.querySelector('[name=shipping_address]');
+    var D = typeof CHECKOUT_DATA !== 'undefined' ? CHECKOUT_DATA : {};
+
+    function fmtPrice(v) {
+        return Math.round(parseFloat(v || 0)).toLocaleString('ar-EG') + ' ' + D.currency;
+    }
+
+    function updateShippingDisplay(cost) {
+        var sd = document.querySelector('.shipping-display');
+        var sc = document.querySelector('.shipping-calculating');
+        var ft = document.querySelector('.final-total-display');
+        if (sc) sc.style.display = 'none';
+        if (sd) {
+            cost = parseFloat(cost || 0);
+            if (cost === 0) {
+                sd.textContent = D.freeText;
+                sd.className = 'font-bold shipping-display text-emerald-500 text-xs';
+            } else {
+                sd.textContent = fmtPrice(cost);
+                sd.className = 'font-bold shipping-display text-slate-900 dark:text-white';
+            }
+        }
+        if (ft) {
+            var total = (D.baseTotal - D.discount) + cost;
+            ft.textContent = fmtPrice(total);
+        }
+    }
+
+    function fetchShipping(govId, cityId) {
+        var sc = document.querySelector('.shipping-calculating');
+        if (sc) sc.style.display = 'inline';
+        if (!govId || !cityId) { updateShippingDisplay(0); return; }
+        fetch(D.shippingApiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': D.csrfToken },
+            body: JSON.stringify({ governorate_id: govId, city_id: cityId, cart_total: D.baseTotal - D.discount })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            updateShippingDisplay(data.final_cost || 0);
+        }).catch(function() { updateShippingDisplay(0); });
+    }
 
     function filterCities(govId) {
-        citySelect.value = '';
+        var prevCity = citySelect.value || D.oldCityId;
         citySelect.disabled = !govId;
         citySelect.querySelectorAll('option[data-gov]').forEach(function (opt) {
             var show = opt.getAttribute('data-gov') == govId;
             opt.style.display = show ? '' : 'none';
             opt.disabled = !show;
         });
+        /* Restore old city if matches current governorate */
+        if (prevCity) {
+            var match = citySelect.querySelector('option[value="' + prevCity + '"][data-gov="' + govId + '"]');
+            if (match) { citySelect.value = prevCity; }
+            else { citySelect.value = ''; }
+        } else { citySelect.value = ''; }
     }
 
     function autoFillAddress() {
@@ -343,19 +406,32 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    if (govSelect) {
-        govSelect.addEventListener('change', function () {
-            filterCities(this.value);
-            autoFillAddress();
-        });
-    }
-    if (citySelect) {
-        citySelect.addEventListener('change', autoFillAddress);
+    function onGovChange() {
+        var g = this ? this.value : govSelect.value;
+        filterCities(g);
+        autoFillAddress();
+        fetchShipping(g, citySelect.value);
     }
 
-    if (govSelect && govSelect.value) { filterCities(govSelect.value); }
+    function onCityChange() {
+        autoFillAddress();
+        fetchShipping(govSelect.value, citySelect.value);
+    }
 
-    /* ===== Button submit handler (no Alpine) ===== */
+    if (govSelect) { govSelect.addEventListener('change', onGovChange); }
+    if (citySelect) { citySelect.addEventListener('change', onCityChange); }
+
+    /* Init: filter + restore old city + calculate shipping */
+    if (govSelect && govSelect.value) {
+        filterCities(govSelect.value);
+        /* If old city exists, trigger shipping calc */
+        if (D.oldCityId && citySelect) {
+            citySelect.value = D.oldCityId;
+            onCityChange();
+        }
+    }
+
+    /* ===== Button submit handler ===== */
     var form = document.querySelector('.checkout-form');
     if (form) {
         form.addEventListener('submit', function () {
