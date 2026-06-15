@@ -35,23 +35,23 @@
             <h2 class="text-lg font-bold mb-4 pb-2 border-b dark:border-gray-700 text-gray-900 dark:text-white">{{ __('global.admin_products_ordered') }}</h2>
             <div class="divide-y dark:divide-gray-700">
                 @foreach($order->items as $item)
-                <div class="flex items-center py-4 first:pt-0 last:pb-0">
-                            @php
-                                $variantImg = $item->variant->imageUrl()
-                                    ?: $item->variant->product->firstImageUrl()
-                                    ?: asset('images/logo.svg');
-                            @endphp
-                            <img src="{{ $variantImg }}" loading="lazy" class="w-14 h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0 ml-4">
+                <div class="flex items-start py-4 first:pt-0 last:pb-0 gap-3 sm:gap-4">
+                    @php
+                        $variantImg = $item->variant->imageUrl()
+                            ?: $item->variant->product->firstImageUrl()
+                            ?: asset('images/logo.svg');
+                    @endphp
+                    <img src="{{ $variantImg }}" loading="lazy" class="w-12 h-14 sm:w-14 sm:h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0">
                     <div class="flex-1 min-w-0">
-                        <h3 class="font-bold text-gray-900 dark:text-white truncate">{{ $item->product_name }}</h3>
-                        <p class="text-xs text-gray-500 mt-1">
+                        <h3 class="font-bold text-gray-900 dark:text-white break-words text-sm sm:text-base leading-snug">{{ $item->product_name }}</h3>
+                        <p class="text-xs text-gray-500 mt-1 break-words">
                             @if($item->color) {{ __('global.color_label') }} {{ $item->color }} @endif
                             @if($item->color && $item->size) | @endif
                             @if($item->size) {{ __('global.size_label') }} {{ $item->size }} @endif
                         </p>
                         <p class="text-xs text-gray-400 mt-1">{{ __('global.qty_label') }} {{ $item->quantity }} × {{ (int) round($item->unit_price) }} {{ __('global.currency') }}</p>
                     </div>
-                    <span class="font-bold text-gray-900 dark:text-white flex-shrink-0">{{ (int) round($item->total) }} {{ __('global.currency') }}</span>
+                    <span class="font-bold text-gray-900 dark:text-white flex-shrink-0 whitespace-nowrap text-sm sm:text-base">{{ (int) round($item->total) }} {{ __('global.currency') }}</span>
                 </div>
                 @endforeach
             </div>
