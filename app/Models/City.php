@@ -10,7 +10,10 @@ class City extends Model
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            'base_shipping_cost' => 'decimal:2',
+        ];
     }
 
     public function governorate()

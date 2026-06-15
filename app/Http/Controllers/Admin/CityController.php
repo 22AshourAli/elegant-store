@@ -33,9 +33,9 @@ class CityController extends Controller
             'governorate_id' => 'required|exists:governorates,id',
             'name' => 'required|string|max:255',
             'name_ar' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
 
         City::create($data);
         ShippingService::clearCache();
@@ -55,9 +55,9 @@ class CityController extends Controller
             'governorate_id' => 'required|exists:governorates,id',
             'name' => 'required|string|max:255',
             'name_ar' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
 
         $city->update($data);
         ShippingService::clearCache();
@@ -78,6 +78,6 @@ class CityController extends Controller
         $city->delete();
         ShippingService::clearCache();
 
-        return redirect()->route('admin.cities.index')->with('success', 'تم حذف المدينة بنجاح.');
+        return redirect()->route('admin.cities.index')->with('success', __('global.deleted_success'));
     }
 }

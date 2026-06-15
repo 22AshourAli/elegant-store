@@ -768,4 +768,5 @@ return [
     'admin_reset' => 'تعيين',
     'admin_close' => 'إغلاق',
     'admin_network_error' => 'حدث خطأ في الشبكة. حاول مرة أخرى.',
+    'shipping_rate_duplicate' => 'يوجد سعر شحن لنفس المحافظة والمدينة بالفعل.',
 ];

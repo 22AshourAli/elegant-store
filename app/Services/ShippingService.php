@@ -10,14 +10,16 @@ class ShippingService
 {
     public function calculateCost(int $governorateId, ?int $cityId = null, float $cartTotal = 0): array
     {
-        $governorate = Governorate::with('shippingRates')->findOrFail($governorateId);
+        $governorate = Governorate::findOrFail($governorateId);
         $fuelSurcharge = $this->getFuelSurcharge();
         $freeThreshold = $this->getFreeShippingThreshold();
 
         $rate = ShippingRate::where('governorate_id', $governorateId)
             ->where('is_active', true)
-            ->when($cityId, fn($q) => $q->where('city_id', $cityId))
-            ->orderBy('city_id', 'desc')
+            ->where(function ($q) use ($cityId) {
+                $q->where('city_id', $cityId)->orWhereNull('city_id');
+            })
+            ->orderByRaw('city_id IS NULL ASC')
             ->first();
 
         $baseCost = $rate?->rate ?? $governorate->base_shipping_cost;

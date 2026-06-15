@@ -125,7 +125,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('categories', CategoryController::class);
     Route::resource('products', ProductController::class);
     Route::resource('coupons', CouponController::class);
-    Route::resource('users', UserController::class);
     Route::resource('orders', AdminOrderController::class)->only(['index', 'show']);
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::get('/orders/{order}/invoice', [App\Http\Controllers\Admin\OrderController::class, 'invoice'])->name('orders.invoice');
@@ -215,9 +214,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Shipping Management
     Route::resource('governorates', GovernorateController::class)->except(['show']);
-    Route::get('governorates/{governorate}/toggle-active', [GovernorateController::class, 'toggleActive'])->name('governorates.toggle-active');
+    Route::post('governorates/{governorate}/toggle-active', [GovernorateController::class, 'toggleActive'])->name('governorates.toggle-active');
     Route::resource('cities', CityController::class)->except(['show']);
-    Route::get('cities/{city}/toggle-active', [CityController::class, 'toggleActive'])->name('cities.toggle-active');
+    Route::post('cities/{city}/toggle-active', [CityController::class, 'toggleActive'])->name('cities.toggle-active');
     Route::get('shipping-settings', [ShippingSettingsController::class, 'index'])->name('shipping-settings.index');
     Route::post('shipping-settings', [ShippingSettingsController::class, 'update'])->name('shipping-settings.update');
     Route::resource('carriers', CarrierController::class);

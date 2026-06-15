@@ -8,6 +8,7 @@ use App\Models\Governorate;
 use App\Models\ShippingRate;
 use App\Services\ShippingService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ShippingRateController extends Controller
 {
@@ -28,12 +29,13 @@ class ShippingRateController extends Controller
     {
         $data = $request->validate([
             'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
+            'city_id' => ['nullable', 'exists:cities,id', Rule::exists('cities', 'id')->where('governorate_id', $request->governorate_id)],
             'rate' => 'required|numeric|min:0',
             'min_cart_amount' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
+        $this->preventDuplicateRate($request, null);
 
         ShippingRate::create($data);
         ShippingService::clearCache();
@@ -52,12 +54,13 @@ class ShippingRateController extends Controller
     {
         $data = $request->validate([
             'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
+            'city_id' => ['nullable', 'exists:cities,id', Rule::exists('cities', 'id')->where('governorate_id', $request->governorate_id)],
             'rate' => 'required|numeric|min:0',
             'min_cart_amount' => 'nullable|numeric|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
+        $this->preventDuplicateRate($request, $shippingRate->id);
 
         $shippingRate->update($data);
         ShippingService::clearCache();
@@ -71,6 +74,18 @@ class ShippingRateController extends Controller
         ShippingService::clearCache();
 
         return redirect()->route('admin.shipping-rates.index')->with('success', __('global.deleted_success'));
+    }
+
+    private function preventDuplicateRate(Request $request, ?int $excludeId): void
+    {
+        $exists = ShippingRate::where('governorate_id', $request->governorate_id)
+            ->where('city_id', $request->city_id)
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->exists();
+
+        if ($exists) {
+            abort(422, __('global.shipping_rate_duplicate'));
+        }
     }
 
     // API: get cities by governorate for dynamic dropdown

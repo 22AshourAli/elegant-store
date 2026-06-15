@@ -26,9 +26,9 @@ class GovernorateController extends Controller
             'name' => 'required|string|max:255',
             'name_ar' => 'nullable|string|max:255',
             'base_shipping_cost' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
 
         Governorate::create($data);
         ShippingService::clearCache();
@@ -47,9 +47,9 @@ class GovernorateController extends Controller
             'name' => 'required|string|max:255',
             'name_ar' => 'nullable|string|max:255',
             'base_shipping_cost' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
 
         $governorate->update($data);
         ShippingService::clearCache();
@@ -73,6 +73,6 @@ class GovernorateController extends Controller
         $governorate->delete();
         ShippingService::clearCache();
 
-        return redirect()->route('admin.governorates.index')->with('success', 'تم حذف المحافظة بنجاح.');
+        return redirect()->route('admin.governorates.index')->with('success', __('global.deleted_success'));
     }
 }
