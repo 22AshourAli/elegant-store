@@ -119,6 +119,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('branches', BranchController::class);
     Route::resource('users', UserController::class);
+    Route::post('/users/{user}/force-reset-password', [UserController::class, 'forceResetPassword'])->name('users.force-reset-password');
     Route::get('/customers', [\App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
     Route::get('/customers/{user}', [\App\Http\Controllers\Admin\CustomerController::class, 'show'])->name('customers.show');
     Route::resource('categories', CategoryController::class);

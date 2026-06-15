@@ -158,6 +158,21 @@ class UserController extends Controller
             ->with('success', __('global.admin_user_updated'));
     }
 
+    public function forceResetPassword(User $user)
+    {
+        $this->guard();
+
+        $rawPassword = Str::random(10);
+        $user->update(['password' => bcrypt($rawPassword)]);
+
+        return response()->json([
+            'success' => true,
+            'password' => $rawPassword,
+            'email' => $user->email,
+            'name' => $user->name,
+        ]);
+    }
+
     public function destroy(User $user)
     {
         $this->guard();
