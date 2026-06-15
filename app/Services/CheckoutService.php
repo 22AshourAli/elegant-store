@@ -6,16 +6,11 @@ use App\Events\StockUpdated;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
-use App\Services\ShippingService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class CheckoutService
 {
-    public function __construct(
-        protected ShippingService $shippingService,
-    ) {}
-
     public function createOrder($user, $cartItems, $data)
     {
         return DB::transaction(function () use ($user, $cartItems, $data) {
@@ -24,20 +19,12 @@ class CheckoutService
 
             $previousOrders = $user->orders()->where('status', '!=', 'cancelled')->count();
             if ($previousOrders === 0) {
-                $shippingCost = 0;
-            } elseif (!empty($data['governorate_id'])) {
-                $shippingCalc = $this->shippingService->calculateCost(
-                    governorateId: (int) $data['governorate_id'],
-                    cityId: !empty($data['city_id']) ? (int) $data['city_id'] : null,
-                    districtId: !empty($data['district_id']) ? (int) $data['district_id'] : null,
-                    cartTotal: (float) ($subtotal - $discount),
-                );
-                $shippingCost = $shippingCalc['cost'];
+                $shipping = 0;
             } else {
-                $shippingCost = $data['shipping_cost'] ?? config('store.default_shipping', 30);
+                $shipping = $data['shipping_cost'] ?? config('store.default_shipping', 30);
             }
 
-            $total = $subtotal + $shippingCost - $discount;
+            $total = $subtotal + $shipping - $discount;
 
             $order = Order::create([
                 'user_id' => $user->id,
@@ -47,15 +34,9 @@ class CheckoutService
                 'payment_status' => 'unpaid',
                 'subtotal' => $subtotal,
                 'discount' => $discount,
-                'shipping_cost' => $shippingCost,
+                'shipping_cost' => $shipping,
                 'total' => $total,
                 'shipping_address' => $data['shipping_address'],
-                'governorate_id' => $data['governorate_id'] ?? null,
-                'city_id' => $data['city_id'] ?? null,
-                'district_id' => $data['district_id'] ?? null,
-                'building' => $data['building'] ?? null,
-                'apartment' => $data['apartment'] ?? null,
-                'street' => $data['street'] ?? null,
                 'phone' => $data['phone'] ?? null,
                 'notes' => $data['notes'] ?? '',
             ]);

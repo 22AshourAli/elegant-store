@@ -2,81 +2,75 @@
 
 namespace App\Services;
 
-use App\Models\City;
-use App\Models\District;
 use App\Models\Governorate;
 use App\Models\ShippingRate;
 
 class ShippingService
 {
+    /**
+     * Calculate shipping cost for a given governorate/city and cart total.
+     *
+     * Priority:
+     * 1. City-specific rate (most specific)
+     * 2. Governorate-wide rate
+     * 3. Default fallback rate
+     */
     public function calculateCost(
         int $governorateId,
-        ?int $cityId = null,
-        ?int $districtId = null,
-        float $cartTotal = 0,
+        ?int $cityId,
+        float $cartTotal = 0
     ): array {
         $rate = null;
 
-        // Priority 1: district-specific rate
-        if ($districtId) {
+        // Try city-specific rate first
+        if ($cityId) {
             $rate = ShippingRate::where('governorate_id', $governorateId)
                 ->where('city_id', $cityId)
-                ->where('district_id', $districtId)
                 ->where('is_active', true)
                 ->first();
         }
 
-        // Priority 2: city-specific rate
-        if (!$rate && $cityId) {
-            $rate = ShippingRate::where('governorate_id', $governorateId)
-                ->where('city_id', $cityId)
-                ->whereNull('district_id')
-                ->where('is_active', true)
-                ->first();
-        }
-
-        // Priority 3: governorate-wide rate
+        // Fall back to governorate-wide rate
         if (!$rate) {
             $rate = ShippingRate::where('governorate_id', $governorateId)
                 ->whereNull('city_id')
-                ->whereNull('district_id')
                 ->where('is_active', true)
                 ->first();
         }
 
-        // Priority 4: any rate for this governorate
+        // Fall back to any rate for this governorate
         if (!$rate) {
             $rate = ShippingRate::where('governorate_id', $governorateId)
                 ->where('is_active', true)
                 ->first();
         }
 
-        // Free shipping eligibility
+        // Check for free shipping eligibility
         if ($rate && $rate->min_cart_amount && $cartTotal >= $rate->min_cart_amount) {
             return [
                 'cost' => 0.0,
                 'method' => 'free',
-                'label' => __('global.free'),
+                'label' => 'Free Shipping',
                 'rate_id' => $rate->id,
             ];
         }
 
-        $cost = $rate ? (float) $rate->rate : (float) config('shipping.default_rate', 50);
+        $cost = $rate ? (float) $rate->rate : config('shipping.default_rate', 50);
 
         return [
             'cost' => $cost,
             'method' => $cost > 0 ? 'flat' : 'free',
-            'label' => $cost > 0 ? number_format($cost, 2) . ' ' . __('global.currency') : __('global.free'),
+            'label' => $cost > 0 ? "Shipping: {$cost} EGP" : 'Free Shipping',
             'rate_id' => $rate?->id,
         ];
     }
 
+    /**
+     * Get all active governorates with their cities for checkout dropdowns.
+     */
     public function getCheckoutLocations(): array
     {
-        return Governorate::with([
-            'cities' => fn($q) => $q->where('is_active', true)->orderBy('name'),
-            'cities.districts' => fn($q) => $q->where('is_active', true)->orderBy('name'),
-        ])
+        return Governorate::with(['cities' => fn($q) => $q->where('is_active', true)])
             ->where('is_active', true)
             ->orderBy('name')
             ->get()
@@ -87,18 +81,18 @@ class ShippingService
                     'id' => $c->id,
                     'name' => $c->name,
                     'delivery_time' => $c->delivery_time,
-                    'districts' => $c->districts->map(fn($d) => [
-                        'id' => $d->id,
-                        'name' => $d->name,
-                        'type' => $d->type,
-                    ]),
                 ]),
             ])
             ->toArray();
     }
 
+    /**
+     * Placeholder for future courier API integration.
+     * Implement specific courier logic in dedicated classes (e.g., BostaCourier, AramexCourier).
+     */
     public function createShipment(array $orderData): array
     {
+        // Future: dispatch to CourierServiceFactory::driver($courierName)->createShipment($orderData);
         return [
             'tracking_number' => null,
             'tracking_url' => null,
@@ -106,8 +100,12 @@ class ShippingService
         ];
     }
 
+    /**
+     * Placeholder for tracking status updates via courier webhook/polling.
+     */
     public function trackShipment(string $trackingNumber, string $courier): ?array
     {
+        // Future: CourierServiceFactory::driver($courier)->track($trackingNumber);
         return null;
     }
 }

@@ -18,11 +18,6 @@ class City extends Model
         return $this->belongsTo(Governorate::class);
     }
 
-    public function districts()
-    {
-        return $this->hasMany(District::class);
-    }
-
     public function shippingRates()
     {
         return $this->hasMany(ShippingRate::class);
