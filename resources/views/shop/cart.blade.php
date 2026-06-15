@@ -1,7 +1,7 @@
 @extends('layouts.store')
 
 @section('content')
-<main class="container py-10 md:py-16 mb-10" x-data="cartView({{ json_encode($cartItems) }}, '{{ csrf_token() }}', {{ $cart->total() }}, {{ $shipping ?? 0 }})">
+<main class="container py-10 md:py-16 mb-10" x-data="cartView({{ json_encode($cartItems) }}, '{{ csrf_token() }}', {{ $cart->total() }})">
 
     <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-8 tracking-tight">{{ __('global.shopping_cart') }}</h1>
 
@@ -144,13 +144,7 @@
                     </div>
                     <div class="flex justify-between text-slate-500 dark:text-slate-400">
                         <span class="font-semibold">{{ __('global.shipping_cost') }}</span>
-                        @if ($shipping === 0)
-                        <span class="text-emerald-500 font-extrabold">{{ __('global.free') }}</span>
-                        @elseif ($shipping > 0)
-                        <span class="font-bold text-slate-700 dark:text-slate-300">{{ $shipping }} {{ __('global.currency') }}</span>
-                        @else
                         <span class="text-slate-400 font-semibold italic">{{ __('global.shipping_at_checkout') }}</span>
-                        @endif
                     </div>
                 </div>
 
@@ -172,11 +166,10 @@
 </main>
 
 <script>
-    function cartFactory(cartItems, csrfToken, initialTotal, shipping) {
+    function cartFactory(cartItems, csrfToken, initialTotal) {
         return {
             items: Object.values(cartItems),
-            shipping: shipping,
-            totalPrice: initialTotal + shipping,
+            totalPrice: initialTotal,
             csrfToken: csrfToken,
             loadingItems: {},
             couponLoading: false,
@@ -206,7 +199,7 @@
                 }).then(function(data) {
                     var item = vm.items.find(function(i) { return i.variant_id == variantId; });
                     if (item) item.quantity = newQty;
-                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    vm.totalPrice = Number(data.total);
                     delete vm.loadingItems[variantId];
                     window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
                 }).catch(function(e) {
@@ -230,7 +223,7 @@
                     return res.json();
                 }).then(function(data) {
                     vm.items = vm.items.filter(function(i) { return i.variant_id != variantId; });
-                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    vm.totalPrice = Number(data.total);
                     delete vm.loadingItems[variantId];
                     window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
                 }).catch(function(e) {
@@ -262,7 +255,7 @@
                 }).then(async function(res) {
                     var data = await res.json();
                     if (!res.ok) throw new Error(data.message || @json(__('global.coupon_error')));
-                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    vm.totalPrice = Number(data.total);
                     vm.appliedCoupon = data.coupon;
                     vm.couponCode = '';
                     vm.couponLoading = false;
@@ -280,7 +273,7 @@
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': @json(csrf_token()) }
                 }).then(function(res) { return res.json(); }).then(function(data) {
-                    vm.totalPrice = Number(data.total) + vm.shipping;
+                    vm.totalPrice = Number(data.total);
                     vm.appliedCoupon = null;
                     vm.couponLoading = false;
                 }).catch(function() { vm.couponLoading = false; });

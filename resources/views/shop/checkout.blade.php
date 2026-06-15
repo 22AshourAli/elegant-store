@@ -90,9 +90,9 @@
                                     class="w-full border border-slate-200/60 dark:border-slate-700/60 rounded-xl shadow-sm focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40 bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center]"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
-                                    <template x-for="gov in governorates" :key="gov.id">
-                                        <option x-bind:value="gov.id" x-text="gov.name"></option>
-                                    </template>
+                                    @foreach($governorates as $gov)
+                                    <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>{{ $gov->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -186,9 +186,8 @@
                         <div class="max-h-48 sm:max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/60 no-scrollbar">
                             @foreach($cartItems as $item)
                             <div class="flex items-center gap-3 p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                <div class="w-10 h-12 sm:w-12 sm:h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center text-xs font-bold text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700">
-                                    {{ $item['quantity'] }}x
-                                </div>
+                                <img src="{{ $item['image'] ?? asset('images/logo.svg') }}" alt="{{ $item['product_name'] }}" loading="lazy"
+                                    class="w-10 h-12 sm:w-12 sm:h-14 rounded-xl object-cover flex-shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                                 <div class="flex-1 min-w-0">
                                     <p class="font-bold text-sm text-slate-900 dark:text-white truncate">{{ $item['product_name'] }}</p>
                                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">

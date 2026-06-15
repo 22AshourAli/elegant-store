@@ -76,8 +76,8 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'shipping_address' => 'required|string|max:1000',
-            'governorate_id' => 'nullable|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
+            'governorate_id' => 'required|exists:governorates,id',
+            'city_id' => 'required|exists:cities,id',
             'payment_method' => 'required|in:cash,card,wallet',
             'phone' => ['required', 'string', 'regex:/^(01)[0-9]{9}$/', 'size:11'],
             'notes' => 'nullable|string|max:1000',

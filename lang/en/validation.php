@@ -179,8 +179,9 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'phone' => [
+            'regex' => 'The phone number must be a valid 11-digit Egyptian number (starting with 01).',
+            'size' => 'The phone number must be exactly 11 digits.',
         ],
     ],
 
@@ -195,6 +196,13 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'phone' => 'phone number',
+        'shipping_address' => 'shipping address',
+        'governorate_id' => 'governorate',
+        'city_id' => 'city',
+        'payment_method' => 'payment method',
+        'notes' => 'order notes',
+    ],
 
 ];

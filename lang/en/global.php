@@ -456,7 +456,7 @@ return [
     'coupon_error' => 'Invalid or expired coupon code.',
     'coupon_removed' => 'Coupon removed successfully.',
     'coupon_discount_label' => 'Discount',
-    'phone_invalid' => 'Phone number must be a valid 11-digit Egyptian number (starting with 01).',
+    'phone_invalid' => 'Phone number must be a valid 11-digit Egyptian number (starting with 01). E.g. 01012345678',
 
     // Invoice
     'invoice_title' => 'Tax Invoice',
