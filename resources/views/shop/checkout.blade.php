@@ -380,19 +380,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!govId) { updateShippingDisplay(0, false); return; }
         var body = { governorate_id: govId, cart_total: D.baseTotal - D.discount };
         if (cityId) body.city_id = cityId;
-        fetch(D.shippingApiUrl, {
+        fetch(D.shippingApiUrl || '/api/shipping/calculate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': D.csrfToken },
             body: JSON.stringify(body)
-        }).then(function(r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-        }).then(function(data) {
-            if (data && typeof data.final_cost !== 'undefined') {
-                updateShippingDisplay(data.final_cost, true);
-            } else {
-                updateShippingDisplay(0, false);
-            }
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            var cost = 0;
+            if (data && typeof data.final_cost === 'number') cost = data.final_cost;
+            updateShippingDisplay(cost, true);
         }).catch(function() { updateShippingDisplay(0, false); });
     }
 
