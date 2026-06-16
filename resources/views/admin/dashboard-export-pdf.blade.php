@@ -5,13 +5,7 @@
     <title>{{ $arabic->utf8Glyphs('التقرير المالي', 50, false) }}</title>
     <style>
         @page { margin: 20mm 15mm; }
-        @font-face {
-            font-family: 'Amiri';
-            src: url('{{ public_path('fonts/Amiri-Regular.ttf') }}') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        body { font-family: 'Amiri', 'DejaVu Sans', sans-serif; font-size: 13px; color: #1f2937; direction: rtl; unicode-bidi: embed; }
+        body { font-family: 'DejaVu Sans', sans-serif; font-size: 13px; color: #1f2937; direction: rtl; unicode-bidi: embed; }
         h1 { text-align: center; font-size: 20px; margin-bottom: 5px; }
         .date { text-align: center; color: #6b7280; font-size: 11px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }

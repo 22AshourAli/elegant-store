@@ -35,7 +35,7 @@
     <div class="flex min-h-screen">
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'"
-               class="fixed right-0 top-0 bottom-0 lg:static z-45 w-64 bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 overflow-y-auto transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none">
+               class="fixed right-0 top-0 bottom-0 lg:static z-45 w-64 bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800 overflow-y-auto transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none flex flex-col">
 
             <!-- Sidebar Header with Logo and Close Button -->
             <div class="p-5 flex justify-between items-center border-b border-gray-150 dark:border-gray-800">
@@ -56,7 +56,7 @@
             </div>
 
             <!-- Sidebar Navigation Links -->
-            <div class="p-4">
+            <div class="p-4 flex-1 overflow-y-auto">
                 <nav class="space-y-1.5">
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-650 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -207,6 +207,60 @@
                     </div>
                 </nav>
             </div>
+
+            <!-- Sidebar Footer -->
+            <div class="mt-auto p-4 border-t border-gray-100 dark:border-gray-800">
+                <div class="space-y-1.5">
+                    <!-- Dark Mode -->
+                    <button @click="darkMode = !darkMode"
+                            class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white">
+                        <svg x-show="!darkMode" class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg x-show="darkMode" class="w-5 h-5 text-amber-500" style="display: none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
+                        <span x-show="!darkMode">داكن</span>
+                        <span x-show="darkMode" style="display: none;">فاتح</span>
+                    </button>
+
+                    <!-- Language Switcher -->
+                    <div x-data="{ langOpen: false }" class="relative">
+                        <button @click="langOpen = !langOpen"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a3 3 0 003-3V6.7m-2 9l-3-3m0 0l-3 3m3-3v12M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
+                            <span>{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
+                            <svg class="w-3 h-3 mr-auto transition-transform" :class="langOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div x-show="langOpen" @click.away="langOpen = false" style="display: none;"
+                             class="mr-10 mt-1 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 py-1">
+                            <a href="{{ route('lang.switch', 'ar') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'ar' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
+                                <span>العربية</span>
+                                @if(app()->getLocale() === 'ar') <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> @endif
+                            </a>
+                            <a href="{{ route('lang.switch', 'en') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'en' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
+                                <span>English</span>
+                                @if(app()->getLocale() === 'en') <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> @endif
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Back to Store -->
+                    <a href="{{ route('home') }}"
+                       class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        <span>{{ __('global.admin_back_to_store') }}</span>
+                    </a>
+                </div>
+
+                <!-- User Info & Logout -->
+                <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 truncate flex-1 min-w-0">{{ auth()->user()->name }}</span>
+                    <form method="POST" action="{{ route('admin.logout') }}" class="m-0 flex-shrink-0">
+                        @csrf
+                        <button class="p-2 rounded-xl text-sm font-semibold transition bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            <span class="hidden lg:inline">خروج</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
         </aside>
 
         <!-- Main content -->
@@ -221,13 +275,6 @@
                 </div>
 
                 <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-
-                    <!-- Dark mode toggle -->
-                    <button @click="darkMode = !darkMode" class="p-1.5 sm:p-2 cursor-pointer rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150">
-                        <svg x-show="!darkMode" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <svg x-show="darkMode" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" style="display: none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
-                    </button>
-
                     <!-- Notifications -->
                     <div x-data="notifications()" x-init="init()">
                         <div class="relative cursor-pointer">
@@ -317,37 +364,6 @@
                         </div>
                     </div>
 
-                    <!-- Language Switcher -->
-                    <div x-data="{ langOpen: false }" class="relative cursor-pointer">
-                        <button @click="langOpen = !langOpen" class="p-1.5 sm:p-2 cursor-pointer rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:scale-105 transition duration-150 flex items-center gap-1 text-xs font-bold uppercase">
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a3 3 0 003-3V6.7m-2 9l-3-3m0 0l-3 3m3-3v12M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
-                        </button>
-                        <div x-show="langOpen" @click.away="langOpen = false" x-transition class="absolute z-50 mt-2 {{ app()->getLocale() === 'ar' ? 'left-0' : 'right-0' }} w-32 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-2" style="display: none;">
-                            <a href="{{ route('lang.switch', 'ar') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'ar' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
-                                <span>العربية</span>
-                                @if(app()->getLocale() === 'ar') <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> @endif
-                            </a>
-                            <a href="{{ route('lang.switch', 'en') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'en' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
-                                <span>English</span>
-                                @if(app()->getLocale() === 'en') <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> @endif
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Back to Store -->
-                    <a href="{{ route('home') }}" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition flex-shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        <span class="hidden sm:inline">{{ __('global.admin_back_to_store') }}</span>
-                    </a>
-
-                    <span class="hidden sm:inline text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0">{{ auth()->user()->name }}</span>
-                    <form method="POST" action="{{ route('admin.logout') }}" class="m-0">
-                        @csrf
-                        <button class="p-1.5 cursor-pointer sm:px-3 sm:py-1.5 rounded-xl text-sm font-semibold transition bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50">
-                            <svg class="w-4 h-4 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            <span class="hidden sm:inline">{{ __('global.admin_logout') }}</span>
-                        </button>
-                    </form>
                 </div>
             </header>
 
