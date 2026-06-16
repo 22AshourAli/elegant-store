@@ -65,6 +65,16 @@ class DashboardController extends Controller
     public function exportPdf(Request $request)
     {
         $data = $this->getReportData($request);
+        $glyphs = new \ArPHP\I18N\Arabic('Glyphs');
+        $data['arabic'] = $glyphs;
+        $items = $data['lowStockItems'];
+        if ($items && $items->count()) {
+            $data['lowStockItems'] = $items->map(function ($item) use ($glyphs) {
+                $item->product_name = $glyphs->utf8Glyphs($item->product_name, 50, false);
+                $item->branch_name = $glyphs->utf8Glyphs($item->branch_name, 50, false);
+                return $item;
+            });
+        }
         $period = $request->get('period', 'month');
         $pdf = Pdf::loadView('admin.dashboard-export-pdf', $data);
         return $pdf->download('تقرير-المبيعات-' . now()->format('Y-m-d') . '.pdf');
