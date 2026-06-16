@@ -312,6 +312,7 @@ return [
     'full_name' => 'Full Name',
     'phone_contact' => 'Contact Phone',
     'phone_example' => 'e.g. 01000000000',
+    'address_required' => 'Please enter your full shipping address',
     'shipping_address_full' => 'Detailed Shipping Address',
     'address_placeholder' => 'Street, Building, Floor, Apartment — Governorate & City added automatically',
     'order_notes' => 'Order Notes (Optional)',
