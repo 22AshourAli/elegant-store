@@ -15,6 +15,7 @@ var CHECKOUT_DATA = {
     csrfToken: '{{ csrf_token() }}',
     shippingApiUrl: '{{ route('api.shipping.calculate') }}',
     isFirstOrder: {{ auth()->user()->orders()->where('status', '!=', 'cancelled')->count() === 0 ? 'true' : 'false' }},
+    shippingKnown: {{ isset($shippingKnown) && $shippingKnown ? 'true' : 'false' }},
 };
 </script>
 <div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950/20 py-6 sm:py-10" x-data="checkoutPage({
@@ -279,7 +280,7 @@ var CHECKOUT_DATA = {
                                 <span class="text-slate-500 dark:text-slate-400">{{ __('global.shipping_cost_label') }}</span>
                                 <span>
                                     <span class="shipping-calculating font-bold text-slate-400 dark:text-slate-500 text-xs italic" style="display:none">{{ __('global.shipping_calculating') }}</span>
-                                    <span class="font-bold shipping-display {{ $shipping > 0 ? 'text-slate-900 dark:text-white' : 'text-emerald-500 text-xs' }}">{{ $shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free') }}</span>
+                                    <span class="font-bold shipping-display @if(isset($shippingKnown) && !$shippingKnown) text-slate-400 @elseif($shipping > 0) text-slate-900 dark:text-white @else text-emerald-500 text-xs @endif">{{ isset($shippingKnown) && !$shippingKnown ? '—' : ($shipping > 0 ? number_format($shipping) . ' ' . __('global.currency') : __('global.free')) }}</span>
                                 </span>
                             </div>
                         </div>
@@ -347,14 +348,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return Math.round(parseFloat(v || 0)).toLocaleString('ar-EG') + ' ' + D.currency;
     }
 
-    function updateShippingDisplay(cost) {
+    function updateShippingDisplay(cost, known) {
         var sd = document.querySelector('.shipping-display');
         var sc = document.querySelector('.shipping-calculating');
         var ft = document.querySelector('.final-total-display');
         if (sc) sc.style.display = 'none';
         if (sd) {
             cost = parseFloat(cost || 0);
-            if (cost === 0) {
+            if (known === false) {
+                sd.textContent = '\u2014';
+                sd.className = 'font-bold shipping-display text-slate-400';
+            } else if (cost === 0) {
                 sd.textContent = D.freeText;
                 sd.className = 'font-bold shipping-display text-emerald-500 text-xs';
             } else {
@@ -370,10 +374,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function fetchShipping(govId, cityId) {
-        if (D.isFirstOrder) { updateShippingDisplay(0); return; }
+        if (D.isFirstOrder) { updateShippingDisplay(0, true); return; }
         var sc = document.querySelector('.shipping-calculating');
         if (sc) sc.style.display = 'inline';
-        if (!govId) { updateShippingDisplay(0); return; }
+        if (!govId) { updateShippingDisplay(0, false); return; }
         var body = { governorate_id: govId, cart_total: D.baseTotal - D.discount };
         if (cityId) body.city_id = cityId;
         fetch(D.shippingApiUrl, {
@@ -381,8 +385,8 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': D.csrfToken },
             body: JSON.stringify(body)
         }).then(function(r) { return r.json(); }).then(function(data) {
-            updateShippingDisplay(data.final_cost || 0);
-        }).catch(function() { updateShippingDisplay(0); });
+            updateShippingDisplay(data.final_cost || 0, true);
+        }).catch(function() { updateShippingDisplay(0, false); });
     }
 
     function filterCities(govId) {

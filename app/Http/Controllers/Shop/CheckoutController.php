@@ -31,14 +31,17 @@ class CheckoutController extends Controller
         $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
         if ($previousOrders === 0) {
             $shipping = 0;
+            $shippingKnown = true;
         } else {
             $oldGovId = old('governorate_id');
             $oldCityId = old('city_id');
             if ($oldGovId) {
                 $result = $shippingService->calculateCost((int) $oldGovId, $oldCityId ? (int) $oldCityId : null, $total);
                 $shipping = $result['final_cost'];
+                $shippingKnown = true;
             } else {
                 $shipping = 0;
+                $shippingKnown = false;
             }
         }
         $finalTotal = $total + $shipping;
@@ -50,7 +53,7 @@ class CheckoutController extends Controller
 
         $governorates = $shippingService->getCheckoutLocations();
 
-        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'finalTotal', 'hasActiveCoupons', 'governorates'));
+        return view('shop.checkout', compact('cartItems', 'baseTotal', 'discount', 'total', 'appliedCoupon', 'shipping', 'shippingKnown', 'finalTotal', 'hasActiveCoupons', 'governorates'));
     }
 
     public function showAuthForm()
