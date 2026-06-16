@@ -65,7 +65,7 @@ var CHECKOUT_DATA = {
         </div>
         @endif
 
-        <form action="{{ route('checkout.store') }}" method="POST" class="checkout-form" x-ref="form" novalidate @submit.prevent="submitOrder">
+        <form action="{{ route('checkout.store') }}" method="POST" class="checkout-form">
             @csrf
             <div class="grid lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 
@@ -85,15 +85,8 @@ var CHECKOUT_DATA = {
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.phone_contact') }} <span class="text-red-500">*</span></label>
-                            <input type="text" name="phone" x-model="phone" required placeholder="{{ __('global.phone_example') }}"
-                                @input="clearError('phone')"
-                                class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('phone') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
-                                :class="formErrors.phone ? 'border-red-400 ring-1 ring-red-300' : ''">
-                            <p x-show="formErrors.phone" x-text="formErrors.phone"
-                               class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span x-text="formErrors.phone"></span>
-                            </p>
+                            <input type="text" name="phone" required value="{{ old('phone') }}" placeholder="{{ __('global.phone_example') }}"
+                                class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('phone') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40">
                             @error('phone')
                             <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -116,9 +109,7 @@ var CHECKOUT_DATA = {
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.governorate') }} <span class="text-red-500">*</span></label>
                                 <select name="governorate_id" id="governorate_id" required x-model="governorateId"
-                                    @change="clearError('governorate_id')"
                                     class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('governorate_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
-                                    :class="formErrors.governorate_id ? 'border-red-400 ring-1 ring-red-300' : ''"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_governorate') }}</option>
                                     @forelse($governorates as $gov)
@@ -127,11 +118,6 @@ var CHECKOUT_DATA = {
                                     <option value="" disabled>⚠️ {{ __('global.no_governorates') }}</option>
                                     @endforelse
                                 </select>
-                                <p x-show="formErrors.governorate_id" x-text="formErrors.governorate_id"
-                                   class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <span x-text="formErrors.governorate_id"></span>
-                                </p>
                                 @error('governorate_id')
                                 <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -143,9 +129,7 @@ var CHECKOUT_DATA = {
                             <div>
                                 <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.city') }} <span class="text-red-500">*</span></label>
                                 <select name="city_id" id="city_id" required x-model="cityId"
-                                    @change="clearError('city_id')"
                                     class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all appearance-none bg-[length:16px] bg-[right_12px_center] bg-no-repeat dark:bg-[right_12px_center] disabled:opacity-50 disabled:cursor-not-allowed bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('city_id') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
-                                    :class="formErrors.city_id ? 'border-red-400 ring-1 ring-red-300' : ''"
                                     style="background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E\")">
                                     <option value="">{{ __('global.select_city') }}</option>
                                     @foreach($governorates as $gov)
@@ -154,11 +138,6 @@ var CHECKOUT_DATA = {
                                     @endforeach
                                     @endforeach
                                 </select>
-                                <p x-show="formErrors.city_id" x-text="formErrors.city_id"
-                                   class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <span x-text="formErrors.city_id"></span>
-                                </p>
                                 @error('city_id')
                                 <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -172,14 +151,8 @@ var CHECKOUT_DATA = {
                             <label class="block text-sm font-semibold mb-1.5 text-slate-700 dark:text-slate-300">{{ __('global.shipping_address_full') }} <span class="text-red-500">*</span></label>
                             <textarea name="shipping_address" required rows="2" placeholder="{{ __('global.address_placeholder') }}"
                                 x-model="shippingAddress"
-                                @input="clearError('shipping_address')"
-                                class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all resize-none bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('shipping_address') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"
-                                :class="formErrors.shipping_address ? 'border-red-400 ring-1 ring-red-300' : ''"></textarea>
-                            <p x-show="formErrors.shipping_address" x-text="formErrors.shipping_address"
-                               class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span x-text="formErrors.shipping_address"></span>
-                            </p>
+                                @input="addressAutoFilled = false"
+                                class="w-full border rounded-xl shadow-sm px-4 py-3 text-sm font-semibold outline-none transition-all resize-none bg-white/70 dark:bg-slate-900/60 text-slate-900 dark:text-white @error('shipping_address') border-red-400 dark:border-red-500 ring-1 ring-red-300 dark:ring-red-700 @enderror border-slate-200/60 dark:border-slate-700/60 focus:border-indigo-400 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:ring-indigo-800/40"></textarea>
                             @error('shipping_address')
                             <p class="mt-1.5 text-xs text-red-500 font-semibold flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -319,12 +292,12 @@ var CHECKOUT_DATA = {
                         </div>
 
                         <div class="p-4 sm:p-6">
-                            <button type="submit" :disabled="submitting"
+                            <button type="submit"
                                 class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-extrabold py-3.5 sm:py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100">
-                                <span x-show="!submitting">{{ __('global.confirm_order') }}</span>
-                                <svg x-show="!submitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                <svg x-show="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                                <span x-show="submitting">{{ __('global.processing') }}...</span>
+                                <span class="btn-text">{{ __('global.confirm_order') }}</span>
+                                <svg class="btn-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span class="btn-processing" style="display:none">{{ __('global.processing') }}...</span>
+                                <svg class="btn-spinner" style="display:none" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
                             </button>
                             <p class="text-xs text-center text-slate-400 dark:text-slate-500 mt-3">{{ __('global.checkout_secure_notice') }}</p>
                         </div>
@@ -462,7 +435,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    /* ===== Button submit: handled by Alpine (submitOrder) ===== */
+    var form = document.querySelector('.checkout-form');
+    if (form) {
+        form.addEventListener('submit', function () {
+            var btn = this.querySelector('button[type="submit"]');
+            if (!btn) return;
+            var txt = btn.querySelector('.btn-text');
+            var ico = btn.querySelector('.btn-icon');
+            var pro = btn.querySelector('.btn-processing');
+            var spi = btn.querySelector('.btn-spinner');
+            if (txt) txt.style.display = 'none';
+            if (ico) ico.style.display = 'none';
+            if (pro) pro.style.display = 'inline';
+            if (spi) spi.style.display = 'inline';
+            btn.disabled = true;
+        });
+    }
 });
 
 document.addEventListener('alpine:init', () => {
@@ -479,9 +467,6 @@ document.addEventListener('alpine:init', () => {
         governorateId: '{{ old('governorate_id') }}',
         cityId: '{{ old('city_id') }}',
         shippingAddress: '{{ old('shipping_address') }}',
-        phone: '{{ old('phone') }}',
-        formErrors: {},
-        shippingCalculating: false,
 
         get appliedCouponText() {
             if (!this.appliedCoupon) return '';
@@ -502,67 +487,7 @@ document.addEventListener('alpine:init', () => {
             if (typeof CHECKOUT_DATA !== 'undefined') CHECKOUT_DATA._shipping = v;
         },
 
-        clearError(field) {
-            if (this.formErrors[field]) {
-                delete this.formErrors[field];
-            }
-        },
-
-        validate() {
-            var errs = {};
-            if (!this.phone || !/^01\d{9}$/.test(this.phone)) {
-                errs.phone = '{{ __('global.phone_invalid') }}';
-            }
-            if (!this.governorateId) {
-                errs.governorate_id = '{{ __('global.select_governorate') }}';
-            }
-            if (!this.cityId) {
-                errs.city_id = '{{ __('global.select_city') }}';
-            }
-            if (!this.shippingAddress || !this.shippingAddress.trim()) {
-                errs.shipping_address = '{{ __('global.address_required') }}';
-            }
-            this.formErrors = errs;
-            return Object.keys(errs).length === 0;
-        },
-
-        submitOrder() {
-            if (!this.validate()) {
-                this.$nextTick(() => {
-                    var firstErr = this.$refs.form.querySelector('[x-show^=\"formErrors\"]');
-                    if (firstErr && firstErr.style.display !== 'none') {
-                        firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                });
-                return;
-            }
-            this.submitting = true;
-            this.$nextTick(() => {
-                this.$refs.form.submit();
-            });
-        },
-
         updateDisplay() {
-            var pt = document.querySelector('.product-total-display');
-            if (pt) pt.textContent = this.formatPrice(this.baseTotal);
-
-            var dr = document.getElementById('discount-row');
-            var dd = document.querySelector('.discount-display');
-            if (dr && dd) {
-                if (this.discount > 0 && this.appliedCoupon) {
-                    dr.style.display = '';
-                    dd.textContent = '-' + this.formatPrice(this.discount);
-                } else {
-                    dr.style.display = 'none';
-                }
-            }
-
-            var ft = document.querySelector('.final-total-display');
-            if (ft) {
-                var ship = this.shipping;
-                ft.textContent = this.formatPrice((this.baseTotal - this.discount) + ship);
-            }
-        },
             var pt = document.querySelector('.product-total-display');
             if (pt) pt.textContent = this.formatPrice(this.baseTotal);
 
