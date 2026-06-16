@@ -186,7 +186,7 @@
                                     <div class="p-1.5">
                                         <p class="text-[10px] font-bold truncate leading-tight" x-text="p.name"></p>
                                         <p class="text-[10px] font-black text-brand-primary mt-0.5" x-text="formatPrice(p.current_price || p.base_price)"></p>
-                                        <span x-show="p.is_on_sale" class="text-[8px] text-red-600 font-bold">-{{ __('global.pos_sale') }}</span>
+                                        <span x-show="p.is_on_sale" class="text-[8px] text-emerald-600 font-bold">-<span x-text="Math.round((1 - p.current_price / p.base_price) * 100)"></span>%</span>
                                     </div>
                                 </div>
                             </template>
@@ -304,7 +304,7 @@
                     <h3 class="font-extrabold text-slate-900 dark:text-white text-lg leading-tight" x-text="exchangeSelectedProduct?.name"></h3>
                     <div class="flex items-center gap-2 mt-1">
                         <template x-if="exchangeSelectedProduct?.is_on_sale">
-                            <span class="text-sm font-black text-red-600 dark:text-red-400" x-text="formatPrice(exchangeSelectedProduct.current_price)"></span>
+                            <span class="text-sm font-black text-emerald-600 dark:text-emerald-400" x-text="formatPrice(exchangeSelectedProduct.current_price)"></span>
                         </template>
                         <span class="text-sm font-black text-brand-primary dark:text-accent" :class="exchangeSelectedProduct?.is_on_sale ? 'text-xs line-through text-slate-400' : ''" x-text="formatPrice(exchangeSelectedProduct?.base_price)"></span>
                     </div>

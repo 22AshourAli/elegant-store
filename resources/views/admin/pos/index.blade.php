@@ -42,7 +42,7 @@
                                 </div>
                                 <div class="text-right flex-shrink-0">
                                     <template x-if="product.is_on_sale">
-                                        <span class="text-xs font-black text-red-600 dark:text-red-400 block" x-text="formatPrice(product.current_price)"></span>
+                                        <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 block" x-text="formatPrice(product.current_price)"></span>
                                     </template>
                                     <span class="text-xs font-bold text-slate-500" :class="product.is_on_sale ? 'line-through' : ''" x-text="formatPrice(product.base_price)"></span>
                                 </div>
@@ -83,9 +83,9 @@
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer relative"
                          @click="selectProduct(product)">
                         {{-- Sale badge --}}
-                        <div x-show="product.is_on_sale" class="absolute top-1.5 right-1.5 z-10 bg-gradient-to-l from-red-600 to-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow">
+                        <div x-show="product.is_on_sale" class="absolute top-1.5 right-1.5 z-10 bg-gradient-to-l from-emerald-500 to-teal-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            {{ __('global.pos_sale') }}
+                            -<span x-text="Math.round((1 - product.current_price / product.base_price) * 100)"></span>%
                         </div>
                         <div class="aspect-square bg-slate-100 dark:bg-slate-700 overflow-hidden">
                             <img :src="product.image || '/images/logo.svg'" :alt="product.name" class="w-full h-full object-cover" loading="lazy">
@@ -94,7 +94,7 @@
                             <p class="text-xs font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-tight" x-text="product.name"></p>
                             <div class="mt-1 flex items-center gap-1.5">
                                 <template x-if="product.is_on_sale">
-                                    <span class="text-xs font-black text-red-600 dark:text-red-400" x-text="formatPrice(product.current_price)"></span>
+                                    <span class="text-xs font-black text-emerald-600 dark:text-emerald-400" x-text="formatPrice(product.current_price)"></span>
                                 </template>
                                 <span class="text-xs font-black text-brand-primary dark:text-accent" :class="product.is_on_sale ? 'text-[10px] line-through text-slate-400 dark:text-slate-500 font-bold' : ''" x-text="formatPrice(product.base_price)"></span>
                             </div>
@@ -270,7 +270,7 @@
                 <h3 class="font-extrabold text-slate-900 dark:text-white text-lg leading-tight" x-text="selectedProduct?.name"></h3>
                 <div class="flex items-center gap-2 mt-1">
                     <template x-if="selectedProduct?.is_on_sale">
-                        <span class="text-sm font-black text-red-600 dark:text-red-400" x-text="formatPrice(selectedProduct.current_price)"></span>
+                        <span class="text-sm font-black text-emerald-600 dark:text-emerald-400" x-text="formatPrice(selectedProduct.current_price)"></span>
                     </template>
                     <span class="text-sm font-black text-brand-primary dark:text-accent" :class="selectedProduct?.is_on_sale ? 'text-xs line-through text-slate-400' : ''" x-text="formatPrice(selectedProduct?.base_price)"></span>
                 </div>
