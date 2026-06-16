@@ -40,11 +40,20 @@ class ShippingController extends Controller
             'cart_total' => 'required|numeric|min:0',
         ]);
 
-        $result = $this->shippingService->calculateCost(
-            $validated['governorate_id'],
-            $validated['city_id'],
-            $validated['cart_total'],
-        );
+        try {
+            $result = $this->shippingService->calculateCost(
+                (int) $validated['governorate_id'],
+                $validated['city_id'] ? (int) $validated['city_id'] : null,
+                (float) $validated['cart_total'],
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Shipping calculate error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $validated,
+            ]);
+            return response()->json(['error' => 'فشل حساب تكلفة الشحن'], 500);
+        }
 
         return response()->json($result);
     }

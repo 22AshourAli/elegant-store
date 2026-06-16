@@ -384,9 +384,11 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': D.csrfToken },
             body: JSON.stringify(body)
-        }).then(function(r) { return r.json(); }).then(function(data) {
-            var cost = 0;
-            if (data && typeof data.final_cost === 'number') cost = data.final_cost;
+        }).then(function(r) {
+            if (!r.ok) throw new Error('API error');
+            return r.json();
+        }).then(function(data) {
+            var cost = typeof data.final_cost === 'number' ? data.final_cost : 0;
             updateShippingDisplay(cost, true);
         }).catch(function() { updateShippingDisplay(0, false); });
     }
