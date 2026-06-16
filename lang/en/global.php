@@ -19,6 +19,7 @@ return [
     'admin_branches' => 'Branches',
     'admin_categories' => 'Categories',
     'admin_products' => 'Products',
+    'admin_product' => 'Product',
     'admin_coupons' => 'Coupons',
     'admin_orders' => 'Orders',
     'return_requests' => 'Returns',

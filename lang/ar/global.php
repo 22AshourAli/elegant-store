@@ -19,6 +19,7 @@ return [
     'admin_branches' => 'الفروع',
     'admin_categories' => 'التصنيفات',
     'admin_products' => 'المنتجات',
+    'admin_product' => 'المنتج',
     'admin_coupons' => 'الكوبونات',
     'admin_orders' => 'الطلبات',
     'return_requests' => 'الإرجاع',
