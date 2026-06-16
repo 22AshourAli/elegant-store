@@ -9,6 +9,7 @@
         "php": "^8.3",
         "ext-exif": "*",
         "ext-gd": "*",
+        "ext-zip": "*",
         "artesaos/seotools": "^1.4",
         "barryvdh/laravel-dompdf": "*",
         "cloudinary/cloudinary_php": "*",
