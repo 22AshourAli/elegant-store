@@ -4,26 +4,41 @@
 @section('page-title', __('global.admin_dashboard'))
 
 @section('content')
-<div class="space-y-8 text-start">
+<div class="space-y-6 text-start" x-data="dashboardPage()">
+    <!-- Filter Bar -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">الفترة:</span>
+            @php $periods = ['today' => 'اليوم', '7days' => 'آخر 7 أيام', 'month' => 'هذا الشهر', 'quarter' => 'آخر 3 شهور', 'year' => 'هذا العام', 'all' => 'الكل']; @endphp
+            @foreach($periods as $key => $label)
+            <a href="{{ url()->current() }}?period={{ $key }}"
+               class="px-3 py-1.5 text-sm font-semibold rounded-xl transition-all
+               {{ $period === $key ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">
+                {{ $label }}
+            </a>
+            @endforeach
+        </div>
+    </div>
+
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
 
-        <!-- Stat: Net Profit (this month) -->
+        <!-- Net Profit -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between lg:col-span-2">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">صافي الربح (هذا الشهر)</span>
-                <h3 class="text-2xl font-extrabold {{ $monthlyNetProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                    {{ (int) round($monthlyNetProfit) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">صافي الربح</span>
+                <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                    {{ number_format((int) round($netProfit)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
                 </h3>
-                <div class="flex items-center gap-4 text-xs text-gray-400 mt-1">
-                    <span>إيراد: <strong class="text-gray-600 dark:text-gray-300">{{ (int) round($monthlyProductRevenue) }}</strong></span>
-                    <span>شحن: <strong class="text-amber-600">{{ (int) round($monthlyShippingCollected) }}</strong></span>
-                    <span>تكلفة: <strong class="text-orange-600">{{ (int) round($monthlyCosts) }}</strong></span>
-                    <span>مصروفات: <strong class="text-red-600">{{ (int) round($monthlyExpenses) }}</strong></span>
+                <div class="flex items-center gap-4 text-xs text-gray-400 mt-1 flex-wrap">
+                    <span>إيراد: <strong class="text-gray-600 dark:text-gray-300">{{ number_format((int) round($totalProductRevenue)) }}</strong></span>
+                    <span>شحن: <strong class="text-amber-600">{{ number_format((int) round($totalShippingCollected)) }}</strong></span>
+                    <span>تكلفة: <strong class="text-orange-600">{{ number_format((int) round($totalCosts)) }}</strong></span>
+                    <span>مصروفات: <strong class="text-red-600">{{ number_format((int) round($totalManualExpenses)) }}</strong></span>
                 </div>
                 <div class="flex items-center gap-3 text-xs mt-1">
-                    <span>هامش الربح: <strong class="{{ $monthlyProfitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $monthlyProfitMargin }}%</strong></span>
-                    <span>متوسط الطلب: <strong class="text-indigo-600">{{ (int) round($monthlyAov) }} {{ __('global.currency') }}</strong></span>
+                    <span>هامش الربح: <strong class="{{ $profitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profitMargin }}%</strong></span>
+                    <span>متوسط الطلب: <strong class="text-indigo-600">{{ number_format((int) round($aov)) }} {{ __('global.currency') }}</strong></span>
                 </div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
@@ -31,23 +46,7 @@
             </div>
         </div>
 
-        <!-- Stat: Net Profit (all time) -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
-            <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">صافي الربح (الإجمالي)</span>
-                <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                    {{ (int) round($netProfit) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
-                </h3>
-                <div class="text-xs mt-1">
-                    <span>هامش الربح: <strong class="{{ $profitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profitMargin }}%</strong></span>
-                </div>
-            </div>
-            <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-        </div>
-
-        <!-- Stat: Orders -->
+        <!-- Orders -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_orders_count') }}</span>
@@ -62,18 +61,19 @@
             </div>
         </div>
 
-        <!-- Stat: Customers -->
+        <!-- Customers -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_customers_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalCustomers }}</h3>
+                <div class="text-xs text-gray-400 mt-1">إجمالي العملاء المسجلين</div>
             </div>
             <div class="p-3.5 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             </div>
         </div>
 
-        <!-- Stat: Returns -->
+        <!-- Returns -->
         <a href="{{ route('admin.returns.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 transition">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">طلبات الإرجاع</span>
@@ -85,7 +85,7 @@
             </div>
         </a>
 
-        <!-- Stat: Exchanges -->
+        <!-- Exchanges -->
         <a href="{{ route('admin.exchanges.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 transition">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">طلبات الاستبدال</span>
@@ -97,11 +97,12 @@
             </div>
         </a>
 
-        <!-- Stat: Low Stock -->
+        <!-- Low Stock -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_low_stock') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $lowStockCount }}</h3>
+                <div class="text-xs text-gray-400 mt-1">أقل من 5 قطع</div>
             </div>
             <div class="p-3.5 {{ $lowStockCount > 0 ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400' }} rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -111,100 +112,97 @@
 
     <!-- Financial Report Card -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h4 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <span>التقرير المالي</span>
             </h4>
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-400">إجمالي</span>
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 rounded">{{ (int) round($totalProductRevenue + $totalShippingCollected) }} {{ __('global.currency') }}</span>
+                <span class="text-xs text-gray-400">الإجمالي</span>
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 rounded">{{ number_format((int) round($totalProductRevenue + $totalShippingCollected)) }} {{ __('global.currency') }}</span>
+                <button onclick="window.print()" class="px-3 py-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    طباعة
+                </button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Revenue -->
             <div class="bg-green-50 dark:bg-green-950/20 rounded-xl p-4 border border-green-100 dark:border-green-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">إيراد</span>
-                    <span class="text-xs text-gray-400">هذا الشهر: {{ (int) round($monthlyProductRevenue) }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-green-700 dark:text-green-400">{{ (int) round($totalProductRevenue) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-green-600/70 dark:text-green-500/70 mt-1">إجمالي مبيعات المنتجات (بدون شحن)</p>
+                <p class="text-2xl font-extrabold text-green-700 dark:text-green-400">{{ number_format((int) round($totalProductRevenue)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-green-600/70 dark:text-green-500/70 mt-1">مبيعات المنتجات</p>
             </div>
-
-            <!-- Shipping -->
             <div class="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-100 dark:border-amber-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">مصاريف الشحن</span>
-                    <span class="text-xs text-gray-400">{{ (int) round($monthlyShippingCollected) }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">{{ (int) round($totalShippingCollected) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">محصّل من العملاء — يُدفع لشركة الشحن</p>
+                <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">{{ number_format((int) round($totalShippingCollected)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">محصّل من العملاء</p>
             </div>
-
-            <!-- COGS -->
             <div class="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-4 border border-orange-100 dark:border-orange-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wide">تكلفة البضاعة</span>
-                    <span class="text-xs text-gray-400">{{ (int) round($monthlyCosts) }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-orange-700 dark:text-orange-400">{{ (int) round($totalCosts) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-orange-600/70 dark:text-orange-500/70 mt-1">تكلفة شراء المنتجات من الموردين</p>
+                <p class="text-2xl font-extrabold text-orange-700 dark:text-orange-400">{{ number_format((int) round($totalCosts)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-orange-600/70 dark:text-orange-500/70 mt-1">تكلفة الشراء من الموردين</p>
             </div>
-
-            <!-- Other Expenses -->
             <div class="bg-red-50 dark:bg-red-950/20 rounded-xl p-4 border border-red-100 dark:border-red-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">مصروفات أخرى</span>
-                    <span class="text-xs text-gray-400">{{ (int) round($monthlyManualExpenses) }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-red-700 dark:text-red-400">{{ (int) round($totalManualExpenses) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-red-600/70 dark:text-red-500/70 mt-1">إيجار، رواتب، فواتير، إلخ</p>
+                <p class="text-2xl font-extrabold text-red-700 dark:text-red-400">{{ number_format((int) round($totalManualExpenses)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-xs text-red-600/70 dark:text-red-500/70 mt-1">إيجار، رواتب، فواتير</p>
             </div>
         </div>
 
-        <!-- Net profit summary -->
         <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
             <div class="text-sm text-gray-500 dark:text-gray-400">
-                <span>صافي الربح = إيراد <span class="text-green-600 font-bold">{{ (int) round($totalProductRevenue) }}</span>
-                - تكلفة <span class="text-orange-600 font-bold">{{ (int) round($totalCosts) }}</span>
-                - شحن <span class="text-amber-600 font-bold">{{ (int) round($totalShippingCollected) }}</span>
-                - مصروفات <span class="text-red-600 font-bold">{{ (int) round($totalManualExpenses) }}</span></span>
+                <span>صافي الربح = إيراد {{ number_format((int) round($totalProductRevenue)) }}
+                - تكلفة {{ number_format((int) round($totalCosts)) }}
+                - شحن {{ number_format((int) round($totalShippingCollected)) }}
+                - مصروفات {{ number_format((int) round($totalManualExpenses)) }}</span>
             </div>
             <div class="text-lg font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                = {{ (int) round($netProfit) }} {{ __('global.currency') }}
+                = {{ number_format((int) round($netProfit)) }} {{ __('global.currency') }}
             </div>
         </div>
     </div>
 
     <!-- Charts Area -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Weekly Revenue & Orders Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-            <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('global.admin_weekly_sales') }}</h4>
-            <div class="h-80 w-full relative">
-                <canvas id="weeklyChart"></canvas>
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white">الإيرادات والطلب</h4>
+                <div class="flex gap-2 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-indigo-500 inline-block"></span> الإيراد</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-emerald-500 inline-block dashed"></span> الطلبات</span>
+                </div>
+            </div>
+            <div class="h-72 w-full relative">
+                <canvas id="revenueChart"></canvas>
             </div>
         </div>
-
-        <!-- Annual Revenue Chart -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-            <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-4">{{ __('global.admin_monthly_sales') }}</h4>
-            <div class="h-80 w-full relative">
-                <canvas id="annualChart"></canvas>
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white">توزيع الطلبات</h4>
+            </div>
+            <div class="h-72 w-full relative flex items-center justify-center">
+                <canvas id="ordersPieChart"></canvas>
             </div>
         </div>
     </div>
 
     <!-- Low Stock Alert Table -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-        <div class="flex justify-between items-center mb-4">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h4 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 <span>{{ __('global.admin_low_stock') }}</span>
             </h4>
-            <span class="text-xs text-gray-500 dark:text-gray-400">الحد الافتراضي للتنبيه: أقل من 5 قطع</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">الحد الأدنى: أقل من 5 قطع</span>
         </div>
 
         <div class="overflow-x-auto">
@@ -271,7 +269,7 @@
                     <tr>
                         <td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700">{{ $expense->category }}</span></td>
                         <td class="px-6 py-4 max-w-xs truncate">{{ $expense->description }}</td>
-                        <td class="px-6 py-4 font-bold text-red-600">{{ (int) round($expense->amount) }} ج.م</td>
+                        <td class="px-6 py-4 font-bold text-red-600">{{ number_format((int) round($expense->amount)) }} {{ __('global.currency') }}</td>
                         <td class="px-6 py-4 text-xs">{{ $expense->expense_date->format('Y-m-d') }}</td>
                     </tr>
                     @endforeach
@@ -286,116 +284,133 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const weeklyRaw = @json(array_values($weeklyData));
-        const monthlyRaw = @json(array_values($monthlyData));
+function dashboardPage() {
+    return {};
+}
 
-        const weeklyLabels = weeklyRaw.map(item => {
-            const date = new Date(item.date);
-            return date.toLocaleDateString('ar-EG', { weekday: 'short', month: 'short', day: 'numeric' });
-        });
-        const weeklyRevenue = weeklyRaw.map(item => item.revenue);
-        const weeklyCounts = weeklyRaw.map(item => item.count);
+document.addEventListener('DOMContentLoaded', function () {
+    const raw = @json(array_values($chartData));
+    const labels = @json($chartLabels);
+    const revenue = raw.map(r => r.revenue || 0);
+    const counts = raw.map(r => r.count || 0);
 
-        const monthlyLabels = monthlyRaw.map(item => {
-            const [year, month] = item.month.split('-');
-            const date = new Date(year, month - 1);
-            return date.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
-        });
-        const monthlyRevenue = monthlyRaw.map(item => item.revenue);
-
-        const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
-        new Chart(ctxWeekly, {
-            type: 'line',
-            data: {
-                labels: weeklyLabels,
-                datasets: [
-                    {
-                        label: '{{ __("global.admin_revenue") }} ({{ __("global.currency") }})',
-                        data: weeklyRevenue,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        yAxisID: 'y'
+    // Revenue + Orders line chart
+    const ctxRev = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctxRev, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'الإيراد ({{ __("global.currency") }})',
+                    data: revenue,
+                    borderColor: '#6366f1',
+                    backgroundColor: function(ctx) {
+                        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                        g.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
+                        g.addColorStop(1, 'rgba(99, 102, 241, 0)');
+                        return g;
                     },
-                    {
-                        label: '{{ __("global.admin_orders_count") }}',
-                        data: weeklyCounts,
-                        borderColor: '#10b981',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        tension: 0.1,
-                        yAxisID: 'y1'
-                    }
-                ]
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'الطلبات',
+                    data: counts,
+                    borderColor: '#10b981',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2.5,
+                    borderDash: [6, 4],
+                    tension: 0.1,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { font: { family: 'Cairo', size: 11 }, boxWidth: 14, padding: 12 }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { family: 'Cairo' },
+                    bodyFont: { family: 'Cairo' },
+                    padding: 10,
+                    cornerRadius: 8
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            font: { family: 'Cairo', size: 12 }
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Cairo', size: 10 } }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: '{{ __("global.currency") }}', font: { family: 'Cairo' } },
+                    grid: { color: 'rgba(156, 163, 175, 0.1)' },
+                    ticks: { font: { family: 'Cairo', size: 10 } }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'عدد الطلبات', font: { family: 'Cairo' } },
+                    grid: { drawOnChartArea: false },
+                    ticks: { stepSize: 1, font: { family: 'Cairo', size: 10 } }
+                }
+            }
+        }
+    });
+
+    // Orders pie chart
+    const ctxPie = document.getElementById('ordersPieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Online', 'Offline'],
+            datasets: [{
+                data: [{{ $onlineOrders }}, {{ $offlineOrders }}],
+                backgroundColor: ['#6366f1', '#f59e0b'],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { family: 'Cairo', size: 12 }, padding: 16 }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { family: 'Cairo' },
+                    bodyFont: { family: 'Cairo' },
+                    callbacks: {
+                        label: function(ctx) {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                            return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false }
-                    },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: { display: true, text: '{{ __("global.admin_revenue") }} ({{ __("global.currency") }})' },
-                        grid: { color: 'rgba(156, 163, 175, 0.1)' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: { display: true, text: '{{ __("global.admin_orders_count") }}' },
-                        grid: { drawOnChartArea: false }
-                    }
                 }
             }
-        });
-
-        const ctxAnnual = document.getElementById('annualChart').getContext('2d');
-        new Chart(ctxAnnual, {
-            type: 'bar',
-            data: {
-                labels: monthlyLabels,
-                datasets: [{
-                    label: '{{ __("global.admin_monthly_sales") }} ({{ __("global.currency") }})',
-                    data: monthlyRevenue,
-                    backgroundColor: '#3b82f6',
-                    hoverBackgroundColor: '#2563eb',
-                    borderRadius: 8,
-                    maxBarThickness: 32
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false }
-                    },
-                    y: {
-                        position: 'right',
-                        grid: { color: 'rgba(156, 163, 175, 0.1)' }
-                    }
-                }
-            }
-        });
+        }
     });
+});
 </script>
 @endpush
