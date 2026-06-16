@@ -117,6 +117,9 @@ use App\Http\Controllers\Admin\CarrierController;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/export-csv', [DashboardController::class, 'exportCsv'])->name('dashboard.export-csv');
+    Route::get('/dashboard/export-excel', [DashboardController::class, 'exportExcel'])->name('dashboard.export-excel');
+    Route::get('/dashboard/export-pdf', [DashboardController::class, 'exportPdf'])->name('dashboard.export-pdf');
     Route::resource('branches', BranchController::class);
     Route::resource('users', UserController::class);
     Route::post('/users/{user}/force-reset-password', [UserController::class, 'forceResetPassword'])->name('users.force-reset-password');

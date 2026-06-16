@@ -9,12 +9,68 @@ use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\ReturnRequest;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\DashboardExport;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
+    {
+        $data = $this->getReportData($request);
+        extract($data);
+        return view('admin.dashboard', $data);
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $data = $this->getReportData($request);
+        $period = $request->get('period', 'month');
+        $filename = 'تقرير-المبيعات-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($data) {
+            $handle = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel Arabic support
+            fputs($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, ['التقرير المالي', date('Y-m-d')]);
+            fputcsv($handle, []);
+            fputcsv($handle, ['البيان', 'القيمة']);
+            fputcsv($handle, ['إجمالي الطلبات', $data['totalOrders']]);
+            fputcsv($handle, ['طلبات Online', $data['onlineOrders']]);
+            fputcsv($handle, ['طلبات Offline', $data['offlineOrders']]);
+            fputcsv($handle, ['إيراد المنتجات', number_format((int) round($data['totalProductRevenue'])) . ' EGP']);
+            fputcsv($handle, ['شحن محصل', number_format((int) round($data['totalShippingCollected'])) . ' EGP']);
+            fputcsv($handle, ['تكلفة البضاعة', number_format((int) round($data['totalCosts'])) . ' EGP']);
+            fputcsv($handle, ['مصروفات أخرى', number_format((int) round($data['totalManualExpenses'])) . ' EGP']);
+            fputcsv($handle, ['صافي الربح', number_format((int) round($data['netProfit'])) . ' EGP']);
+            fputcsv($handle, ['هامش الربح', $data['profitMargin'] . '%']);
+            fputcsv($handle, ['متوسط قيمة الطلب', number_format((int) round($data['aov'])) . ' EGP']);
+
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $data = $this->getReportData($request);
+        $period = $request->get('period', 'month');
+        $filename = 'تقرير-المبيعات-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new DashboardExport($data), $filename);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $data = $this->getReportData($request);
+        $period = $request->get('period', 'month');
+        $pdf = Pdf::loadView('admin.dashboard-export-pdf', $data);
+        return $pdf->download('تقرير-المبيعات-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    private function getReportData(Request $request): array
     {
         $user = auth()->user();
         $branchId = $user->isManager() ? $user->branch_id : null;
@@ -70,7 +126,6 @@ class DashboardController extends Controller
         $chartMonths = match ($period) { 'today' => 0, '7days' => 0, 'month' => 0, 'quarter' => 2, 'year' => 11, default => 11 };
         $chartDaily = $chartDays > 0;
 
-        // Daily chart data
         if ($chartDaily) {
             $dailyQuery = Order::select(
                 DB::raw('DATE(created_at) as date'),
@@ -172,7 +227,7 @@ class DashboardController extends Controller
             $recentExpenses = (clone $recentExpensesQuery)->limit(5)->get();
         }
 
-        return view('admin.dashboard', compact(
+        return compact(
             'period',
             'totalOrders', 'onlineOrders', 'offlineOrders',
             'totalRevenue', 'totalProductRevenue', 'totalShippingCollected',
@@ -185,7 +240,7 @@ class DashboardController extends Controller
             'totalCosts', 'totalManualExpenses', 'totalExpenses',
             'netProfit', 'profitMargin',
             'aov', 'recentExpenses'
-        ));
+        );
     }
 
     private function parsePeriod(string $period, Request $request): ?array
