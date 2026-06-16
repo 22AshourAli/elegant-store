@@ -48,8 +48,9 @@ class DashboardController extends Controller
         $returnedAmount = (float) (clone $returnedQuery)->sum('total');
         $returnedCount = (clone $returnedQuery)->count();
 
-        $lowStockCount = ProductVariant::whereHas('branches', function ($q) use ($branchId) {
-            $q->where('stock', '>', 0)->where('stock', '<', 2);
+        $threshold = config('store.low_stock_threshold', 5);
+        $lowStockCount = ProductVariant::whereHas('branches', function ($q) use ($branchId, $threshold) {
+            $q->where('stock', '>', 0)->where('stock', '<', $threshold);
             if ($branchId) $q->where('branch_id', $branchId);
         })->count();
 
@@ -160,7 +161,7 @@ class DashboardController extends Controller
                 'branches.name as branch_name',
                 'branch_product_variant.stock'
             )->where('branch_product_variant.stock', '>', 0)
-            ->where('branch_product_variant.stock', '<', 2);
+            ->where('branch_product_variant.stock', '<', $threshold);
         if ($branchId) $lowStockQuery->where('branch_product_variant.branch_id', $branchId);
         $lowStockItems = (clone $lowStockQuery)->orderBy('branch_product_variant.stock', 'asc')->limit(10)->get();
 
