@@ -382,10 +382,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cityId) body.city_id = cityId;
         fetch(D.shippingApiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': D.csrfToken },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': D.csrfToken },
             body: JSON.stringify(body)
-        }).then(function(r) { return r.json(); }).then(function(data) {
-            updateShippingDisplay(data.final_cost || 0, true);
+        }).then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }).then(function(data) {
+            if (data && typeof data.final_cost !== 'undefined') {
+                updateShippingDisplay(data.final_cost, true);
+            } else {
+                updateShippingDisplay(0, false);
+            }
         }).catch(function() { updateShippingDisplay(0, false); });
     }
 

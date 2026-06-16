@@ -49,7 +49,7 @@ class ShippingService
 
     public function getCheckoutLocations()
     {
-        return Cache::remember('checkout_locations', 3600, fn() =>
+        return Cache::remember('checkout_locations', 300, fn() =>
             Governorate::where('is_active', true)
                 ->with(['cities' => fn($q) => $q->where('is_active', true)->orderBy('name')])
                 ->orderBy('name')
