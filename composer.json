@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "ext-exif": "*",
+        "ext-gd": "*",
         "artesaos/seotools": "^1.4",
         "barryvdh/laravel-dompdf": "*",
         "cloudinary/cloudinary_php": "*",
