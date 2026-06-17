@@ -7,16 +7,47 @@
 <div class="space-y-6 text-start" x-data="dashboardPage()">
     <!-- Filter Bar -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-        <div class="flex flex-wrap items-center gap-3">
-            <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('global.admin_period') }}:</span>
-            @php $periods = ['today' => __('global.period_today'), '7days' => __('global.period_7days'), 'month' => __('global.period_month'), 'quarter' => __('global.period_quarter'), 'year' => __('global.period_year'), 'all' => __('global.period_all')]; @endphp
-            @foreach($periods as $key => $label)
-            <a href="{{ url()->current() }}?period={{ $key }}"
-               class="px-3 py-1.5 text-sm font-semibold rounded-xl transition-all
-               {{ $period === $key ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">
-                {{ $label }}
-            </a>
-            @endforeach
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('global.admin_period') }}:</span>
+                @php $periods = ['today' => __('global.period_today'), '7days' => __('global.period_7days'), 'month' => __('global.period_month'), 'quarter' => __('global.period_quarter'), 'year' => __('global.period_year'), 'all' => __('global.period_all')]; @endphp
+                @foreach($periods as $key => $label)
+                <a href="{{ url()->current() }}?period={{ $key }}"
+                   class="px-3 py-1.5 text-sm font-semibold rounded-xl transition-all
+                   {{ $period === $key ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">
+                    {{ $label }}
+                </a>
+                @endforeach
+            </div>
+            
+            <!-- Auto Refresh Switch -->
+            <div x-data="{ 
+                autoRefresh: false, 
+                timer: null,
+                toggle() {
+                    if (this.autoRefresh) {
+                        this.timer = setInterval(() => {
+                            window.location.reload();
+                        }, 30000);
+                    } else {
+                        if (this.timer) clearInterval(this.timer);
+                    }
+                }
+            }" x-init="$watch('autoRefresh', val => toggle())" class="flex items-center gap-2">
+                <button @click="autoRefresh = !autoRefresh" 
+                        class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                        :class="autoRefresh ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'">
+                    <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                          :class="autoRefresh ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'"></span>
+                </button>
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                    <span x-show="autoRefresh" class="flex h-1.5 w-1.5 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
+                    <span>{{ app()->getLocale() === 'ar' ? 'تحديث تلقائي (٣٠ ث)' : 'Auto Refresh (30s)' }}</span>
+                </span>
+            </div>
         </div>
     </div>
 
@@ -24,7 +55,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
 
         <!-- Net Profit -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between lg:col-span-2">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between lg:col-span-2">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_net_profit') }}</span>
                 <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
@@ -47,7 +78,7 @@
         </div>
 
         <!-- Orders -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_orders_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalOrders }}</h3>
@@ -62,7 +93,7 @@
         </div>
 
         <!-- Customers -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_customers_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalCustomers }}</h3>
@@ -74,7 +105,7 @@
         </div>
 
         <!-- Returns -->
-        <a href="{{ route('admin.returns.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 transition">
+        <a href="{{ route('admin.returns.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all duration-300">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_return_requests') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $returnRequestCount }}</h3>
@@ -86,7 +117,7 @@
         </a>
 
         <!-- Exchanges -->
-        <a href="{{ route('admin.exchanges.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 transition">
+        <a href="{{ route('admin.exchanges.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5 transition-all duration-300">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_exchange_requests') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $exchangeCount }}</h3>
@@ -98,7 +129,7 @@
         </a>
 
         <!-- Low Stock -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_low_stock') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $lowStockCount }}</h3>

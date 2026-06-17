@@ -146,7 +146,7 @@ class DashboardController extends Controller
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(total) as revenue'),
                 DB::raw('COUNT(*) as count'),
-                DB::raw('SUM(CASE WHEN status NOT IN ("' . OrderStatus::Cancelled->value . '","' . OrderStatus::Returned->value . '") THEN subtotal ELSE 0 END) - SUM(CASE WHEN status NOT IN ("' . OrderStatus::Cancelled->value . '","' . OrderStatus::Returned->value . '") THEN (SELECT COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) FROM order_items JOIN product_variants ON order_items.product_variant_id = product_variants.id WHERE order_items.order_id = orders.id) ELSE 0 END) as profit')
+                DB::raw('SUM(CASE WHEN status NOT IN (\'' . OrderStatus::Cancelled->value . '\',\'' . OrderStatus::Returned->value . '\') THEN subtotal ELSE 0 END) - SUM(CASE WHEN status NOT IN (\'' . OrderStatus::Cancelled->value . '\',\'' . OrderStatus::Returned->value . '\') THEN (SELECT COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) FROM order_items JOIN product_variants ON order_items.product_variant_id = product_variants.id WHERE order_items.order_id = orders.id) ELSE 0 END) as profit')
             )->where('created_at', '>=', now()->subDays($chartDays)->startOfDay())
             ->whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
             if ($branchId) $dailyQuery->where('branch_id', $branchId);

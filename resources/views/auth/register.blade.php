@@ -16,8 +16,8 @@
                 </div>
                 <input id="name" type="text" name="name" x-model="value" @blur="touched = true" required autofocus autocomplete="name"
                        placeholder="{{ __('global.name_placeholder') }}"
-                       class="block w-full ps-10 pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none"
-                       :class="error ? 'border-red-400' : (valid && value.length > 0 ? 'border-emerald-400' : 'border-slate-300 dark:border-slate-600 focus:border-indigo-500')">
+                       class="block w-full ps-10 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-300 py-2.5 outline-none focus:outline-none focus:ring-4 shadow-sm"
+                       :class="error ? 'border-red-450 focus:border-red-500 focus:ring-red-500/10' : (valid && value.length > 0 ? 'border-emerald-450 focus:border-emerald-500 focus:ring-emerald-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -27,9 +27,16 @@
                     </template>
                 </div>
             </div>
-            <template x-if="error">
-                <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
-            </template>
+            <div x-show="error" x-cloak x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span x-text="error"></span>
+            </div>
             <x-input-error :messages="$errors->get('name')" class="mt-1" />
         </div>
 
@@ -47,8 +54,8 @@
                 </div>
                 <input id="email" type="email" name="email" x-model="value" @blur="touched = true" required autocomplete="username"
                        placeholder="you@example.com"
-                       class="block w-full ps-10 pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none"
-                       :class="error ? 'border-red-400' : (valid && value.length > 0 ? 'border-emerald-400' : 'border-slate-300 dark:border-slate-600 focus:border-indigo-500')">
+                       class="block w-full ps-10 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-300 py-2.5 outline-none focus:outline-none focus:ring-4 shadow-sm"
+                       :class="error ? 'border-red-450 focus:border-red-500 focus:ring-red-500/10' : (valid && value.length > 0 ? 'border-emerald-450 focus:border-emerald-500 focus:ring-emerald-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -58,9 +65,16 @@
                     </template>
                 </div>
             </div>
-            <template x-if="error">
-                <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
-            </template>
+            <div x-show="error" x-cloak x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span x-text="error"></span>
+            </div>
             <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 
@@ -89,8 +103,8 @@
                        autocomplete="tel"
                        placeholder="100 000 0000"
                        inputmode="numeric"
-                       class="block w-full ps-12 pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none tracking-wider font-mono"
-                       :class="error ? 'border-red-400' : (valid && value.length > 0 ? 'border-emerald-400' : 'border-slate-300 dark:border-slate-600 focus:border-indigo-500')">
+                       class="block w-full ps-12 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-300 py-2.5 outline-none focus:outline-none focus:ring-4 shadow-sm tracking-wider font-mono"
+                       :class="error ? 'border-red-450 focus:border-red-500 focus:ring-red-500/10' : (valid && value.length > 0 ? 'border-emerald-450 focus:border-emerald-500 focus:ring-emerald-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -104,9 +118,16 @@
                 <span class="text-slate-300">+20 </span>
                 <span x-text="'01' + value.slice(2).replace(/(\d{3})(\d{0,4})/, '$1 $2')" class="text-slate-500"></span>
             </p>
-            <template x-if="error">
-                <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
-            </template>
+            <div x-show="error" x-cloak x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 -translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 -translate-y-1"
+                 class="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <span x-text="error"></span>
+            </div>
             <p x-show="value.length === 0" class="mt-1 text-[10px] font-medium text-slate-400 flex items-center gap-1">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ __('global.phone_hint') }}
@@ -128,8 +149,8 @@
                 <div class="relative mt-1">
                     <input id="password" name="password" x-model="value" @blur="touched = true" x-bind:type="show ? 'text' : 'password'" required autocomplete="new-password"
                            placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-                       class="block w-full pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none ps-3"
-                       :class="error ? 'border-red-400' : (valid && value.length > 0 ? 'border-emerald-400' : 'border-slate-300 dark:border-slate-600 focus:border-indigo-500')">
+                       class="block w-full pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-300 py-2.5 outline-none focus:outline-none focus:ring-4 shadow-sm ps-3"
+                       :class="error ? 'border-red-450 focus:border-red-500 focus:ring-red-500/10' : (valid && value.length > 0 ? 'border-emerald-450 focus:border-emerald-500 focus:ring-emerald-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10')">
                     <button type="button" @click="show = !show" class="absolute inset-y-0 end-0 flex items-center pe-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
                         <template x-if="!show">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -153,9 +174,16 @@
                         </template>
                     </div>
                 </div>
-                <template x-if="error">
-                    <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
-                </template>
+                <div x-show="error" x-cloak x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span x-text="error"></span>
+                </div>
                 <x-input-error :messages="$errors->get('password')" class="mt-1" />
             </div>
 
@@ -172,8 +200,8 @@
                 <div class="relative mt-1">
                     <input id="password_confirmation" name="password_confirmation" x-model="value" @blur="touched = true" x-bind:type="show ? 'text' : 'password'" required autocomplete="new-password"
                            placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-                       class="block w-full pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none ps-3"
-                       :class="error ? 'border-red-400' : (valid && value.length > 0 ? 'border-emerald-400' : 'border-slate-300 dark:border-slate-600 focus:border-indigo-500')">
+                       class="block w-full pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-300 py-2.5 outline-none focus:outline-none focus:ring-4 shadow-sm ps-3"
+                       :class="error ? 'border-red-450 focus:border-red-500 focus:ring-red-500/10' : (valid && value.length > 0 ? 'border-emerald-450 focus:border-emerald-500 focus:ring-emerald-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10')">
                     <button type="button" @click="show = !show" class="absolute inset-y-0 end-0 flex items-center pe-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
                         <template x-if="!show">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -196,9 +224,16 @@
                         <span x-text="valid ? '{{ __('global.password_match') }}' : '{{ __('global.password_mismatch') }}'"></span>
                     </p>
                 </div>
-                <template x-if="error">
-                    <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
-                </template>
+                <div x-show="error" x-cloak x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="mt-1.5 flex items-center gap-1 text-xs font-bold text-red-500">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span x-text="error"></span>
+                </div>
                 <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
             </div>
         </div>
