@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Governorate;
 use App\Services\CartService;
@@ -28,7 +30,7 @@ class CheckoutController extends Controller
         $total = $cart->total();
         $appliedCoupon = $cart->getAppliedCoupon();
 
-        $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
+        $previousOrders = auth()->user()->orders()->where('status', '!=', OrderStatus::Cancelled->value)->count();
         if ($previousOrders === 0) {
             $shipping = 0;
             $shippingKnown = true;
@@ -112,14 +114,24 @@ class CheckoutController extends Controller
             $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
 
             if ($request->payment_method === 'cash') {
-                return redirect()->route('orders.show', $order)->with('success', 'تم تسجيل طلبك بنجاح! رقم الطلب: ' . $order->id);
+                return $this->processCashPayment($order);
             }
 
-            return $this->initiatePaymobPayment($order, $request->payment_method, $request->phone);
+            return $this->processCardPayment($order, $request->payment_method, $request->phone);
 
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'حدثت مشكلة أثناء إتمام الطلب: ' . $e->getMessage());
         }
+    }
+
+    private function processCashPayment($order)
+    {
+        return redirect()->route('orders.show', $order)->with('success', 'تم تسجيل طلبك بنجاح! رقم الطلب: ' . $order->id);
+    }
+
+    private function processCardPayment($order, $paymentMethod, $phone)
+    {
+        return $this->initiatePaymobPayment($order, $paymentMethod, $phone);
     }
 
     private function initiatePaymobPayment($order, $method, $phone)
@@ -210,15 +222,15 @@ class CheckoutController extends Controller
             }
 
         } catch (\Exception $e) {
-            $order->update(['status' => 'cancelled', 'payment_status' => 'failed']);
-            $order->payment()->update(['status' => 'failed', 'response' => ['error' => $e->getMessage()]]);
+            $order->update(['status' => OrderStatus::Cancelled->value, 'payment_status' => PaymentStatus::Failed->value]);
+            $order->payment()->update(['status' => PaymentStatus::Failed->value, 'response' => ['error' => $e->getMessage()]]);
             return redirect()->route('cart.index')->with('error', 'حدث خطأ في بوابة الدفع الإلكتروني: ' . $e->getMessage());
         }
     }
 
     public function showMockPaymentForm(\App\Models\Order $order, Request $request)
     {
-        if ($order->status !== 'pending' || $order->payment_status === 'paid') {
+        if ($order->status !== OrderStatus::Pending->value || $order->payment_status === PaymentStatus::Paid->value) {
             return redirect()->route('orders.show', $order);
         }
 
@@ -234,8 +246,8 @@ class CheckoutController extends Controller
 
         if ($request->status === 'success') {
             $order->update([
-                'status' => 'processing',
-                'payment_status' => 'paid'
+                'status' => OrderStatus::Processing->value,
+                'payment_status' => PaymentStatus::Paid->value
             ]);
             $order->payment()->updateOrCreate([], [
                 'status' => 'success',
@@ -251,8 +263,8 @@ class CheckoutController extends Controller
             return redirect()->route('orders.show', $order)->with('success', 'تم محاكاة عملية الدفع بنجاح! شكراً لتعاملك معنا.');
         } else {
             $order->update([
-                'status' => 'cancelled',
-                'payment_status' => 'failed'
+                'status' => OrderStatus::Cancelled->value,
+                'payment_status' => PaymentStatus::Failed->value
             ]);
             $order->payment()->updateOrCreate([], [
                 'status' => 'failed',

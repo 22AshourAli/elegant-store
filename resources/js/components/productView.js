@@ -1,5 +1,7 @@
-export default function productView(data) {
-    const { product, colors, sizes, colorImages, firstImageUrl } = data;
+import { formatPrice } from '../app';
+
+export default function productView(productViewData) {
+    const { product, colors, sizes, colorImages, firstImageUrl } = productViewData;
 
     return {
         cartLoading: false,
@@ -76,14 +78,8 @@ export default function productView(data) {
             this.selectedColor = color;
         },
 
-        formatPrice(price) {
-            const value = Math.round(parseFloat(price || 0));
-            return value.toLocaleString() + ' EGP';
-        },
-
-        formatNumber(value) {
-            return Math.round(parseFloat(value || 0)).toLocaleString() + ' EGP';
-        },
+        formatPrice,
+        formatNumber: formatPrice,
 
         addToCart() {
             if (!this.currentVariant) return;
@@ -97,12 +93,13 @@ export default function productView(data) {
                 body: JSON.stringify({ quantity: this.qty })
             })
             .then(res => res.json())
-            .then(data => {
+            .then(responseData => {
                 this.cartLoading = false;
-                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
+                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: responseData.cartCount } }));
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: responseData.message, type: 'success' } }));
             })
-            .catch(() => {
+            .catch(e => {
+                console.error('Add to cart failed:', e);
                 this.cartLoading = false;
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Error adding to cart', type: 'error' } }));
             });
@@ -120,7 +117,10 @@ export default function productView(data) {
                 body: JSON.stringify({ quantity: this.qty })
             })
             .then(() => { window.location.href = '/checkout'; })
-            .catch(() => { window.location.href = '/checkout'; });
+            .catch(e => {
+                console.error('Buy now failed:', e);
+                window.location.href = '/checkout';
+            });
         }
     };
 }

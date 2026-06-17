@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ExchangeStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Exchange;
 use App\Models\ProductVariant;
@@ -36,17 +37,17 @@ class ExchangeController extends Controller
             return redirect()->route('admin.exchanges.show', $exchange);
         }
 
-        if ($exchange->status !== 'pending') {
+        if ($exchange->status !== ExchangeStatus::Pending->value) {
             return back()->with('error', 'تم معالجة طلب الاستبدال مسبقاً.');
         }
 
         $request->validate(['admin_note' => 'nullable|string|max:1000']);
 
-        $exchange->load('order.items.variant');
+        $exchange->load('order.items.variant.branches');
 
         DB::transaction(function () use ($exchange, $request) {
             $exchange->update([
-                'status' => 'approved',
+                'status' => ExchangeStatus::Approved->value,
                 'admin_note' => $request->admin_note,
                 'approved_at' => now(),
             ]);
@@ -54,29 +55,37 @@ class ExchangeController extends Controller
             $order = $exchange->order;
             $branchId = $order->branch_id ?? 1;
 
+            // Batch-load all new variants needed for exchange
+            $newVariantIds = collect($exchange->items ?? [])->pluck('new_variant_id')->filter()->unique()->all();
+            $newVariants = !empty($newVariantIds)
+                ? ProductVariant::with('branches')->whereIn('id', $newVariantIds)->get()->keyBy('id')
+                : collect();
+
             foreach ($exchange->items ?? [] as $item) {
-                $orderItem = $order->items()->find($item['order_item_id']);
+                $orderItem = $order->items->firstWhere('id', $item['order_item_id']);
                 if (!$orderItem) continue;
 
                 // Restore old variant stock
                 $oldVariant = $orderItem->variant;
                 if ($oldVariant) {
-                    $pivot = $oldVariant->branches()->where('branch_id', $branchId)->first();
-                    if ($pivot) {
-                        $oldVariant->branches()->updateExistingPivot($branchId, [
-                            'stock' => $pivot->pivot->stock + $orderItem->quantity,
-                        ]);
+                    $branch = $oldVariant->branches->first(fn($b) => $b->id == $branchId);
+                    if ($branch) {
+                        DB::table('branch_product_variant')
+                            ->where('product_variant_id', $oldVariant->id)
+                            ->where('branch_id', $branchId)
+                            ->update(['stock' => $branch->pivot->stock + $orderItem->quantity]);
                     }
                 }
 
                 // Deduct new variant stock
-                $newVariant = ProductVariant::find($item['new_variant_id']);
+                $newVariant = $newVariants->get($item['new_variant_id']);
                 if ($newVariant) {
-                    $pivot = $newVariant->branches()->where('branch_id', $branchId)->first();
-                    if ($pivot && $pivot->pivot->stock >= $orderItem->quantity) {
-                        $newVariant->branches()->updateExistingPivot($branchId, [
-                            'stock' => $pivot->pivot->stock - $orderItem->quantity,
-                        ]);
+                    $branch = $newVariant->branches->first(fn($b) => $b->id == $branchId);
+                    if ($branch && $branch->pivot->stock >= $orderItem->quantity) {
+                        DB::table('branch_product_variant')
+                            ->where('product_variant_id', $newVariant->id)
+                            ->where('branch_id', $branchId)
+                            ->update(['stock' => $branch->pivot->stock - $orderItem->quantity]);
                     }
                 }
             }
@@ -97,14 +106,14 @@ class ExchangeController extends Controller
             return redirect()->route('admin.exchanges.show', $exchange);
         }
 
-        if ($exchange->status !== 'pending') {
+        if ($exchange->status !== ExchangeStatus::Pending->value) {
             return back()->with('error', 'تم معالجة طلب الاستبدال مسبقاً.');
         }
 
         $request->validate(['admin_note' => 'required|string|max:1000']);
 
         $exchange->update([
-            'status' => 'rejected',
+            'status' => ExchangeStatus::Rejected->value,
             'admin_note' => $request->admin_note,
             'rejected_at' => now(),
         ]);

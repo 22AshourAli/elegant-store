@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use Illuminate\Console\Command;
 
@@ -15,7 +16,7 @@ class BackfillDeliveredAt extends Command
 
     public function handle(): int
     {
-        $query = Order::where('status', 'delivered')
+        $query = Order::where('status', OrderStatus::Delivered->value)
             ->whereNull('delivered_at');
 
         if ($from = $this->option('from')) {

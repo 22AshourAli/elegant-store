@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -91,7 +92,7 @@ class Order extends Model
 
     public function isWithinReturnWindow(): bool
     {
-        if ($this->status !== 'delivered') {
+        if ($this->status !== OrderStatus::Delivered->value) {
             return false;
         }
 

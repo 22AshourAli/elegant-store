@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\OrderType;
+use App\Enums\PaymentStatus;
+use App\Enums\StockMovementType;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Events\StockUpdated;
 use App\Models\Category;
@@ -31,7 +36,7 @@ class PosController extends Controller
     public function recentOrders()
     {
         $orders = Order::with('user', 'cashier')
-            ->where('order_type', 'offline')
+            ->where('order_type', OrderType::Offline->value)
             ->latest()
             ->limit(10)
             ->get()
@@ -173,7 +178,7 @@ class PosController extends Controller
 
     public function checkout(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'payment_method' => 'required|in:cash,card,wallet',
             'name' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
@@ -182,100 +187,39 @@ class PosController extends Controller
 
         $cart = session('pos_cart', []);
         if (empty($cart)) {
-            if ($request->expectsJson()) {
-                return response()->json(['error' => __('global.pos_cart_empty')], 422);
-            }
-            return back()->with('error', __('global.pos_cart_empty'));
+            return $request->expectsJson()
+                ? response()->json(['error' => __('global.pos_cart_empty')], 422)
+                : back()->with('error', __('global.pos_cart_empty'));
         }
 
         $cartItems = $this->getEnrichedCart($cart);
         $total = $this->cartTotal($cart);
-        $customerName = $request->input('name');
-        $customerPhone = $request->input('phone');
-        $paymentMethod = $request->input('payment_method');
-
         $branchId = auth()->user()->branch_id ?? 1;
 
         try {
-            $order = DB::transaction(function () use ($cartItems, $total, $customerName, $customerPhone, $paymentMethod, $request, $branchId) {
-                $userId = null;
+            $order = DB::transaction(function () use ($cartItems, $total, $validated, $branchId) {
+                $customerPhone = $validated['phone'] ?? null;
+                $customerName = $validated['name'] ?? null;
 
-                if ($customerPhone) {
-                    $user = User::firstOrCreate(
-                        ['phone' => $customerPhone],
-                        [
-                            'name' => $customerName ?: $customerPhone,
-                            'password' => bcrypt('changeme'),
-                            'role' => 'customer',
-                        ]
-                    );
-                    $userId = $user->id;
-
-                    if ($customerName && $user->name === $customerPhone) {
-                        $user->update(['name' => $customerName]);
-                    }
-                }
+                $userId = $this->resolvePosCustomer($customerPhone, $customerName);
 
                 $order = Order::create([
                     'user_id' => $userId,
                     'cashier_id' => auth()->id(),
                     'branch_id' => $branchId,
-                    'order_type' => 'offline',
-                    'status' => 'confirmed',
-                    'payment_method' => $paymentMethod,
-                    'payment_status' => 'paid',
+                    'order_type' => OrderType::Offline->value,
+                    'status' => OrderStatus::Confirmed->value,
+                    'payment_method' => $validated['payment_method'],
+                    'payment_status' => PaymentStatus::Paid->value,
                     'subtotal' => $total,
                     'discount' => 0,
                     'shipping_cost' => 0,
                     'total' => $total,
                     'phone' => $customerPhone,
-                    'notes' => $request->input('notes', ''),
+                    'notes' => $validated['notes'] ?? '',
                 ]);
 
-                foreach ($cartItems as $variantId => $item) {
-                    $variant = ProductVariant::findOrFail($variantId);
-
-                    $order->items()->create([
-                        'product_variant_id' => $variantId,
-                        'product_name' => $item['product_name'],
-                        'color' => $item['color'],
-                        'size' => $item['size'],
-                        'quantity' => $item['quantity'],
-                        'unit_price' => $item['price'],
-                        'total' => $item['price'] * $item['quantity'],
-                    ]);
-
-                    $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                    if ($pivot && $pivot->pivot->stock >= $item['quantity']) {
-                        $stockBefore = $pivot->pivot->stock;
-                        $stockAfter = $stockBefore - $item['quantity'];
-                        $variant->branches()->updateExistingPivot($branchId, [
-                            'stock' => $stockAfter,
-                        ]);
-
-                        StockMovement::create([
-                            'product_variant_id' => $variantId,
-                            'branch_id' => $branchId,
-                            'order_id' => $order->id,
-                            'type' => 'sale',
-                            'quantity' => -$item['quantity'],
-                            'stock_before' => $stockBefore,
-                            'stock_after' => $stockAfter,
-                        ]);
-
-                        StockUpdated::dispatch(
-                            variantId: $variantId,
-                            productId: $variant->product_id,
-                            branchId: $branchId,
-                            stockBefore: $stockBefore,
-                            stockAfter: $stockAfter,
-                            action: 'sale',
-                            orderId: $order->id,
-                        );
-                    } else {
-                        throw new \Exception(__('global.pos_insufficient_stock', ['product' => $item['product_name']]));
-                    }
-                }
+                $this->processPosItems($order, $cartItems, $branchId);
 
                 return $order;
             });
@@ -369,5 +313,126 @@ class PosController extends Controller
     {
         $items = $this->getEnrichedCart($cart);
         return array_sum(array_column($items, 'total'));
+    }
+
+    private function resolvePosCustomer(?string $phone, ?string $name): ?int
+    {
+        if (!$phone) {
+            return null;
+        }
+
+        $user = User::firstOrCreate(
+            ['phone' => $phone],
+            [
+                'name' => $name ?: $phone,
+                'password' => bcrypt('changeme'),
+                'role' => UserRole::Customer->value,
+            ]
+        );
+
+        if ($name && $user->name === $phone) {
+            $user->update(['name' => $name]);
+        }
+
+        return $user->id;
+    }
+
+    private function processPosItems(Order $order, array $cartItems, int $branchId): void
+    {
+        $variantIds = array_keys($cartItems);
+
+        $variants = ProductVariant::with('product')
+            ->whereIn('id', $variantIds)
+            ->get()
+            ->keyBy('id');
+
+        $branchPivot = DB::table('branch_product_variant')
+            ->whereIn('product_variant_id', $variantIds)
+            ->where('branch_id', $branchId)
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('product_variant_id');
+
+        $now = now();
+        $stockMovements = [];
+        $stockUpdates = [];
+
+        foreach ($cartItems as $variantId => $item) {
+            $variant = $variants->get($variantId);
+            if (!$variant) {
+                throw new \Exception("المنتج غير موجود: {$item['product_name']}");
+            }
+
+            $pivot = $branchPivot->get($variantId);
+            $stockBefore = $pivot ? $pivot->stock : 0;
+
+            if ($stockBefore < $item['quantity']) {
+                throw new \Exception(__('global.pos_insufficient_stock', ['product' => $item['product_name']]));
+            }
+
+            $order->items()->create([
+                'product_variant_id' => $variantId,
+                'product_name' => $item['product_name'],
+                'color' => $item['color'],
+                'size' => $item['size'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['price'],
+                'total' => $item['price'] * $item['quantity'],
+            ]);
+
+            $stockAfter = $stockBefore - $item['quantity'];
+
+            $stockUpdates[] = [
+                'product_variant_id' => $variantId,
+                'stock' => $stockAfter,
+            ];
+
+            $stockMovements[] = [
+                'product_variant_id' => $variantId,
+                'branch_id' => $branchId,
+                'order_id' => $order->id,
+                'type' => StockMovementType::Sale->value,
+                'quantity' => -$item['quantity'],
+                'stock_before' => $stockBefore,
+                'stock_after' => $stockAfter,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        $this->applyStockUpdates($stockUpdates, $branchId);
+        $this->dispatchStockEvents($stockMovements, $variants, $branchId, $order);
+    }
+
+    private function applyStockUpdates(array $stockUpdates, int $branchId): void
+    {
+        foreach ($stockUpdates as $update) {
+            DB::table('branch_product_variant')
+                ->where('product_variant_id', $update['product_variant_id'])
+                ->where('branch_id', $branchId)
+                ->update(['stock' => $update['stock']]);
+        }
+    }
+
+    private function dispatchStockEvents(array $stockMovements, $variants, int $branchId, Order $order): void
+    {
+        if (empty($stockMovements)) {
+            return;
+        }
+
+        StockMovement::insert($stockMovements);
+
+        foreach ($stockMovements as $movement) {
+            $variant = $variants->get($movement['product_variant_id']);
+            StockUpdated::dispatch(
+                variantId: $movement['product_variant_id'],
+                productId: $variant->product_id,
+                branchId: $branchId,
+                stockBefore: $movement['stock_before'],
+                stockAfter: $movement['stock_after'],
+                action: StockMovementType::Sale->value,
+                orderId: $order->id,
+            );
+        }
     }
 }

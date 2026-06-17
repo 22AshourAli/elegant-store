@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\ReturnRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ReturnRequest;
 use App\Notifications\OrderStatusChanged;
@@ -31,17 +33,17 @@ class ReturnRequestController extends Controller
 
     public function approve(Request $request, ReturnRequest $return)
     {
-        if ($return->status !== 'pending') {
+        if ($return->status !== ReturnRequestStatus::Pending->value) {
             return back()->with('error', 'تم معالجة الطلب مسبقاً.');
         }
 
         $request->validate(['admin_note' => 'nullable|string|max:1000']);
 
-        $return->load('order.items.variant');
+        $return->load('order.items.variant.branches');
 
         DB::transaction(function () use ($return, $request) {
             $return->update([
-                'status' => 'approved',
+                'status' => ReturnRequestStatus::Approved->value,
                 'admin_note' => $request->admin_note,
                 'approved_at' => now(),
             ]);
@@ -49,64 +51,9 @@ class ReturnRequestController extends Controller
             $order = $return->order;
 
             if ($return->type === 'exchange') {
-                // Exchange: return old items, deduct new items
-                $branchId = $order->branch_id ?? 1;
-
-                foreach ($return->exchange_data ?? [] as $exchangeItem) {
-                    $orderItem = $order->items()->find($exchangeItem['order_item_id']);
-                    if (!$orderItem) continue;
-
-                    // Restore old variant stock
-                    $oldVariant = $orderItem->variant;
-                    if ($oldVariant) {
-                        $pivot = $oldVariant->branches()->where('branch_id', $branchId)->first();
-                        if ($pivot) {
-                            $oldVariant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $pivot->pivot->stock + $orderItem->quantity,
-                            ]);
-                        }
-                    }
-
-                    // Deduct new variant stock
-                    $newVariant = \App\Models\ProductVariant::find($exchangeItem['new_variant_id']);
-                    if ($newVariant) {
-                        $pivot = $newVariant->branches()->where('branch_id', $branchId)->first();
-                        if ($pivot && $pivot->pivot->stock >= $orderItem->quantity) {
-                            $newVariant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $pivot->pivot->stock - $orderItem->quantity,
-                            ]);
-                        }
-                    }
-                }
-
-                try {
-                    $order->user->notify(new \App\Notifications\ExchangeApproved($order, $return));
-                } catch (\Exception $e) {
-                    \Log::error('Exchange notification failed: ' . $e->getMessage());
-                }
+                $this->processExchange($return, $order);
             } else {
-                // Return: restore stock for all items
-                foreach ($order->items as $item) {
-                    $variant = $item->variant;
-                    if ($variant) {
-                        $branchId = $order->branch_id ?? 1;
-                        $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                        if ($pivot) {
-                            $variant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $pivot->pivot->stock + $item->quantity,
-                            ]);
-                        }
-                    }
-                }
-
-                // Mark order as returned only for returns (not exchanges)
-                $order->update(['status' => 'returned']);
-
-                try {
-                    $order->user->notify(new OrderStatusChanged($order, 'returned'));
-                } catch (\Exception $e) {
-                    \Log::error('Return notification failed: ' . $e->getMessage());
-                }
+                $this->processReturn($order);
             }
         });
 
@@ -119,14 +66,14 @@ class ReturnRequestController extends Controller
 
     public function reject(Request $request, ReturnRequest $return)
     {
-        if ($return->status !== 'pending') {
+        if ($return->status !== ReturnRequestStatus::Pending->value) {
             return back()->with('error', 'تم معالجة الطلب مسبقاً.');
         }
 
         $request->validate(['admin_note' => 'required|string|max:1000']);
 
         $return->update([
-            'status' => 'rejected',
+            'status' => ReturnRequestStatus::Rejected->value,
             'admin_note' => $request->admin_note,
             'rejected_at' => now(),
         ]);
@@ -140,5 +87,74 @@ class ReturnRequestController extends Controller
 
         $msg = $return->type === 'exchange' ? 'تم رفض طلب الاستبدال.' : 'تم رفض طلب الإرجاع.';
         return redirect()->route('admin.returns.index')->with('success', $msg);
+    }
+
+    private function processExchange(ReturnRequest $return, Order $order): void
+    {
+        $branchId = $order->branch_id ?? 1;
+
+        $newVariantIds = collect($return->exchange_data ?? [])->pluck('new_variant_id')->filter()->unique()->all();
+        $newVariants = !empty($newVariantIds)
+            ? \App\Models\ProductVariant::with('branches')->whereIn('id', $newVariantIds)->get()->keyBy('id')
+            : collect();
+
+        foreach ($return->exchange_data ?? [] as $exchangeItem) {
+            $orderItem = $order->items->firstWhere('id', $exchangeItem['order_item_id']);
+            if (!$orderItem) continue;
+
+            $oldVariant = $orderItem->variant;
+            if ($oldVariant) {
+                $branch = $oldVariant->branches->first(fn($b) => $b->id == $branchId);
+                if ($branch) {
+                    DB::table('branch_product_variant')
+                        ->where('product_variant_id', $oldVariant->id)
+                        ->where('branch_id', $branchId)
+                        ->update(['stock' => $branch->pivot->stock + $orderItem->quantity]);
+                }
+            }
+
+            $newVariant = $newVariants->get($exchangeItem['new_variant_id']);
+            if ($newVariant) {
+                $branch = $newVariant->branches->first(fn($b) => $b->id == $branchId);
+                if ($branch && $branch->pivot->stock >= $orderItem->quantity) {
+                    DB::table('branch_product_variant')
+                        ->where('product_variant_id', $newVariant->id)
+                        ->where('branch_id', $branchId)
+                        ->update(['stock' => $branch->pivot->stock - $orderItem->quantity]);
+                }
+            }
+        }
+
+        try {
+            $order->user->notify(new \App\Notifications\ExchangeApproved($order, $return));
+        } catch (\Exception $e) {
+            \Log::error('Exchange notification failed: ' . $e->getMessage());
+        }
+    }
+
+    private function processReturn(Order $order): void
+    {
+        $branchId = $order->branch_id ?? 1;
+
+        foreach ($order->items as $item) {
+            $variant = $item->variant;
+            if (!$variant) continue;
+
+            $branch = $variant->branches->first(fn($b) => $b->id == $branchId);
+            if ($branch) {
+                DB::table('branch_product_variant')
+                    ->where('product_variant_id', $variant->id)
+                    ->where('branch_id', $branchId)
+                    ->update(['stock' => $branch->pivot->stock + $item->quantity]);
+            }
+        }
+
+        $order->update(['status' => OrderStatus::Returned->value]);
+
+        try {
+            $order->user->notify(new OrderStatusChanged($order, OrderStatus::Returned->value));
+        } catch (\Exception $e) {
+            \Log::error('Return notification failed: ' . $e->getMessage());
+        }
     }
 }

@@ -484,6 +484,7 @@ return [
     // Error pages
     'page_not_found' => 'الصفحة غير موجودة',
     'page_not_found_desc' => 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
+    'database_connection_error' => 'تعذر الاتصال بقاعدة البيانات. برجاء المحاولة مرة أخرى لاحقاً.',
     'server_error' => 'خطأ في الخادم',
     'server_error_desc' => 'حدث خطأ ما. برجاء المحاولة مرة أخرى لاحقاً.',
     'login_required' => 'يجب تسجيل الدخول أولاً',

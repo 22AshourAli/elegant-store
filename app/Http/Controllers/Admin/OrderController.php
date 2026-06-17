@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\StockMovementType;
+use App\Enums\ReturnRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Events\OrderDelivered;
 use App\Events\StockUpdated;
@@ -10,6 +13,7 @@ use App\Models\Order;
 use App\Models\ReturnRequest;
 use App\Models\StockMovement;
 use App\Notifications\OrderStatusChanged;
+use App\Services\CursorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -39,9 +43,16 @@ class OrderController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $orders = $query->latest()->paginate(20);
+        $result = CursorService::applyCursor(
+            $query->latest(),
+            $request->get('cursor'),
+            'created_at',
+            'desc',
+            20
+        );
+        $orders = $result['data'];
         $branches = Cache::remember('admin_branches', 3600, fn() => Branch::all());
-        return view('admin.orders.index', compact('orders', 'branches'));
+        return view('admin.orders.index', compact('orders', 'branches', 'result'));
     }
 
     public function show(Order $order)
@@ -72,79 +83,20 @@ class OrderController extends Controller
         DB::transaction(function () use ($order, $newStatus, $oldStatus) {
             $updateData = ['status' => $newStatus];
 
-            // Auto-set delivered_at when status changes to delivered
-            if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+            if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
                 $updateData['delivered_at'] = now();
             }
 
             $order->update($updateData);
 
-            // Dispatch event for cashback on first delivered order
-            if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+            if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
                 event(new OrderDelivered($order));
             }
 
-            // Restore stock if the order is cancelled or returned
-            if (in_array($newStatus, ['cancelled', 'returned']) && !in_array($oldStatus, ['cancelled', 'returned'])) {
-                $order->load('items.variant.branches');
-                foreach ($order->items as $item) {
-                    $variant = $item->variant;
-                    if ($variant) {
-                        $branchId = $order->branch_id ?? 1;
-                        $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                        if ($pivot) {
-                            $stockBefore = $pivot->pivot->stock;
-                            $stockAfter = $stockBefore + $item->quantity;
-                            $variant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $stockAfter,
-                            ]);
-
-                            StockMovement::create([
-                                'product_variant_id' => $variant->id,
-                                'branch_id' => $branchId,
-                                'order_id' => $order->id,
-                                'type' => 'return',
-                                'quantity' => $item->quantity,
-                                'stock_before' => $stockBefore,
-                                'stock_after' => $stockAfter,
-                            ]);
-
-                            StockUpdated::dispatch(
-                                variantId: $variant->id,
-                                productId: $variant->product_id,
-                                branchId: $branchId,
-                                stockBefore: $stockBefore,
-                                stockAfter: $stockAfter,
-                                action: 'return',
-                                orderId: $order->id,
-                            );
-                        }
-                    }
-                }
-
-                // Auto-create ReturnRequest if status is 'returned'
-                if ($newStatus === 'returned') {
-                    $existing = ReturnRequest::where('order_id', $order->id)->first();
-                    if (!$existing) {
-                        ReturnRequest::create([
-                            'order_id' => $order->id,
-                            'user_id' => $order->user_id,
-                            'status' => 'approved',
-                            'reason' => 'تم الإرجاع بواسطة الإدارة',
-                            'approved_at' => now(),
-                        ]);
-                    }
-                }
-            }
-
+            $this->restoreStockForCancelledReturn($order, $newStatus, $oldStatus);
         });
 
-        // Send notification outside transaction so mail failure doesn't rollback the order update
-        try {
-            $order->user->notify(new OrderStatusChanged($order, $newStatus));
-        } catch (\Throwable $e) {
-            // Notification sent best-effort; mail may fail (e.g. SMTP timeout)
-        }
+        $this->sendStatusNotification($order, $newStatus);
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -155,5 +107,79 @@ class OrderController extends Controller
         }
 
         return back()->with('success', 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.');
+    }
+
+    private function restoreStockForCancelledReturn(Order $order, string $newStatus, string $oldStatus): void
+    {
+        if (!in_array($newStatus, [OrderStatus::Cancelled->value, OrderStatus::Returned->value]) || in_array($oldStatus, [OrderStatus::Cancelled->value, OrderStatus::Returned->value])) {
+            return;
+        }
+
+        $order->load('items.variant.branches');
+        $branchId = $order->branch_id ?? 1;
+        $stockMovements = [];
+
+        foreach ($order->items as $item) {
+            $variant = $item->variant;
+            if (!$variant) continue;
+
+            $branch = $variant->branches->first(fn($b) => $b->id == $branchId);
+            if (!$branch) continue;
+
+            $stockBefore = $branch->pivot->stock;
+            $stockAfter = $stockBefore + $item->quantity;
+
+            DB::table('branch_product_variant')
+                ->where('product_variant_id', $variant->id)
+                ->where('branch_id', $branchId)
+                ->update(['stock' => $stockAfter]);
+
+            $stockMovements[] = [
+                'product_variant_id' => $variant->id,
+                'branch_id' => $branchId,
+                'order_id' => $order->id,
+                'type' => StockMovementType::Return->value,
+                'quantity' => $item->quantity,
+                'stock_before' => $stockBefore,
+                'stock_after' => $stockAfter,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            StockUpdated::dispatch(
+                variantId: $variant->id,
+                productId: $variant->product_id,
+                branchId: $branchId,
+                stockBefore: $stockBefore,
+                stockAfter: $stockAfter,
+                action: StockMovementType::Return->value,
+                orderId: $order->id,
+            );
+        }
+
+        if (!empty($stockMovements)) {
+            StockMovement::insert($stockMovements);
+        }
+
+        if ($newStatus === OrderStatus::Returned->value) {
+            $existing = ReturnRequest::where('order_id', $order->id)->first();
+            if (!$existing) {
+                ReturnRequest::create([
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'status' => ReturnRequestStatus::Approved->value,
+                    'reason' => 'تم الإرجاع بواسطة الإدارة',
+                    'approved_at' => now(),
+                ]);
+            }
+        }
+    }
+
+    private function sendStatusNotification(Order $order, string $newStatus): void
+    {
+        try {
+            $order->user->notify(new OrderStatusChanged($order, $newStatus));
+        } catch (\Throwable $e) {
+        }
     }
 }

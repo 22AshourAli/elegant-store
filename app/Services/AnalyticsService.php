@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentStatus;
 use App\Models\CustomerWallet;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -88,14 +89,14 @@ class AnalyticsService
      */
     public function aovAndClv(int $userId = null): array
     {
-        $query = Order::where('payment_status', 'paid');
+        $query = Order::where('payment_status', PaymentStatus::Paid->value);
 
         // AOV: Average Order Value (paid orders only)
         $aov = (float) (clone $query)->avg('total') ?? 0;
         $totalOrders = (clone $query)->count();
 
         // CLV: Customer Lifetime Value — average per customer
-        $clvData = Order::where('payment_status', 'paid')
+        $clvData = Order::where('payment_status', PaymentStatus::Paid->value)
             ->whereNotNull('user_id')
             ->select('user_id', DB::raw('SUM(total) as lifetime_value'), DB::raw('COUNT(*) as order_count'))
             ->groupBy('user_id')

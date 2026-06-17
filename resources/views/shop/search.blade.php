@@ -14,7 +14,7 @@
             {{ __('global.search_results_for') }} "{{ $query }}"
         </h1>
         <p class="text-slate-500 text-sm">
-            {{ $products->total() }} {{ __('global.product') }} {{ __('global.found') }}
+            {{ $products->count() }} {{ __('global.product') }} {{ __('global.found') }}
         </p>
     </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\ReturnRequestStatus;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -32,7 +33,7 @@ class ReturnRequestProcessed extends Notification
 
     private function getActionLabel(): string
     {
-        return $this->request->status === 'approved' ? 'الموافقة' : 'الرفض';
+        return $this->request->status === ReturnRequestStatus::Approved->value ? 'الموافقة' : 'الرفض';
     }
 
     public function toMail($notifiable): MailMessage

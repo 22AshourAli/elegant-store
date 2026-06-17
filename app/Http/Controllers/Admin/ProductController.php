@@ -6,16 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Branch;
+use App\Services\CursorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category', 'media')->latest()->paginate(20);
-        return view('admin.products.index', compact('products'));
+        $result = CursorService::applyCursor(
+            Product::with('category', 'media'),
+            $request->get('cursor'),
+            'created_at',
+            'desc',
+            20
+        );
+        $products = $result['data'];
+        return view('admin.products.index', compact('products', 'result'));
     }
 
     public function create()
@@ -63,68 +71,14 @@ class ProductController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $validated['image_urls'] = $this->parseImageUrls($request->input('image_urls'));
 
+        $allBranches = Branch::all()->keyBy('id');
+
         $product = Product::create($validated);
 
         $this->clearHomepageCache();
-
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $product->addMedia($image)->toMediaCollection('product_images');
-            }
-        }
-
-        if ($product->has_variants) {
-            $colors = array_filter(array_map('trim', explode(',', $request->colors)));
-            $sizes = array_filter(array_map('trim', explode(',', $request->sizes)));
-            $variantData = $request->variants ?? [];
-
-            foreach ($colors as $color) {
-                foreach ($sizes as $size) {
-                    $key = $color . '_' . $size;
-
-                    if (empty($variantData) || isset($variantData[$key])) {
-                        $cost = $validated['cost_prices'][$key] ?? null;
-                        $vdata = $request->input('variants_data.' . $key, []);
-                        $variant = $product->variants()->create([
-                            'color' => $color,
-                            'size' => $size,
-                            'sku' => $vdata['sku'] ?? ($product->id . '-' . $color . '-' . $size),
-                            'price_override' => $vdata['price_override'] ?? null,
-                            'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
-                        ]);
-
-                        $stocks = $validated['variant_stocks'][$key] ?? [];
-                        foreach ($stocks as $branchId => $qty) {
-                            $variant->branches()->attach($branchId, ['stock' => max(0, (int)$qty)]);
-                        }
-                    }
-                }
-            }
-        } else {
-            $cost = $validated['cost_prices']['default'] ?? null;
-            $variant = $product->variants()->create([
-                'is_default' => true,
-                'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
-            ]);
-
-            $stocks = $validated['variant_stocks']['default'] ?? [];
-            foreach (Branch::all() as $branch) {
-                $qty = $stocks[$branch->id] ?? 0;
-                $variant->branches()->attach($branch->id, ['stock' => max(0, (int)$qty)]);
-            }
-        }
-
-        // Attach color-specific image URLs to the first variant of each color
-        if ($request->has('color_image_urls')) {
-            foreach ($request->input('color_image_urls') as $color => $url) {
-                if (!empty(trim($url))) {
-                    $first = $product->variants()->where('color', $color)->first();
-                    if ($first) {
-                        $first->update(['image_url' => trim($url)]);
-                    }
-                }
-            }
-        }
+        $this->handleUploadedProductImages($request, $product);
+        $this->createProductVariants($product, $request, $validated, $allBranches);
+        $this->attachColorImageUrls($request, $product);
 
         return redirect()->route('admin.products.index')->with('success', 'تم إضافة المنتج بنجاح');
     }
@@ -170,93 +124,13 @@ class ProductController extends Controller
 
         $this->clearHomepageCache();
 
-        if ($request->has('delete_images')) {
-            foreach ($request->input('delete_images') as $mediaId) {
-                $media = $product->media()->find($mediaId);
-                if ($media) {
-                    $media->delete();
-                }
-            }
-        }
+        $allBranches = Branch::all()->keyBy('id');
+        $product->load('variants');
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                $product->addMedia($image)->toMediaCollection('product_images');
-            }
-        }
-
-        if ($request->has('variants')) {
-            foreach ($request->input('variants') as $variantId => $vData) {
-                $variant = $product->variants()->findOrFail($variantId);
-                $updateData = [
-                    'price_override' => empty($vData['price_override']) ? null : $vData['price_override'],
-                    'cost_price' => array_key_exists('cost_price', $vData) && $vData['cost_price'] !== '' && $vData['cost_price'] !== null ? (float) $vData['cost_price'] : null,
-                    'sku' => $vData['sku'] ?? null,
-                    'image_url' => !empty($vData['image_url']) ? trim($vData['image_url']) : null,
-                ];
-
-                if (isset($vData['color'])) {
-                    $updateData['color'] = $vData['color'];
-                }
-                if (isset($vData['size'])) {
-                    $updateData['size'] = $vData['size'];
-                }
-
-                $variant->update($updateData);
-
-                if (isset($vData['stocks'])) {
-                    foreach ($vData['stocks'] as $branchId => $qty) {
-                        $variant->branches()->syncWithoutDetaching([
-                            $branchId => ['stock' => max(0, (int)$qty)]
-                        ]);
-                    }
-                }
-            }
-        }
-
-        if ($request->filled('new_colors') || $request->filled('new_sizes')) {
-            $existingColors = $product->variants->pluck('color')->unique()->filter()->values();
-            $existingSizes = $product->variants->pluck('size')->unique()->filter()->values();
-
-            $newColors = $request->filled('new_colors')
-                ? array_filter(array_map('trim', explode(',', $request->new_colors)))
-                : [];
-            $newSizes = $request->filled('new_sizes')
-                ? array_filter(array_map('trim', explode(',', $request->new_sizes)))
-                : [];
-
-            if (empty($newColors)) {
-                $newColors = $existingColors->toArray();
-            }
-            if (empty($newSizes)) {
-                $newSizes = $existingSizes->toArray();
-            }
-
-            if (!empty($newColors) && !empty($newSizes)) {
-                $product->update(['has_variants' => true]);
-
-                foreach ($newColors as $color) {
-                    foreach ($newSizes as $size) {
-                        $exists = $product->variants()
-                            ->where('color', $color)
-                            ->where('size', $size)
-                            ->exists();
-
-                        if (!$exists) {
-                            $variant = $product->variants()->create([
-                                'color' => $color,
-                                'size' => $size,
-                                'sku' => Str::slug($product->name) . '-' . $color . '-' . $size,
-                            ]);
-
-                            foreach (Branch::all() as $branch) {
-                                $variant->branches()->attach($branch->id, ['stock' => 0]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        $this->handleDeletedProductImages($request, $product);
+        $this->handleUploadedProductImages($request, $product);
+        $this->updateExistingVariants($request, $product);
+        $this->addNewVariants($request, $product, $allBranches);
 
         return redirect()->route('admin.products.index')->with('success', 'تم تحديث المنتج بنجاح');
     }
@@ -273,6 +147,197 @@ class ProductController extends Controller
         Cache::forget('homepage_default');
         Cache::forget('categories_all');
         Cache::increment('cache_version');
+    }
+
+    private function handleUploadedProductImages(Request $request, Product $product): void
+    {
+        if (!$request->hasFile('images')) {
+            return;
+        }
+
+        foreach ($request->file('images') as $image) {
+            $product->addMedia($image)->toMediaCollection('product_images');
+        }
+    }
+
+    private function createProductVariants(Product $product, Request $request, array $validated, $allBranches): void
+    {
+        if ($product->has_variants) {
+            $this->createVariantCombinations($product, $request, $validated);
+        } else {
+            $this->createDefaultVariant($product, $validated, $allBranches);
+        }
+    }
+
+    private function createVariantCombinations(Product $product, Request $request, array $validated): void
+    {
+        $colors = array_filter(array_map('trim', explode(',', $request->colors)));
+        $sizes = array_filter(array_map('trim', explode(',', $request->sizes)));
+        $variantData = $request->variants ?? [];
+
+        foreach ($colors as $color) {
+            foreach ($sizes as $size) {
+                $key = $color . '_' . $size;
+                if (!empty($variantData) && !isset($variantData[$key])) {
+                    continue;
+                }
+
+                $cost = $validated['cost_prices'][$key] ?? null;
+                $vdata = $request->input('variants_data.' . $key, []);
+                $variant = $product->variants()->create([
+                    'color' => $color,
+                    'size' => $size,
+                    'sku' => $vdata['sku'] ?? ($product->id . '-' . $color . '-' . $size),
+                    'price_override' => $vdata['price_override'] ?? null,
+                    'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
+                ]);
+
+                $stocks = $validated['variant_stocks'][$key] ?? [];
+                foreach ($stocks as $branchId => $qty) {
+                    $variant->branches()->attach($branchId, ['stock' => max(0, (int)$qty)]);
+                }
+            }
+        }
+    }
+
+    private function createDefaultVariant(Product $product, array $validated, $allBranches): void
+    {
+        $cost = $validated['cost_prices']['default'] ?? null;
+        $variant = $product->variants()->create([
+            'is_default' => true,
+            'cost_price' => $cost !== null && $cost !== '' ? (float) $cost : null,
+        ]);
+
+        $stocks = $validated['variant_stocks']['default'] ?? [];
+        foreach ($allBranches as $branch) {
+            $qty = $stocks[$branch->id] ?? 0;
+            $variant->branches()->attach($branch->id, ['stock' => max(0, (int)$qty)]);
+        }
+    }
+
+    private function attachColorImageUrls(Request $request, Product $product): void
+    {
+        if (!$request->has('color_image_urls')) {
+            return;
+        }
+
+        foreach ($request->input('color_image_urls') as $color => $url) {
+            if (empty(trim($url))) {
+                continue;
+            }
+
+            $first = $product->variants()->where('color', $color)->first();
+            if ($first) {
+                $first->update(['image_url' => trim($url)]);
+            }
+        }
+    }
+
+    private function handleDeletedProductImages(Request $request, Product $product): void
+    {
+        if (!$request->has('delete_images')) {
+            return;
+        }
+
+        foreach ($request->input('delete_images') as $mediaId) {
+            $media = $product->media()->find($mediaId);
+            if ($media) {
+                $media->delete();
+            }
+        }
+    }
+
+    private function updateExistingVariants(Request $request, Product $product): void
+    {
+        if (!$request->has('variants')) {
+            return;
+        }
+
+        foreach ($request->input('variants') as $variantId => $vData) {
+            $variant = $product->variants->find($variantId);
+            if (!$variant) {
+                abort(404);
+            }
+
+            $updateData = [
+                'price_override' => empty($vData['price_override']) ? null : $vData['price_override'],
+                'cost_price' => array_key_exists('cost_price', $vData) && $vData['cost_price'] !== '' && $vData['cost_price'] !== null ? (float) $vData['cost_price'] : null,
+                'sku' => $vData['sku'] ?? null,
+                'image_url' => !empty($vData['image_url']) ? trim($vData['image_url']) : null,
+            ];
+
+            if (isset($vData['color'])) {
+                $updateData['color'] = $vData['color'];
+            }
+            if (isset($vData['size'])) {
+                $updateData['size'] = $vData['size'];
+            }
+
+            $variant->update($updateData);
+
+            if (!isset($vData['stocks'])) {
+                continue;
+            }
+
+            foreach ($vData['stocks'] as $branchId => $qty) {
+                $variant->branches()->syncWithoutDetaching([
+                    $branchId => ['stock' => max(0, (int)$qty)]
+                ]);
+            }
+        }
+    }
+
+    private function addNewVariants(Request $request, Product $product, $allBranches): void
+    {
+        if (!$request->filled('new_colors') && !$request->filled('new_sizes')) {
+            return;
+        }
+
+        $existingColors = $product->variants->pluck('color')->unique()->filter()->values();
+        $existingSizes = $product->variants->pluck('size')->unique()->filter()->values();
+
+        $newColors = $request->filled('new_colors')
+            ? array_filter(array_map('trim', explode(',', $request->new_colors)))
+            : [];
+        $newSizes = $request->filled('new_sizes')
+            ? array_filter(array_map('trim', explode(',', $request->new_sizes)))
+            : [];
+
+        if (empty($newColors)) {
+            $newColors = $existingColors->toArray();
+        }
+        if (empty($newSizes)) {
+            $newSizes = $existingSizes->toArray();
+        }
+
+        if (empty($newColors) || empty($newSizes)) {
+            return;
+        }
+
+        $product->update(['has_variants' => true]);
+
+        $existingKeys = $product->variants()
+            ->whereIn('color', $newColors)
+            ->whereIn('size', $newSizes)
+            ->get()
+            ->map(fn($v) => $v->color . '_' . $v->size)
+            ->flip();
+
+        foreach ($newColors as $color) {
+            foreach ($newSizes as $size) {
+                if (isset($existingKeys[$color . '_' . $size])) {
+                    continue;
+                }
+
+                $variant = $product->variants()->create([
+                    'color' => $color,
+                    'size' => $size,
+                    'sku' => Str::slug($product->name) . '-' . $color . '-' . $size,
+                ]);
+
+                $variant->branches()->attach($allBranches->mapWithKeys(fn($b) => [$b->id => ['stock' => 0]])->all());
+            }
+        }
     }
 
     private function parseImageUrls(?string $input): array

@@ -478,6 +478,7 @@ return [
     // Error pages
     'page_not_found' => 'Page Not Found',
     'page_not_found_desc' => 'The page you are looking for does not exist or has been moved.',
+    'database_connection_error' => 'Could not connect to database. Please try again later.',
     'server_error' => 'Server Error',
     'server_error_desc' => 'Something went wrong. Please try again later.',
     'login_required' => 'Please login first',

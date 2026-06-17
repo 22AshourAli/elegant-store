@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ProductVariant;
 use App\Services\CartService;
@@ -26,7 +27,7 @@ class CartController extends Controller
 
             $shipping = null;
             if (auth()->check()) {
-                $previousOrders = auth()->user()->orders()->where('status', '!=', 'cancelled')->count();
+                $previousOrders = auth()->user()->orders()->where('status', '!=', OrderStatus::Cancelled->value)->count();
                 $shipping = ($previousOrders === 0) ? 0 : config('store.default_shipping', 30);
             }
 
@@ -42,72 +43,102 @@ class CartController extends Controller
 
     public function add(Request $request, ProductVariant $variant, CartService $cart)
     {
-        $quantity = $request->input('quantity', 1);
-        $cart->add($variant->id, $quantity);
-        return response()->json([
-            'message' => __('global.added_to_cart'),
-            'cartCount' => $cart->count()
-        ]);
+        try {
+            $quantity = $request->input('quantity', 1);
+            $cart->add($variant->id, $quantity);
+            return response()->json([
+                'message' => __('global.added_to_cart'),
+                'cartCount' => $cart->count()
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     public function buyNow(Request $request, ProductVariant $variant, CartService $cart)
     {
-        $quantity = $request->input('quantity', 1);
-        $cart->clear();
-        $cart->add($variant->id, $quantity);
-        return response()->json([
-            'cartCount' => $cart->count()
-        ]);
+        try {
+            $quantity = $request->input('quantity', 1);
+            $cart->clear();
+            $cart->add($variant->id, $quantity);
+            return response()->json([
+                'cartCount' => $cart->count()
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     public function update(Request $request, $variantId, CartService $cart)
     {
-        $cart->updateQuantity($variantId, $request->quantity);
+        try {
+            $cart->updateQuantity($variantId, $request->quantity);
 return response()->json([
-            'total' => (int) round($cart->total()),
-            'cartCount' => $cart->count()
-        ]);
+                'total' => (int) round($cart->total()),
+                'cartCount' => $cart->count()
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     public function remove($variantId, CartService $cart)
     {
-        $cart->remove($variantId);
+        try {
+            $cart->remove($variantId);
 return response()->json([
-            'message' => __('global.removed_from_cart'),
-            'cartCount' => $cart->count(),
-            'total' => (int) round($cart->total())
-        ]);
+                'message' => __('global.removed_from_cart'),
+                'cartCount' => $cart->count(),
+                'total' => (int) round($cart->total())
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     public function applyCoupon(Request $request, CartService $cart)
     {
-        $code = $request->input('code');
-        if (!$code) return response()->json(['message' => __('global.coupon_error')], 422);
+        try {
+            $code = $request->input('code');
+            if (!$code) return response()->json(['message' => __('global.coupon_error')], 422);
 
-        $coupon = $cart->applyCouponByCode($code);
-        if (!$coupon) {
-            return response()->json(['message' => __('global.coupon_error')], 422);
+            $coupon = $cart->applyCouponByCode($code);
+            if (!$coupon) {
+                return response()->json(['message' => __('global.coupon_error')], 422);
+            }
+
+            return response()->json([
+                'message' => __('global.coupon_success'),
+                'cartCount' => $cart->count(),
+                'total' => (int) round($cart->total()),
+                'baseTotal' => (int) round($cart->baseTotal()),
+                'discount' => (int) round($cart->getDiscount()),
+                'coupon' => ['code' => $coupon->code, 'type' => $coupon->type, 'value' => $coupon->value]
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
         }
-
-        return response()->json([
-            'message' => __('global.coupon_success'),
-            'cartCount' => $cart->count(),
-            'total' => (int) round($cart->total()),
-            'baseTotal' => (int) round($cart->baseTotal()),
-            'discount' => (int) round($cart->getDiscount()),
-            'coupon' => ['code' => $coupon->code, 'type' => $coupon->type, 'value' => $coupon->value]
-        ]);
     }
 
     public function removeCoupon(CartService $cart)
     {
-        $cart->removeCoupon();
-        return response()->json([
-            'message' => __('global.coupon_removed'),
-            'cartCount' => $cart->count(),
-            'total' => (int) round($cart->total()),
-            'baseTotal' => (int) round($cart->baseTotal()),
-            'discount' => (int) round($cart->getDiscount())
-        ]);
+        try {
+            $cart->removeCoupon();
+            return response()->json([
+                'message' => __('global.coupon_removed'),
+                'cartCount' => $cart->count(),
+                'total' => (int) round($cart->total()),
+                'baseTotal' => (int) round($cart->baseTotal()),
+                'discount' => (int) round($cart->getDiscount())
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 }

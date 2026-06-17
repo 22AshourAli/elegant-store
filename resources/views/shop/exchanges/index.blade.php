@@ -1,6 +1,11 @@
 @extends('layouts.store')
 
 @section('content')
+@php
+    $nextCursor = $result['next_cursor'] ?? null;
+    $prevCursor = $result['prev_cursor'] ?? null;
+    $hasMore = $result['has_more'] ?? false;
+@endphp
 <div class="bg-gray-50 dark:bg-gray-800/50 py-6 border-b border-gray-200 dark:border-gray-700">
     <div class="container mx-auto px-4">
         <h1 class="text-2xl font-bold">{{ __('return.my_exchanges') }}</h1>
@@ -41,7 +46,7 @@
                 </div>
             @endforeach
         </div>
-        <div class="mt-6">{{ $exchanges->links() }}</div>
+        <div class="mt-6"><x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" /></div>
     @else
         <div class="text-center py-12">
             <p class="text-gray-500">{{ __('return.no_exchanges') }}</p>

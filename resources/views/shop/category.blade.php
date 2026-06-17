@@ -15,6 +15,11 @@
 @endsection
 
 @section('content')
+@php
+    $nextCursor = $result['next_cursor'] ?? null;
+    $prevCursor = $result['prev_cursor'] ?? null;
+    $hasMore = $result['has_more'] ?? false;
+@endphp
 {{-- Category Header --}}
 <div class="relative overflow-hidden bg-white/40 dark:bg-bg-dark/40 border-b border-slate-200/40 dark:border-slate-800/40 py-10 backdrop-blur-md">
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-bg-light/10 dark:to-bg-dark/10 pointer-events-none"></div>
@@ -79,7 +84,7 @@
     {{-- Sort + Count Bar (desktop) --}}
     <div class="hidden md:flex justify-between items-center mb-6 px-6 py-4 bg-white/60 dark:bg-surface-dark/60 rounded-2xl border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-md shadow-[0_8px_32px_0_rgba(31,38,135,0.03)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
             <p class="text-sm text-slate-600 dark:text-slate-400 font-semibold">
-                <span class="font-extrabold text-brand-primary dark:text-accent text-lg">{{ $products->total() }}</span>
+                <span class="font-extrabold text-brand-primary dark:text-accent text-lg">{{ $products->count() }}</span>
                 <span class="mx-1">{{ __('global.product') }}</span>
             </p>
             <form action="{{ request()->url() }}" method="GET" id="sort-form-desktop" class="flex items-center gap-3">
@@ -111,7 +116,7 @@
             </div>
 
             <div class="mt-12">
-                {{ $products->links('pagination.tailwind') }}
+                <x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" />
             </div>
         @else
             {{-- Empty state --}}

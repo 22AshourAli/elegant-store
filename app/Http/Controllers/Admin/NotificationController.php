@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\CursorService;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (request()->query('json')) {
             $notifications = auth()->user()->notifications()->latest()->take(10)->get()->map(function ($n) {
@@ -27,8 +29,15 @@ class NotificationController extends Controller
             ]);
         }
 
-        $notifications = auth()->user()->notifications()->paginate(20);
-        return view('admin.notifications.index', compact('notifications'));
+        $result = CursorService::applyCursor(
+            auth()->user()->notifications(),
+            $request->get('cursor'),
+            'created_at',
+            'desc',
+            20
+        );
+        $notifications = $result['data'];
+        return view('admin.notifications.index', compact('notifications', 'result'));
     }
 
     public function markRead($id)

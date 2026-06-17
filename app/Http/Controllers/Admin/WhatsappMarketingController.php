@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Mail\BulkMarketingMail;
 use App\Models\User;
@@ -18,13 +20,13 @@ class WhatsappMarketingController extends Controller
 
     public function bulkForm()
     {
-        $totalCustomers = User::where('role', 'customer')->count();
-        $withEmail = User::where('role', 'customer')
+        $totalCustomers = User::where('role', UserRole::Customer->value)->count();
+        $withEmail = User::where('role', UserRole::Customer->value)
             ->whereNotNull('email')->where('email', '!=', '')->count();
-        $withPhone = User::where('role', 'customer')
+        $withPhone = User::where('role', UserRole::Customer->value)
             ->whereNotNull('phone')->where('phone', '!=', '')->count();
-        $previousBuyers = User::where('role', 'customer')
-            ->whereHas('orders', fn($q) => $q->where('status', '!=', 'cancelled'))
+        $previousBuyers = User::where('role', UserRole::Customer->value)
+            ->whereHas('orders', fn($q) => $q->where('status', '!=', OrderStatus::Cancelled->value))
             ->count();
 
         return view('admin.whatsapp.bulk', [
@@ -46,10 +48,10 @@ class WhatsappMarketingController extends Controller
             'message' => 'required|string|max:10000',
         ]);
 
-        $query = User::where('role', 'customer');
+        $query = User::where('role', UserRole::Customer->value);
 
         if ($request->audience === 'previous_buyers') {
-            $query->whereHas('orders', fn($q) => $q->where('status', '!=', 'cancelled'));
+            $query->whereHas('orders', fn($q) => $q->where('status', '!=', OrderStatus::Cancelled->value));
         } elseif ($request->audience === 'online') {
             $query->online();
         } elseif ($request->audience === 'offline') {
@@ -135,7 +137,7 @@ class WhatsappMarketingController extends Controller
 
     public function index()
     {
-        $customers = User::where('role', 'customer')
+        $customers = User::where('role', UserRole::Customer->value)
             ->select('users.*')
             ->selectSub(function ($q) {
                 $q->selectRaw('COALESCE(COUNT(*), 0)')
@@ -213,7 +215,7 @@ class WhatsappMarketingController extends Controller
     {
         $messagedIds = WhatsappLog::pluck('user_id')->unique();
 
-        $next = User::where('role', 'customer')
+        $next = User::where('role', UserRole::Customer->value)
             ->whereNotIn('id', $messagedIds)
             ->select('users.*')
             ->selectSub(fn($q) => $q->selectRaw('COALESCE(SUM(total), 0)')->from('orders')->whereColumn('orders.user_id', 'users.id'), 'total_spent')
@@ -221,7 +223,7 @@ class WhatsappMarketingController extends Controller
             ->first();
 
         if (!$next) {
-            $next = User::where('role', 'customer')
+            $next = User::where('role', UserRole::Customer->value)
                 ->select('users.*')
                 ->selectSub(fn($q) => $q->selectRaw('COALESCE(SUM(total), 0)')->from('orders')->whereColumn('orders.user_id', 'users.id'), 'total_spent')
                 ->orderByDesc('total_spent')

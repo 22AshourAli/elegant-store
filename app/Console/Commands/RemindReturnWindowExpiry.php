@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ExchangeStatus;
+use App\Enums\OrderStatus;
+use App\Enums\ReturnRequestStatus;
 use App\Models\Order;
 use App\Notifications\OrderDeliveredNotification;
 use Illuminate\Console\Command;
@@ -17,11 +20,11 @@ class RemindReturnWindowExpiry extends Command
     {
         $targetDate = now()->subDays(2);
 
-        $orders = Order::where('status', 'delivered')
+        $orders = Order::where('status', OrderStatus::Delivered->value)
             ->whereNotNull('delivered_at')
             ->whereDate('delivered_at', $targetDate->format('Y-m-d'))
-            ->whereDoesntHave('returnRequests', fn ($q) => $q->whereIn('status', ['pending', 'approved']))
-            ->whereDoesntHave('exchanges', fn ($q) => $q->whereIn('status', ['pending', 'approved']))
+            ->whereDoesntHave('returnRequests', fn ($q) => $q->whereIn('status', [ReturnRequestStatus::Pending->value, ReturnRequestStatus::Approved->value]))
+            ->whereDoesntHave('exchanges', fn ($q) => $q->whereIn('status', [ExchangeStatus::Pending->value, ExchangeStatus::Approved->value]))
             ->get();
 
         if ($orders->isEmpty()) {

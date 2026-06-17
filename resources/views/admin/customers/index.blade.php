@@ -4,7 +4,7 @@
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 overflow-hidden">
     {{-- Header --}}
     <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h3 class="font-extrabold text-lg">{{ __('global.admin_customers') }} <span class="text-slate-400 text-sm font-bold">({{ $customers->total() }})</span></h3>
+        <h3 class="font-extrabold text-lg">{{ __('global.admin_customers') }} <span class="text-slate-400 text-sm font-bold">({{ $customers->count() }})</span></h3>
         <form method="GET" class="flex gap-2">
             <input type="text" name="search" value="{{ $search }}" placeholder="{{ __('global.search') }}..." class="border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-primary dark:bg-gray-700 dark:text-white w-48">
             <button type="submit" class="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-hover transition font-bold text-sm">{{ __('global.search') }}</button>
@@ -74,7 +74,12 @@
 
     {{-- Pagination --}}
     <div class="p-4 border-t border-slate-200 dark:border-slate-700">
-        {{ $customers->onEachSide(1)->links('vendor.pagination.admin') }}
+        @php
+        $nextCursor = $result['next_cursor'] ?? null;
+        $prevCursor = $result['prev_cursor'] ?? null;
+        $hasMore = $result['has_more'] ?? false;
+        @endphp
+        <x-admin-cursor-pagination :next-cursor="$nextCursor" :prev-cursor="$prevCursor" :has-more="$hasMore" />
     </div>
 </div>
 

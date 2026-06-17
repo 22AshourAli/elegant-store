@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\ProductVariant;
@@ -48,8 +49,11 @@ class PurchaseOrderController extends Controller
         $items = [];
         $subtotal = 0;
 
+        $variantIds = collect($data['items'])->pluck('variant_id')->unique()->all();
+        $variants = ProductVariant::whereIn('id', $variantIds)->get()->keyBy('id');
+
         foreach ($data['items'] as $item) {
-            $variant = ProductVariant::findOrFail($item['variant_id']);
+            $variant = $variants[$item['variant_id']];
             $total = $item['quantity'] * $item['unit_cost'];
             $subtotal += $total;
             $items[] = [
@@ -65,7 +69,7 @@ class PurchaseOrderController extends Controller
             'supplier_id' => $data['supplier_id'],
             'branch_id' => $data['branch_id'],
             'created_by' => auth()->id(),
-            'status' => 'pending',
+            'status' => PurchaseOrderStatus::Pending->value,
             'subtotal' => $subtotal,
             'total' => $subtotal,
             'notes' => $data['notes'],
@@ -87,7 +91,7 @@ class PurchaseOrderController extends Controller
 
     public function edit(PurchaseOrder $purchaseOrder)
     {
-        if (!in_array($purchaseOrder->status, ['pending', 'sent'])) {
+        if (!in_array($purchaseOrder->status, [PurchaseOrderStatus::Pending->value, PurchaseOrderStatus::Sent->value])) {
             return redirect()->route('admin.purchase-orders.show', $purchaseOrder)
                 ->with('error', __('global.po_cannot_edit'));
         }
@@ -102,7 +106,7 @@ class PurchaseOrderController extends Controller
 
     public function update(Request $request, PurchaseOrder $purchaseOrder)
     {
-        if (!in_array($purchaseOrder->status, ['pending', 'sent'])) {
+        if (!in_array($purchaseOrder->status, [PurchaseOrderStatus::Pending->value, PurchaseOrderStatus::Sent->value])) {
             return redirect()->route('admin.purchase-orders.show', $purchaseOrder)
                 ->with('error', __('global.po_cannot_edit'));
         }
@@ -150,12 +154,12 @@ class PurchaseOrderController extends Controller
 
     public function markSent(PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status !== 'pending') {
+        if ($purchaseOrder->status !== PurchaseOrderStatus::Pending->value) {
             return back()->with('error', __('global.po_invalid_status'));
         }
 
         $purchaseOrder->update([
-            'status' => 'sent',
+            'status' => PurchaseOrderStatus::Sent->value,
             'ordered_at' => now(),
         ]);
 
@@ -164,7 +168,7 @@ class PurchaseOrderController extends Controller
 
     public function receiveForm(PurchaseOrder $purchaseOrder)
     {
-        if (in_array($purchaseOrder->status, ['received', 'cancelled'])) {
+        if (in_array($purchaseOrder->status, [PurchaseOrderStatus::Received->value, PurchaseOrderStatus::Cancelled->value])) {
             return redirect()->route('admin.purchase-orders.show', $purchaseOrder)
                 ->with('error', __('global.po_cannot_receive'));
         }
@@ -176,7 +180,7 @@ class PurchaseOrderController extends Controller
 
     public function receive(Request $request, PurchaseOrder $purchaseOrder)
     {
-        if (in_array($purchaseOrder->status, ['received', 'cancelled'])) {
+        if (in_array($purchaseOrder->status, [PurchaseOrderStatus::Received->value, PurchaseOrderStatus::Cancelled->value])) {
             return back()->with('error', __('global.po_cannot_receive'));
         }
 
@@ -187,52 +191,12 @@ class PurchaseOrderController extends Controller
 
         $allReceived = true;
         $branchId = $purchaseOrder->branch_id ?? auth()->user()->branch_id ?? 1;
+        $purchaseOrder->load('items.variant.branches');
 
         foreach ($purchaseOrder->items as $item) {
-            $receivedQty = (int) ($data['items'][$item->id]['received'] ?? 0);
-
-            if ($receivedQty > 0) {
-                $variant = $item->variant;
-                $newReceived = $item->quantity_received + $receivedQty;
-
-                if ($newReceived > $item->quantity_ordered) {
-                    return back()->with('error', __('global.po_receive_exceeds', [
-                        'variant' => $variant->sku,
-                    ]));
-                }
-
-                $item->update(['quantity_received' => $newReceived]);
-
-                $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                if ($pivot) {
-                    $stockBefore = $pivot->pivot->stock;
-                    $stockAfter = $stockBefore + $receivedQty;
-                    $variant->branches()->updateExistingPivot($branchId, [
-                        'stock' => $stockAfter,
-                    ]);
-
-                    StockMovement::create([
-                        'product_variant_id' => $variant->id,
-                        'branch_id' => $branchId,
-                        'type' => 'purchase_receive',
-                        'quantity' => $receivedQty,
-                        'stock_before' => $stockBefore,
-                        'stock_after' => $stockAfter,
-                        'reference_type' => PurchaseOrder::class,
-                        'reference_id' => $purchaseOrder->id,
-                    ]);
-
-                    StockUpdated::dispatch(
-                        variantId: $variant->id,
-                        productId: $variant->product_id,
-                        branchId: $branchId,
-                        stockBefore: $stockBefore,
-                        stockAfter: $stockAfter,
-                        action: 'purchase_receive',
-                    );
-                } else {
-                    $variant->branches()->attach($branchId, ['stock' => $receivedQty]);
-                }
+            $error = $this->processReceivedItem($item, $data, $branchId, $purchaseOrder);
+            if ($error) {
+                return $error;
             }
 
             if ($item->quantity_received < $item->quantity_ordered) {
@@ -240,7 +204,7 @@ class PurchaseOrderController extends Controller
             }
         }
 
-        $newStatus = $allReceived ? 'received' : 'partially_received';
+        $newStatus = $allReceived ? PurchaseOrderStatus::Received->value : PurchaseOrderStatus::PartiallyReceived->value;
         $purchaseOrder->update([
             'status' => $newStatus,
             'received_at' => $allReceived ? now() : null,
@@ -250,20 +214,72 @@ class PurchaseOrderController extends Controller
             ->with('success', __('global.po_received'));
     }
 
+    private function processReceivedItem($item, array $data, int $branchId, PurchaseOrder $purchaseOrder): ?\Illuminate\Http\RedirectResponse
+    {
+        $receivedQty = (int) ($data['items'][$item->id]['received'] ?? 0);
+        if ($receivedQty <= 0) {
+            return null;
+        }
+
+        $variant = $item->variant;
+        $newReceived = $item->quantity_received + $receivedQty;
+
+        if ($newReceived > $item->quantity_ordered) {
+            return back()->with('error', __('global.po_receive_exceeds', [
+                'variant' => $variant->sku,
+            ]));
+        }
+
+        $item->update(['quantity_received' => $newReceived]);
+
+        $branchPivot = $variant->branches->firstWhere('id', $branchId);
+        if ($branchPivot) {
+            $stockBefore = $branchPivot->pivot->stock;
+            $stockAfter = $stockBefore + $receivedQty;
+            $variant->branches()->updateExistingPivot($branchId, [
+                'stock' => $stockAfter,
+            ]);
+
+            StockMovement::create([
+                'product_variant_id' => $variant->id,
+                'branch_id' => $branchId,
+                'type' => 'purchase_receive',
+                'quantity' => $receivedQty,
+                'stock_before' => $stockBefore,
+                'stock_after' => $stockAfter,
+                'reference_type' => PurchaseOrder::class,
+                'reference_id' => $purchaseOrder->id,
+            ]);
+
+            StockUpdated::dispatch(
+                variantId: $variant->id,
+                productId: $variant->product_id,
+                branchId: $branchId,
+                stockBefore: $stockBefore,
+                stockAfter: $stockAfter,
+                action: 'purchase_receive',
+            );
+        } else {
+            $variant->branches()->attach($branchId, ['stock' => $receivedQty]);
+        }
+
+        return null;
+    }
+
     public function cancel(PurchaseOrder $purchaseOrder)
     {
-        if (in_array($purchaseOrder->status, ['received', 'cancelled'])) {
+        if (in_array($purchaseOrder->status, [PurchaseOrderStatus::Received->value, PurchaseOrderStatus::Cancelled->value])) {
             return back()->with('error', __('global.po_cannot_cancel'));
         }
 
-        $purchaseOrder->update(['status' => 'cancelled']);
+        $purchaseOrder->update(['status' => PurchaseOrderStatus::Cancelled->value]);
 
         return back()->with('success', __('global.po_cancelled'));
     }
 
     public function destroy(PurchaseOrder $purchaseOrder)
     {
-        if ($purchaseOrder->status === 'received') {
+        if ($purchaseOrder->status === PurchaseOrderStatus::Received->value) {
             return back()->with('error', __('global.po_cannot_delete'));
         }
 

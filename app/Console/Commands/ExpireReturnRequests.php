@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ExchangeStatus;
+use App\Enums\OrderStatus;
+use App\Enums\ReturnRequestStatus;
 use App\Models\Exchange;
 use App\Models\ReturnRequest;
 use Illuminate\Console\Command;
@@ -74,7 +77,7 @@ class ExpireReturnRequests extends Command
 
         foreach ($expiredReturns as $request) {
             $request->update([
-                'status' => 'rejected',
+                'status' => ReturnRequestStatus::Rejected->value,
                 'rejected_at' => $now,
                 'admin_note' => $reason,
             ]);
@@ -83,7 +86,7 @@ class ExpireReturnRequests extends Command
 
         foreach ($expiredExchanges as $exchange) {
             $exchange->update([
-                'status' => 'rejected',
+                'status' => ExchangeStatus::Rejected->value,
                 'rejected_at' => $now,
                 'admin_note' => $reason,
             ]);
@@ -99,9 +102,9 @@ class ExpireReturnRequests extends Command
 
     private function expiredReturnRequests()
     {
-        return ReturnRequest::where('status', 'pending')
+        return ReturnRequest::where('status', ReturnRequestStatus::Pending->value)
             ->whereHas('order', function ($q) {
-                $q->where('status', 'delivered')
+                $q->where('status', OrderStatus::Delivered->value)
                     ->whereNotNull('delivered_at');
             })
             ->get()
@@ -111,9 +114,9 @@ class ExpireReturnRequests extends Command
 
     private function expiredExchanges()
     {
-        return Exchange::where('status', 'pending')
+        return Exchange::where('status', ExchangeStatus::Pending->value)
             ->whereHas('order', function ($q) {
-                $q->where('status', 'delivered')
+                $q->where('status', OrderStatus::Delivered->value)
                     ->whereNotNull('delivered_at');
             })
             ->get()

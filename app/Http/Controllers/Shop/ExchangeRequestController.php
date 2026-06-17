@@ -2,21 +2,28 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\ExchangeStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Exchange;
 use App\Models\Order;
+use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class ExchangeRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $exchanges = auth()->user()->exchanges()
-            ->with('order')
-            ->latest()
-            ->paginate(10);
+        $result = CursorService::applyCursor(
+            auth()->user()->exchanges()->with('order')->reorder(),
+            $request->input('cursor'),
+            'created_at',
+            'desc',
+            10
+        );
+        $exchanges = $result['data'];
 
-        return view('shop.exchanges.index', compact('exchanges'));
+        return view('shop.exchanges.index', compact('exchanges', 'result'));
     }
 
     public function create(Order $order)
@@ -30,7 +37,7 @@ class ExchangeRequestController extends Controller
         }
 
         if ($order->exchanges()
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', [ExchangeStatus::Pending->value, ExchangeStatus::Approved->value])
             ->exists()) {
             return back()->with('error', __('return.already_requested'));
         }
@@ -51,7 +58,7 @@ class ExchangeRequestController extends Controller
         }
 
         if ($order->exchanges()
-            ->whereIn('status', ['pending', 'approved'])
+            ->whereIn('status', [ExchangeStatus::Pending->value, ExchangeStatus::Approved->value])
             ->exists()) {
             return back()->with('error', __('return.already_requested'));
         }
@@ -74,13 +81,13 @@ class ExchangeRequestController extends Controller
         $exchange = Exchange::create([
             'order_id' => $order->id,
             'user_id' => auth()->id(),
-            'status' => 'pending',
+            'status' => ExchangeStatus::Pending->value,
             'reason' => $validated['reason'],
             'items' => $validated['items'],
         ]);
 
         // Notify all admins
-        $admins = \App\Models\User::whereIn('role', ['super_admin', 'manager'])->get();
+        $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
         foreach ($admins as $admin) {
             try {
                 $admin->notify(new \App\Notifications\ExchangeSubmitted($exchange));

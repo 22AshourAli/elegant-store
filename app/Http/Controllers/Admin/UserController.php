@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\User;
@@ -27,16 +28,16 @@ class UserController extends Controller
         $query = User::with('branch');
 
         if ($type === 'customers') {
-            $query->where('role', 'customer');
+            $query->where('role', UserRole::Customer->value);
         } else {
-            $query->where('role', '!=', 'customer');
+            $query->where('role', '!=', UserRole::Customer->value);
         }
 
         $users = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
         $counts = [
-            'staff' => User::where('role', '!=', 'customer')->count(),
-            'customers' => User::where('role', 'customer')->count(),
+            'staff' => User::where('role', '!=', UserRole::Customer->value)->count(),
+            'customers' => User::where('role', UserRole::Customer->value)->count(),
         ];
 
         return view('admin.users.index', compact('users', 'type', 'counts'));
@@ -73,7 +74,7 @@ class UserController extends Controller
                 'name' => strstr($data['email'], '@', true),
                 'email' => $data['email'],
                 'password' => bcrypt($rawPassword),
-                'role' => 'customer',
+                'role' => UserRole::Customer->value,
                 'branch_id' => null,
             ]);
 
@@ -85,13 +86,13 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => ['required', Rule::in(['manager', 'super_admin'])],
+            'role' => ['required', Rule::in([UserRole::Manager->value, UserRole::SuperAdmin->value])],
             'branch_id' => 'nullable|exists:branches,id',
             'phone' => 'nullable|string|max:20',
         ]);
 
         $data['password'] = bcrypt($data['password']);
-        $data['branch_id'] = $data['role'] === 'manager' ? $data['branch_id'] : null;
+        $data['branch_id'] = $data['role'] === UserRole::Manager->value ? $data['branch_id'] : null;
 
         User::create($data);
 
@@ -139,7 +140,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
-            'role' => ['required', Rule::in(['manager', 'super_admin'])],
+            'role' => ['required', Rule::in([UserRole::Manager->value, UserRole::SuperAdmin->value])],
             'branch_id' => 'nullable|exists:branches,id',
             'phone' => 'nullable|string|max:20',
         ]);
@@ -150,7 +151,7 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        $data['branch_id'] = $data['role'] === 'manager' ? $data['branch_id'] : null;
+        $data['branch_id'] = $data['role'] === UserRole::Manager->value ? $data['branch_id'] : null;
 
         $user->update($data);
 

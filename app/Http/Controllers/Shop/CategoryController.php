@@ -7,11 +7,13 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use App\Services\CursorService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         $version = Cache::get('cache_version', 1);
         $cacheKey = 'category_' . $version . '_' . md5($slug . '_' . request()->fullUrl());
@@ -29,16 +31,14 @@ class CategoryController extends Controller
                 ->active()
                 ->with('media', 'variants');
 
-            $sort = request('sort', 'latest');
-            if ($sort === 'price_asc') {
-                $query->orderByRaw('COALESCE(sale_price, base_price) ASC');
-            } elseif ($sort === 'price_desc') {
-                $query->orderByRaw('COALESCE(sale_price, base_price) DESC');
-            } else {
-                $query->latest();
-            }
-
-            $products = $query->paginate(12)->withQueryString();
+            $result = CursorService::applyCursor(
+                $query->reorder(),
+                $request->input('cursor'),
+                'created_at',
+                'desc',
+                12
+            );
+            $products = $result['data'];
             Cache::put($cacheKey . '_prods', $products, now()->addMinutes(10));
 
             $wishlistIds = [];
@@ -56,7 +56,7 @@ class CategoryController extends Controller
             \SEOMeta::setDescription('تسوق أحدث منتجات ' . $category->name . ' بأفضل الأسعار.');
             \OpenGraph::setTitle($category->name . ' - Elegant Store');
 
-            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds'));
+            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds', 'result'));
         } catch (\PDOException $e) {
             $products = Cache::get($cacheKey . '_prods');
             $category = Cache::get($cacheKey . '_cat');
@@ -68,7 +68,7 @@ class CategoryController extends Controller
             $wishlistIds = [];
             $cartProductIds = [];
 
-            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds'));
+            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds', 'result'));
         }
     }
 }

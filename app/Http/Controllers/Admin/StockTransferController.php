@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\StockTransferStatus;
+use App\Enums\StockMovementType;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\ProductVariant;
@@ -46,7 +48,7 @@ class StockTransferController extends Controller
             'from_branch_id' => $data['from_branch_id'],
             'to_branch_id' => $data['to_branch_id'],
             'created_by' => auth()->id(),
-            'status' => 'pending',
+            'status' => StockTransferStatus::Pending->value,
             'notes' => $data['notes'],
         ]);
 
@@ -73,38 +75,39 @@ class StockTransferController extends Controller
 
     public function complete(StockTransfer $stockTransfer)
     {
-        if ($stockTransfer->status !== 'pending') {
+        if ($stockTransfer->status !== StockTransferStatus::Pending->value) {
             return back()->with('error', __('global.st_cannot_complete'));
         }
 
-        $stockTransfer->load('items.variant');
+        $stockTransfer->load('items.variant.branches');
+
+        $movements = [];
 
         foreach ($stockTransfer->items as $item) {
             $variant = $item->variant;
 
-            // Deduct from source branch
-            $fromPivot = $variant->branches()->where('branch_id', $stockTransfer->from_branch_id)->first();
-            if (!$fromPivot || $fromPivot->pivot->stock < $item->quantity) {
+            $fromBranch = $variant->branches->firstWhere('id', $stockTransfer->from_branch_id);
+            if (!$fromBranch || $fromBranch->pivot->stock < $item->quantity) {
                 return back()->with('error', __('global.st_insufficient_stock', [
                     'variant' => $variant->sku,
-                    'available' => $fromPivot ? $fromPivot->pivot->stock : 0,
+                    'available' => $fromBranch ? $fromBranch->pivot->stock : 0,
                 ]));
             }
 
-            $fromStockBefore = $fromPivot->pivot->stock;
+            $fromStockBefore = $fromBranch->pivot->stock;
             $fromStockAfter = $fromStockBefore - $item->quantity;
             $variant->branches()->updateExistingPivot($stockTransfer->from_branch_id, [
                 'stock' => $fromStockAfter,
             ]);
 
-            StockMovement::create([
+            $movements[] = [
                 'product_variant_id' => $variant->id,
                 'branch_id' => $stockTransfer->from_branch_id,
-                'type' => 'transfer_out',
+                'type' => StockMovementType::TransferOut->value,
                 'quantity' => -$item->quantity,
                 'stock_before' => $fromStockBefore,
                 'stock_after' => $fromStockAfter,
-            ]);
+            ];
 
             StockUpdated::dispatch(
                 variantId: $variant->id,
@@ -112,26 +115,25 @@ class StockTransferController extends Controller
                 branchId: $stockTransfer->from_branch_id,
                 stockBefore: $fromStockBefore,
                 stockAfter: $fromStockAfter,
-                action: 'transfer_out',
+                action: StockMovementType::TransferOut->value,
             );
 
-            // Add to destination branch
-            $toPivot = $variant->branches()->where('branch_id', $stockTransfer->to_branch_id)->first();
-            if ($toPivot) {
-                $toStockBefore = $toPivot->pivot->stock;
+            $toBranch = $variant->branches->firstWhere('id', $stockTransfer->to_branch_id);
+            if ($toBranch) {
+                $toStockBefore = $toBranch->pivot->stock;
                 $toStockAfter = $toStockBefore + $item->quantity;
                 $variant->branches()->updateExistingPivot($stockTransfer->to_branch_id, [
                     'stock' => $toStockAfter,
                 ]);
 
-                StockMovement::create([
+                $movements[] = [
                     'product_variant_id' => $variant->id,
                     'branch_id' => $stockTransfer->to_branch_id,
-                    'type' => 'transfer_in',
+                    'type' => StockMovementType::TransferIn->value,
                     'quantity' => $item->quantity,
                     'stock_before' => $toStockBefore,
                     'stock_after' => $toStockAfter,
-                ]);
+                ];
 
                 StockUpdated::dispatch(
                     variantId: $variant->id,
@@ -139,15 +141,17 @@ class StockTransferController extends Controller
                     branchId: $stockTransfer->to_branch_id,
                     stockBefore: $toStockBefore,
                     stockAfter: $toStockAfter,
-                    action: 'transfer_in',
+                    action: StockMovementType::TransferIn->value,
                 );
             } else {
                 $variant->branches()->attach($stockTransfer->to_branch_id, ['stock' => $item->quantity]);
             }
         }
 
+        StockMovement::insert($movements);
+
         $stockTransfer->update([
-            'status' => 'completed',
+            'status' => StockTransferStatus::Completed->value,
             'completed_at' => now(),
         ]);
 
@@ -157,18 +161,18 @@ class StockTransferController extends Controller
 
     public function cancel(StockTransfer $stockTransfer)
     {
-        if ($stockTransfer->status !== 'pending') {
+        if ($stockTransfer->status !== StockTransferStatus::Pending->value) {
             return back()->with('error', __('global.st_cannot_cancel'));
         }
 
-        $stockTransfer->update(['status' => 'cancelled']);
+        $stockTransfer->update(['status' => StockTransferStatus::Cancelled->value]);
 
         return back()->with('success', __('global.st_cancelled'));
     }
 
     public function destroy(StockTransfer $stockTransfer)
     {
-        if ($stockTransfer->status === 'completed') {
+        if ($stockTransfer->status === StockTransferStatus::Completed->value) {
             return back()->with('error', __('global.st_cannot_delete'));
         }
 

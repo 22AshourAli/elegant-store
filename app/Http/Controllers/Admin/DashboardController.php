@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\OrderType;
+use App\Enums\ExchangeStatus;
+use App\Enums\ReturnRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Exchange;
 use App\Models\Expense;
@@ -89,8 +94,8 @@ class DashboardController extends Controller
         $dates = $this->parsePeriod($period, $request);
 
         $orderQuery = Order::query();
-        $revenueQuery = Order::whereNotIn('status', ['cancelled', 'returned']);
-        $returnedQuery = Order::where('status', 'returned');
+        $revenueQuery = Order::whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
+        $returnedQuery = Order::where('status', OrderStatus::Returned->value);
 
         if ($branchId) {
             $orderQuery->where('branch_id', $branchId);
@@ -105,12 +110,12 @@ class DashboardController extends Controller
         }
 
         $totalOrders = (clone $orderQuery)->count();
-        $onlineOrders = (clone $orderQuery)->where('order_type', 'online')->count();
-        $offlineOrders = (clone $orderQuery)->where('order_type', 'offline')->count();
+        $onlineOrders = (clone $orderQuery)->where('order_type', OrderType::Online->value)->count();
+        $offlineOrders = (clone $orderQuery)->where('order_type', OrderType::Offline->value)->count();
         $totalRevenue = (float) (clone $revenueQuery)->sum('total');
         $totalProductRevenue = (float) (clone $revenueQuery)->sum('subtotal');
         $totalShippingCollected = (float) (clone $revenueQuery)->sum('shipping_cost');
-        $totalCustomers = User::where('role', 'customer')->count();
+        $totalCustomers = User::where('role', UserRole::Customer->value)->count();
         $returnedAmount = (float) (clone $returnedQuery)->sum('total');
         $returnedCount = (clone $returnedQuery)->count();
 
@@ -127,9 +132,9 @@ class DashboardController extends Controller
             $exchangeQuery->whereHas('order', fn($q) => $q->where('branch_id', $branchId));
         }
         $returnRequestCount = (clone $returnRequestQuery)->count();
-        $returnRequestPending = (clone $returnRequestQuery)->where('status', 'pending')->count();
+        $returnRequestPending = (clone $returnRequestQuery)->where('status', ReturnRequestStatus::Pending->value)->count();
         $exchangeCount = (clone $exchangeQuery)->count();
-        $exchangePending = (clone $exchangeQuery)->where('status', 'pending')->count();
+        $exchangePending = (clone $exchangeQuery)->where('status', ExchangeStatus::Pending->value)->count();
 
         // --- Chart Data ---
         $chartDays = match ($period) { 'today' => 0, '7days' => 6, 'month' => 29, 'quarter' => 89, 'year' => 364, default => 29 };
@@ -141,9 +146,9 @@ class DashboardController extends Controller
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(total) as revenue'),
                 DB::raw('COUNT(*) as count'),
-                DB::raw('SUM(CASE WHEN status NOT IN ("cancelled","returned") THEN subtotal ELSE 0 END) - SUM(CASE WHEN status NOT IN ("cancelled","returned") THEN (SELECT COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) FROM order_items JOIN product_variants ON order_items.product_variant_id = product_variants.id WHERE order_items.order_id = orders.id) ELSE 0 END) as profit')
+                DB::raw('SUM(CASE WHEN status NOT IN ("' . OrderStatus::Cancelled->value . '","' . OrderStatus::Returned->value . '") THEN subtotal ELSE 0 END) - SUM(CASE WHEN status NOT IN ("' . OrderStatus::Cancelled->value . '","' . OrderStatus::Returned->value . '") THEN (SELECT COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) FROM order_items JOIN product_variants ON order_items.product_variant_id = product_variants.id WHERE order_items.order_id = orders.id) ELSE 0 END) as profit')
             )->where('created_at', '>=', now()->subDays($chartDays)->startOfDay())
-            ->whereNotIn('status', ['cancelled', 'returned']);
+            ->whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
             if ($branchId) $dailyQuery->where('branch_id', $branchId);
             $dailySales = (clone $dailyQuery)->groupBy('date')->orderBy('date')->get();
 
@@ -175,7 +180,7 @@ class DashboardController extends Controller
                 DB::raw('SUM(total) as revenue'),
                 DB::raw('COUNT(*) as count')
             )->where('created_at', '>=', now()->subMonths(max($chartMonths, 1))->startOfMonth())
-            ->whereNotIn('status', ['cancelled', 'returned']);
+            ->whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
             if ($branchId) $monthlyQuery->where('branch_id', $branchId);
             $monthlySales = (clone $monthlyQuery)->groupBy('month')->orderBy('month')->get();
 
@@ -197,7 +202,7 @@ class DashboardController extends Controller
         $cogsQuery = DB::table('order_items')
             ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereNotIn('orders.status', ['cancelled', 'returned'])
+            ->whereNotIn('orders.status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value])
             ->whereNotNull('product_variants.cost_price');
         if ($branchId) $cogsQuery->where('orders.branch_id', $branchId);
         if ($dates) $cogsQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);

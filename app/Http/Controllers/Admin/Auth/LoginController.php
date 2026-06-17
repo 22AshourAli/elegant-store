@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             // التأكد من أن المستخدم إداري (مدير أو سوبر أدمن)
-            if ($user->role === 'customer') {
+            if ($user->role === UserRole::Customer->value) {
                 Auth::logout();
                 throw ValidationException::withMessages([
                     'email' => __('This account is not an admin account.'),

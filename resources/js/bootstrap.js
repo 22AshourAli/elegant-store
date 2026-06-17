@@ -21,6 +21,6 @@ try {
                 .listen('.StockUpdated', (e) => {
                     window.dispatchEvent(new CustomEvent('stock-updated', { detail: e }));
                 });
-        }).catch(() => {});
-    }).catch(() => {});
-} catch (e) {}
+        }).catch(e => { console.error('Failed to load Pusher:', e); });
+    }).catch(e => { console.error('Failed to load Echo:', e); });
+} catch (e) { console.warn('Realtime imports are not available:', e); }

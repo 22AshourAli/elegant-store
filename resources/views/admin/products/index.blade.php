@@ -66,6 +66,11 @@
     </table>
 </div>
 <div class="mt-4">
-    {{ $products->onEachSide(1)->links('vendor.pagination.admin') }}
+    @php
+    $nextCursor = $result['next_cursor'] ?? null;
+    $prevCursor = $result['prev_cursor'] ?? null;
+    $hasMore = $result['has_more'] ?? false;
+    @endphp
+    <x-admin-cursor-pagination :next-cursor="$nextCursor" :prev-cursor="$prevCursor" :has-more="$hasMore" />
 </div>
 @endsection

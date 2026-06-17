@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -26,21 +28,21 @@ class PaymobWebhookController extends Controller
                 if ($order) {
                     if ($transaction['success'] == true) {
                         $order->update([
-                            'payment_status' => 'paid',
-                            'status' => 'confirmed'
+                            'payment_status' => PaymentStatus::Paid->value,
+                            'status' => OrderStatus::Confirmed->value
                         ]);
                         $order->payment()->update([
-                            'status' => 'paid',
+                            'status' => PaymentStatus::Paid->value,
                             'transaction_id' => $transaction['id'],
                             'response' => $transaction
                         ]);
                     } else {
                         $order->update([
-                            'payment_status' => 'failed',
-                            'status' => 'cancelled'
+                            'payment_status' => PaymentStatus::Failed->value,
+                            'status' => OrderStatus::Cancelled->value
                         ]);
                         $order->payment()->update([
-                            'status' => 'failed',
+                            'status' => PaymentStatus::Failed->value,
                             'response' => $transaction
                         ]);
                     }

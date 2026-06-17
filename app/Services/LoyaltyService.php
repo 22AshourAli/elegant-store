@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentStatus;
 use App\Models\CustomerWallet;
 use App\Models\LoyaltyPointsLog;
 use App\Models\Order;
@@ -21,7 +22,7 @@ class LoyaltyService
      */
     public function awardOrderPoints(Order $order): void
     {
-        if ($order->payment_status !== 'paid' || $order->user_id === null) {
+        if ($order->payment_status !== PaymentStatus::Paid->value || $order->user_id === null) {
             return;
         }
 
@@ -93,7 +94,7 @@ class LoyaltyService
     {
         $orders = Order::where('user_id', $userId)
             ->with('items')
-            ->where('payment_status', 'paid')
+            ->where('payment_status', PaymentStatus::Paid->value)
             ->get();
 
         $allItems = $orders->flatMap->items;

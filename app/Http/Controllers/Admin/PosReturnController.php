@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ExchangeStatus;
+use App\Enums\OrderStatus;
+use App\Enums\OrderType;
+use App\Enums\ReturnRequestStatus;
+use App\Enums\StockMovementType;
 use App\Http\Controllers\Controller;
 use App\Events\StockUpdated;
 use App\Models\Exchange;
@@ -24,7 +29,7 @@ class PosReturnController extends Controller
         $query = $request->input('q');
 
         $orders = Order::with(['items.variant', 'user', 'cashier'])
-            ->where('order_type', 'offline')
+            ->where('order_type', OrderType::Offline->value)
             ->where(function ($q) use ($query) {
                 $q->where('id', $query)
                   ->orWhere('phone', $query)
@@ -87,9 +92,10 @@ class PosReturnController extends Controller
                 $totalRefund = 0;
                 $totalExchange = 0;
                 $allFullyReturned = true;
+                $returnStockMovements = [];
 
                 foreach ($request->items as $item) {
-                    $orderItem = $order->items()->find($item['order_item_id']);
+                    $orderItem = $order->items->firstWhere('id', $item['order_item_id']);
                     if (!$orderItem) {
                         throw new \Exception(__('global.pos_return_item_not_found'));
                     }
@@ -101,23 +107,27 @@ class PosReturnController extends Controller
 
                     $variant = $orderItem->variant;
                     if ($variant) {
-                        $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                        if ($pivot) {
-                            $stockBefore = $pivot->pivot->stock;
+                        $branch = $variant->branches->first(fn($b) => $b->id == $branchId);
+                        if ($branch) {
+                            $stockBefore = $branch->pivot->stock;
                             $stockAfter = $stockBefore + $item['quantity'];
-                            $variant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $stockAfter,
-                            ]);
 
-                            StockMovement::create([
+                            DB::table('branch_product_variant')
+                                ->where('product_variant_id', $variant->id)
+                                ->where('branch_id', $branchId)
+                                ->update(['stock' => $stockAfter]);
+
+                            $returnStockMovements[] = [
                                 'product_variant_id' => $variant->id,
                                 'branch_id' => $branchId,
                                 'order_id' => $order->id,
-                                'type' => 'return',
+                                'type' => StockMovementType::Return->value,
                                 'quantity' => $item['quantity'],
                                 'stock_before' => $stockBefore,
                                 'stock_after' => $stockAfter,
-                            ]);
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
 
                             StockUpdated::dispatch(
                                 variantId: $variant->id,
@@ -125,7 +135,7 @@ class PosReturnController extends Controller
                                 branchId: $branchId,
                                 stockBefore: $stockBefore,
                                 stockAfter: $stockAfter,
-                                action: 'return',
+                                action: StockMovementType::Return->value,
                                 orderId: $order->id,
                             );
                         }
@@ -139,15 +149,19 @@ class PosReturnController extends Controller
                     }
                 }
 
+                if (!empty($returnStockMovements)) {
+                    StockMovement::insert($returnStockMovements);
+                }
+
                 if ($allFullyReturned) {
-                    $order->update(['status' => 'returned']);
+                    $order->update(['status' => OrderStatus::Returned->value]);
                 }
 
                 $returnRequest = ReturnRequest::create([
                     'order_id' => $order->id,
                     'user_id' => $order->user_id ?? auth()->id(),
                     'type' => 'return',
-                    'status' => 'approved',
+                    'status' => ReturnRequestStatus::Approved->value,
                     'reason' => __('global.pos_return_pos_reason'),
                     'admin_note' => __('global.pos_return_pos_note'),
                     'approved_at' => now(),
@@ -156,30 +170,44 @@ class PosReturnController extends Controller
                 $exchangeId = null;
 
                 if ($request->type === 'exchange') {
+                    $exchangeVariantIds = collect($request->exchange_items)->pluck('variant_id')->filter()->unique()->all();
+                    $exchangeVariants = !empty($exchangeVariantIds)
+                        ? ProductVariant::with('branches')->whereIn('id', $exchangeVariantIds)->get()->keyBy('id')
+                        : collect();
+
+                    $exchangeStockMovements = [];
+
                     foreach ($request->exchange_items as $exItem) {
-                        $variant = ProductVariant::with('branches')->findOrFail($exItem['variant_id']);
+                        $variant = $exchangeVariants->get($exItem['variant_id']);
+                        if (!$variant) {
+                            throw new \Exception(__('global.pos_variant_not_found'));
+                        }
 
                         if ($variant->total_stock < $exItem['quantity']) {
                             throw new \Exception(__('global.pos_insufficient_stock', ['product' => $variant->sku]));
                         }
 
-                        $pivot = $variant->branches()->where('branch_id', $branchId)->first();
-                        if ($pivot && $pivot->pivot->stock >= $exItem['quantity']) {
-                            $stockBefore = $pivot->pivot->stock;
+                        $branch = $variant->branches->first(fn($b) => $b->id == $branchId);
+                        if ($branch && $branch->pivot->stock >= $exItem['quantity']) {
+                            $stockBefore = $branch->pivot->stock;
                             $stockAfter = $stockBefore - $exItem['quantity'];
-                            $variant->branches()->updateExistingPivot($branchId, [
-                                'stock' => $stockAfter,
-                            ]);
 
-                            StockMovement::create([
+                            DB::table('branch_product_variant')
+                                ->where('product_variant_id', $variant->id)
+                                ->where('branch_id', $branchId)
+                                ->update(['stock' => $stockAfter]);
+
+                            $exchangeStockMovements[] = [
                                 'product_variant_id' => $variant->id,
                                 'branch_id' => $branchId,
                                 'order_id' => $order->id,
-                                'type' => 'exchange',
+                                'type' => StockMovementType::Exchange->value,
                                 'quantity' => -$exItem['quantity'],
                                 'stock_before' => $stockBefore,
                                 'stock_after' => $stockAfter,
-                            ]);
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
 
                             StockUpdated::dispatch(
                                 variantId: $variant->id,
@@ -187,7 +215,7 @@ class PosReturnController extends Controller
                                 branchId: $branchId,
                                 stockBefore: $stockBefore,
                                 stockAfter: $stockAfter,
-                                action: 'exchange',
+                                action: StockMovementType::Exchange->value,
                                 orderId: $order->id,
                             );
                         }
@@ -195,10 +223,14 @@ class PosReturnController extends Controller
                         $totalExchange += (float) $variant->current_price * $exItem['quantity'];
                     }
 
+                    if (!empty($exchangeStockMovements)) {
+                        StockMovement::insert($exchangeStockMovements);
+                    }
+
                     $exchange = Exchange::create([
                         'order_id' => $order->id,
                         'user_id' => $order->user_id ?? auth()->id(),
-                        'status' => 'completed',
+                        'status' => ExchangeStatus::Completed->value,
                         'reason' => __('global.pos_exchange_pos_reason'),
                         'items' => $request->exchange_items,
                         'admin_note' => __('global.pos_return_pos_note'),

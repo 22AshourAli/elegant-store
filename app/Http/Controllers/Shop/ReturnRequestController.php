@@ -2,17 +2,27 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\ReturnRequestStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\ReturnRequest;
+use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class ReturnRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $returns = auth()->user()->returnRequests()->with('order')->latest()->paginate(10);
-        return view('shop.returns.index', compact('returns'));
+        $result = CursorService::applyCursor(
+            auth()->user()->returnRequests()->with('order')->reorder(),
+            $request->input('cursor'),
+            'created_at',
+            'desc',
+            10
+        );
+        $returns = $result['data'];
+        return view('shop.returns.index', compact('returns', 'result'));
     }
 
     public function store(Request $request, Order $order)
@@ -25,7 +35,7 @@ class ReturnRequestController extends Controller
             return back()->with('error', __('return.return_period_expired'));
         }
 
-        if ($order->returnRequests()->where('status', 'pending')->exists()) {
+        if ($order->returnRequests()->where('status', ReturnRequestStatus::Pending->value)->exists()) {
             return back()->with('error', __('return.already_requested'));
         }
 
@@ -35,12 +45,12 @@ class ReturnRequestController extends Controller
 
         $return = $order->returnRequests()->create([
             'user_id' => auth()->id(),
-            'status' => 'pending',
+            'status' => ReturnRequestStatus::Pending->value,
             'reason' => $validated['reason'],
         ]);
 
         // Notify all admins
-        $admins = \App\Models\User::whereIn('role', ['super_admin', 'manager'])->get();
+        $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
         foreach ($admins as $admin) {
             try {
                 $admin->notify(new \App\Notifications\ReturnRequestSubmitted($return));

@@ -2,58 +2,81 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * A list of exception types with their corresponding custom log levels.
-     *
-     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
-     */
     protected $levels = [];
 
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array<int, class-string<\Throwable>>
-     */
     protected $dontReport = [
         QueryException::class,
     ];
 
-    /**
-     * A list of the inputs that are never flashed for validation exceptions.
-     *
-     * @var array<int, string>
-     */
     protected $dontFlash = [
         'current_password',
         'password',
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
         });
     }
 
     public function render($request, Throwable $e): mixed
     {
-        if ($request->isMethod('GET') && !$request->expectsJson()) {
-            if ($this->isDatabaseConnectionException($e)) {
-                return response()->view('shop.offline', [], 503);
+        if ($this->isDatabaseConnectionException($e)) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'error' => __('global.database_connection_error'),
+                ], 503);
             }
+            return response()->view('shop.offline', [], 503);
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return $this->renderJsonError($request, $e);
         }
 
         return parent::render($request, $e);
+    }
+
+    private function renderJsonError($request, Throwable $e): mixed
+    {
+        if ($e instanceof ValidationException) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        if ($e instanceof AuthenticationException) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        if ($e instanceof HttpException) {
+            return response()->json([
+                'message' => $e->getMessage() ?: __('global.server_error'),
+            ], $e->getStatusCode());
+        }
+
+        \Log::error($e->getMessage(), [
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+        return response()->json([
+            'message' => __('global.server_error'),
+        ], $status);
     }
 
     private function isDatabaseConnectionException(Throwable $e): bool

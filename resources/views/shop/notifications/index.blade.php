@@ -1,6 +1,11 @@
 @extends('layouts.store')
 
 @section('content')
+@php
+    $nextCursor = $result['next_cursor'] ?? null;
+    $prevCursor = $result['prev_cursor'] ?? null;
+    $hasMore = $result['has_more'] ?? false;
+@endphp
 <div class="container mx-auto px-4 py-12 max-w-2xl">
     <h1 class="text-3xl font-extrabold mb-8 text-gray-900 dark:text-white">الإشعارات</h1>
 
@@ -70,11 +75,9 @@
                 </div>
             @endforeach
 
-            @if($notifications->hasPages())
-                <div class="mt-6">
-                    {{ $notifications->links() }}
-                </div>
-            @endif
+            <div class="mt-6">
+                <x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" />
+            </div>
         @endif
     </div>
 </div>

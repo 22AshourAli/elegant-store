@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Services\CursorService;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (request()->query('json')) {
+        if ($request->query('json')) {
             $notifications = auth()->user()->notifications()->latest()->take(10)->get()->map(function ($n) {
                 $data = $n->data;
                 $type = $this->resolveType($data);
@@ -29,33 +31,55 @@ class NotificationController extends Controller
 
         auth()->user()->unreadNotifications->markAsRead();
 
-        $notifications = auth()->user()->notifications()->paginate(20);
+        $result = CursorService::applyCursor(
+            auth()->user()->notifications()->reorder(),
+            $request->input('cursor'),
+            'created_at',
+            'desc',
+            20
+        );
+        $notifications = $result['data'];
 
-        return view('shop.notifications.index', compact('notifications'));
+        return view('shop.notifications.index', compact('notifications', 'result'));
     }
 
     public function markRead($id)
     {
-        $notification = auth()->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
-        return response()->json(['success' => true]);
+        try {
+            $notification = auth()->user()->notifications()->findOrFail($id);
+            $notification->markAsRead();
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     public function markAllRead()
     {
-        auth()->user()->unreadNotifications->markAsRead();
-        return response()->json(['success' => true]);
+        try {
+            auth()->user()->unreadNotifications->markAsRead();
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     public function unreadCount()
     {
-        $latest = auth()->user()->notifications()->latest()->first();
+        try {
+            $latest = auth()->user()->notifications()->latest()->first();
 
-        return response()->json([
-            'count' => auth()->user()->unreadNotifications->count(),
-            'latest_id' => $latest?->id,
-            'latest_created_at' => $latest?->created_at?->toIso8601String(),
-        ]);
+            return response()->json([
+                'count' => auth()->user()->unreadNotifications->count(),
+                'latest_id' => $latest?->id,
+                'latest_created_at' => $latest?->created_at?->toIso8601String(),
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
+            return response()->json(['error' => __('global.server_error')], 500);
+        }
     }
 
     private function resolveType(array $data): string
