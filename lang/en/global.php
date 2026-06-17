@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'loading' => 'Loading...',
+    'load_error' => 'An error occurred while loading',
+    'save' => 'Save',
+    'next' => 'Next',
+    'previous' => 'Previous',
+    'load_more' => 'Load More',
+    'choose_color' => 'Choose a color',
     'home' => 'Home',
     'shop' => 'Shop',
     'categories' => 'Categories',
@@ -754,4 +761,22 @@ return [
     'min_cart_amount' => 'Min. Cart Amount for Free Shipping',
     'min_cart_hint' => 'If cart total equals or exceeds this, shipping is free. Leave empty to disable.',
     'deleted_success' => 'Deleted successfully.',
+
+    // Admin settings
+    'admin_settings' => 'Settings',
+    'products' => 'Products',
+    'showing' => 'Showing',
+    'to' => 'to',
+    'of' => 'of',
+    'show' => 'Show',
+    'shipping_rate_duplicate' => 'A shipping rate for this governorate and city already exists.',
+    'admin_force_reset_password' => 'Force Reset Password',
+    'admin_force_reset_confirm' => 'A new random password will be generated for this user. Are you sure?',
+    'admin_new_password' => 'New Password',
+    'admin_copy' => 'Copy',
+    'admin_save_password_hint' => 'Save the password and send it to the user. You won\'t be able to see it again.',
+    'admin_processing' => 'Processing...',
+    'admin_reset' => 'Reset',
+    'admin_close' => 'Close',
+    'admin_network_error' => 'A network error occurred. Please try again.',
 ];

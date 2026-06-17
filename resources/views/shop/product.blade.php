@@ -56,7 +56,7 @@
                      class="absolute inset-0 bg-gradient-to-br from-slate-100/80 to-slate-200/80 dark:from-slate-800/80 dark:to-slate-700/80 flex items-center justify-center z-20">
                     <div class="flex flex-col items-center gap-2">
                         <svg class="w-8 h-8 text-brand-primary/60 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 animate-pulse">{{ app()->getLocale() === 'ar' ? 'جاري التحميل...' : 'Loading...' }}</span>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 animate-pulse">{{ __('global.loading') }}</span>
                     </div>
                 </div>
                 {{-- Badges --}}
@@ -72,38 +72,24 @@
                 </div>
             </div>
 
-            {{-- Thumbnails + Color swatches --}}
-            @php $productThumbs = $product->allImageThumbs(); $productUrls = $product->allImageUrls(); @endphp
+            {{-- Color swatches --}}
+            @if(count($colors) > 0)
             <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {{-- Color swatches --}}
-                <template x-if="colors.length > 0">
-                    <template x-for="color in colors" :key="'swatch-'+color">
-                        <button @click="selectColor(color)"
-                                class="relative flex-shrink-0 w-12 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary group/swatch"
-                                :class="selectedColor === color ? 'border-brand-primary dark:border-accent shadow-lg shadow-brand-primary/20 scale-105' : 'border-slate-200/40 dark:border-slate-800/60 opacity-70 hover:opacity-100 hover:border-brand-primary/40'"
-                                :title="color">
-                            <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color">
-                            <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider" x-text="color"></span>
-                            {{-- Active indicator --}}
-                            <span x-show="selectedColor === color" class="absolute inset-0 ring-2 ring-inset ring-white/60 dark:ring-slate-900/60 rounded-xl pointer-events-none"></span>
-                            {{-- Tooltip --}}
-                            <span x-show="selectedColor === color" class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-brand-primary dark:text-accent whitespace-nowrap opacity-0 group-hover/swatch:opacity-100 transition-opacity">
-                                <span x-text="color"></span>
-                            </span>
-                        </button>
-                    </template>
-                </template>
-                {{-- Product thumbnails --}}
-                <template x-for="(thumb, index) in @json($productThumbs)" :key="'thumb-'+index">
-                    <button @click="currentImage = @json($productUrls)[index] || thumb"
-                            aria-label="View image"
-                            class="relative flex-shrink-0 w-12 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
-                            :class="currentImage === (@json($productUrls)[index] || thumb) ? 'border-brand-primary dark:border-accent shadow-lg shadow-brand-primary/20' : 'border-slate-200/40 dark:border-slate-800/60 opacity-60 hover:opacity-100 hover:border-brand-primary/40'">
-                        <img :src="thumb" loading="lazy" class="w-full h-full object-cover" alt="Thumbnail">
-                        <span x-show="currentImage === (@json($productUrls)[index] || thumb)" class="absolute inset-0 ring-2 ring-inset ring-white/60 dark:ring-slate-900/60 rounded-xl pointer-events-none"></span>
+                <template x-for="color in colors" :key="'swatch-'+color">
+                    <button @click="selectColor(color)"
+                            class="relative flex-shrink-0 w-12 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary group/swatch"
+                            :class="selectedColor === color ? 'border-brand-primary dark:border-accent shadow-lg shadow-brand-primary/20 scale-105' : 'border-slate-200/40 dark:border-slate-800/60 opacity-70 hover:opacity-100 hover:border-brand-primary/40'"
+                            :title="color">
+                        <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color">
+                        <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider" x-text="color"></span>
+                        <span x-show="selectedColor === color" class="absolute inset-0 ring-2 ring-inset ring-white/60 dark:ring-slate-900/60 rounded-xl pointer-events-none"></span>
+                        <span x-show="selectedColor === color" class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-brand-primary dark:text-accent whitespace-nowrap opacity-0 group-hover/swatch:opacity-100 transition-opacity">
+                            <span x-text="color"></span>
+                        </span>
                     </button>
                 </template>
             </div>
+            @endif
         </div>
 
         {{-- Product Details --}}
@@ -131,7 +117,7 @@
                     <span x-show="originalPrice !== currentPrice" x-cloak
                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 text-xs font-black shadow-sm">
                         <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                        <span x-text="'{{ app()->getLocale() === 'ar' ? 'وفر' : 'Save' }} ' + formatNumber(originalPrice - currentPrice)"></span>
+                        <span x-text="'{{ __('global.save') }} ' + formatNumber(originalPrice - currentPrice)"></span>
                     </span>
                 </div>
                 @if($product->discount_end)
@@ -166,22 +152,22 @@
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
-                    <span class="text-sm text-slate-700 dark:text-slate-300 font-bold" x-text="selectedColor"></span>
+                    <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __("global.choose_color") }}'"></span>
                 </div>
-                <div class="flex flex-wrap gap-3.5" role="group" aria-label="{{ __('global.color') }}">
+                <div class="flex flex-wrap gap-4" role="group" aria-label="{{ __('global.color') }}">
                     <template x-for="color in colors" :key="color">
                         <button @click="selectColor(color)"
-                                class="relative w-11 h-11 rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-primary dark:focus-visible:ring-offset-slate-950 transition-all duration-300"
-                                :class="selectedColor === color ? 'ring-2 ring-offset-2 ring-brand-primary dark:ring-accent shadow-[0_0_15px_rgba(79,70,229,0.4)] scale-110 dark:ring-offset-slate-950' : 'ring-1 ring-slate-200 dark:ring-slate-800 hover:scale-105 hover:shadow-md'"
+                                class="relative w-12 h-12 rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-primary dark:focus-visible:ring-offset-slate-950 transition-all duration-300"
+                                :class="selectedColor === color ? 'ring-2 ring-offset-2 ring-brand-primary dark:ring-accent shadow-[0_0_20px_rgba(79,70,229,0.45)] scale-110 dark:ring-offset-slate-950' : 'ring-1 ring-slate-300 dark:ring-slate-700 hover:scale-110 hover:shadow-lg'"
                                 :title="color"
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
-                            <span class="block w-full h-full rounded-full border border-black/10 dark:border-white/10 overflow-hidden">
+                            <span class="block w-full h-full rounded-full border border-black/10 dark:border-white/15 overflow-hidden">
                                 <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color">
-                                <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-slate-100 dark:bg-slate-800 text-xs text-slate-500 dark:text-slate-400 font-extrabold" x-text="color.substring(0,2)"></span>
+                                <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase" x-text="color.substring(0,3)"></span>
                             </span>
-                            <span x-show="selectedColor === color" class="absolute -bottom-1 -end-1 bg-brand-primary dark:bg-accent text-white rounded-full p-0.5 shadow-md">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"></path></svg>
+                            <span x-show="selectedColor === color" class="absolute -top-1 -end-1 bg-brand-primary dark:bg-accent text-white rounded-full p-0.5 shadow-md">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
                             </span>
                         </button>
                     </template>

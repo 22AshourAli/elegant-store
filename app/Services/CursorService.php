@@ -80,6 +80,7 @@ class CursorService
         int $limit = 20,
         string $tiebreaker = 'id',
     ): array {
+        $table = $query->getModel()->getTable();
         $payload = $cursor ? self::decode($cursor) : null;
 
         if ($payload) {
@@ -90,12 +91,11 @@ class CursorService
             $effectiveDirection = $isPrev ? 'asc' : 'desc';
             $op = $effectiveDirection === 'desc' ? '<' : '>';
 
-            $table = $query->getModel()->getTable();
             $sortCol = "{$table}.{$sortColumn}";
             $tieCol = "{$table}.{$tiebreaker}";
 
             if ($sortValue !== null && $tiebreakerValue !== null) {
-                $query->where(function (Builder $q) use ($sortCol, $sortValue, $op, $tieCol, $tiebreakerValue, $effectiveDirection) {
+                $query->where(function (Builder $q) use ($sortCol, $sortValue, $op, $tieCol, $tiebreakerValue, $tiebreaker, $sortColumn, $effectiveDirection) {
                     $q->where($sortCol, $op, $sortValue);
                     if ($tiebreaker !== $sortColumn) {
                         $q->orWhere(function (Builder $q) use ($sortCol, $sortValue, $tieCol, $tiebreakerValue, $op, $effectiveDirection) {
@@ -105,12 +105,9 @@ class CursorService
                     }
                 });
             }
-
-            // Restore original direction for ORDER BY after cursor filtering
         }
 
         $sortDir = $direction;
-        $table = $query->getModel()->getTable();
 
         $query->orderBy("{$table}.{$sortColumn}", $sortDir)
               ->orderBy("{$table}.{$tiebreaker}", $sortDir);

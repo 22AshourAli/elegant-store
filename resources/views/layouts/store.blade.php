@@ -145,7 +145,7 @@
             <!-- Desktop Search (Premium Input) -->
             <div class="hidden md:flex flex-1 max-w-md mx-6 lg:mx-10">
                 <form action="{{ route('shop.search') }}" method="GET" class="relative w-full">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') ?? 'Search products...' }}" aria-label="{{ __('global.search_placeholder') ?? 'Search products' }}"
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') }}" aria-label="{{ __('global.search_placeholder') }}"
                            class="w-full ps-12 pe-5 h-10 text-sm bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-900 rounded-full focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary dark:focus:border-accent dark:text-slate-100 placeholder-slate-400/80 transition-all duration-300 focus:bg-white dark:focus:bg-slate-950/80 focus:shadow-[0_0_15px_rgba(79,70,229,0.1)] dark:focus:shadow-[0_0_20px_rgba(139,92,246,0.15)] outline-none">
                     <button type="submit" class="absolute top-1/2 -translate-y-1/2 start-4 w-4 h-4 text-slate-400 hover:text-brand-primary dark:hover:text-accent transition-colors" aria-label="بحث">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +197,7 @@
                     </button>
                     <div x-show="show" x-cloak @click.away="show = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 p-4 shadow-lg z-50 glass-premium">
                         <form action="{{ route('shop.search') }}" method="GET" class="flex gap-2">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') ?? 'Search...' }}"
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') }}"
                                    class="flex-1 px-4 h-11 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-2xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary dark:focus:border-accent dark:text-slate-100 outline-none">
                             <button type="submit" class="px-5 h-11 bg-brand-primary hover:bg-brand-hover text-white rounded-2xl text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -290,13 +290,13 @@
                 @endauth
 
                 <!-- Wishlist -->
-                <a href="{{ auth()->check() ? route('wishlist.index') : route('login', ['redirect' => url()->current()]) }}" class="icon-btn relative hidden lg:inline-flex focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" title="{{ __('global.wishlist') ?? 'Wishlist' }}" aria-label="View wishlist">
+                <a href="{{ auth()->check() ? route('wishlist.index') : route('login', ['redirect' => url()->current()]) }}" class="icon-btn relative hidden lg:inline-flex focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" title="{{ __('global.wishlist') }}" aria-label="View wishlist">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
                     <span x-show="wishlistCount > 0" x-cloak x-text="wishlistCount" class="badge-indigo animate-scaleIn"></span>
                 </a>
 
                 <!-- Cart -->
-                <a href="{{ route('cart.index') }}" class="icon-btn relative hidden lg:inline-flex focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" title="{{ __('global.cart') ?? 'Cart' }}" aria-label="View cart">
+                <a href="{{ route('cart.index') }}" class="icon-btn relative hidden lg:inline-flex focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" title="{{ __('global.cart') }}" aria-label="View cart">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
                     <span x-show="cartCount > 0" x-cloak x-text="cartCount" class="badge-indigo animate-scaleIn"></span>
                 </a>
@@ -374,9 +374,9 @@
             <div class="p-4 border-b border-slate-100 dark:border-slate-900">
                 <form action="{{ route('shop.search') }}" method="GET">
                     <div class="relative">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') ?? 'Search...' }}"
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('global.search_placeholder') }}"
                                class="w-full ps-10 pe-4 h-10 text-sm bg-slate-100/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-900 rounded-xl focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary dark:focus:border-accent dark:text-slate-150 transition-all duration-300 outline-none">
-                        <button type="submit" class="absolute top-1/2 -translate-y-1/2 {{ app()->getLocale() === 'ar' ? 'right-3.5' : 'left-3.5' }} w-4 h-4 text-slate-400 hover:text-brand-primary dark:hover:text-accent transition-colors" aria-label="بحث">
+                        <button type="submit" class="absolute top-1/2 -translate-y-1/2 {{ app()->getLocale() === 'ar' ? 'right-3.5' : 'left-3.5' }} w-4 h-4 text-slate-400 hover:text-brand-primary dark:hover:text-accent transition-colors" aria-label="{{ __('global.search') }}">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </button>
                     </div>
@@ -407,7 +407,7 @@
 
             <!-- Drawer Categories -->
             <div role="navigation" aria-label="Mobile menu navigation links" class="flex-1 overflow-y-auto py-3 no-scrollbar">
-                <div class="px-4.5 py-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{{ __('global.categories') ?? 'Categories' }}</div>
+                <div class="px-4.5 py-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{{ __('global.categories') }}</div>
                 <a href="{{ route('home') }}" class="flex items-center gap-3.5 px-4.5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition">
                     <svg class="w-4.5 h-4.5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     {{ __('global.home') }}
@@ -549,7 +549,7 @@
 
                 <!-- Categories -->
                 <div>
-                    <h3 class="font-bold text-sm mb-5 text-slate-900 dark:text-white uppercase tracking-wider">{{ __('global.categories') ?? 'Categories' }}</h3>
+                    <h3 class="font-bold text-sm mb-5 text-slate-900 dark:text-white uppercase tracking-wider">{{ __('global.categories') }}</h3>
                     <ul class="space-y-3 text-sm text-slate-500 dark:text-slate-400 font-semibold">
                         @foreach($navbarCategories->take(5) as $cat)
                             @if(is_object($cat) && isset($cat->slug))

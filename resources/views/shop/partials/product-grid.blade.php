@@ -6,7 +6,7 @@
             <a href="{{ request()->fullUrlWithQuery(['cursor' => $prevCursor]) }}"
                class="inline-flex items-center gap-1 px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm font-medium cursor-prev">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                {{ __('global.previous') ?? 'السابق' }}
+                {{ __('global.previous') }}
             </a>
         @endif
 
@@ -14,7 +14,7 @@
             <button onclick="loadMoreProducts()"
                     class="inline-flex items-center gap-1 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-medium shadow-sm cursor-next"
                     data-cursor="{{ $nextCursor ?? '' }}">
-                {{ __('global.load_more') ?? 'تحميل المزيد' }}
+                {{ __('global.load_more') }}
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
         @endif
@@ -28,7 +28,7 @@
         const cursor = btn.dataset.cursor;
         if (!cursor) return;
         btn.disabled = true;
-        btn.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> جاري التحميل...';
+        btn.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> {{ __('global.loading') }}';
 
         const params = new URLSearchParams(window.location.search);
         params.set('cursor', cursor);
@@ -56,7 +56,7 @@
             if (d.has_more && d.next_cursor) {
                 btn.dataset.cursor = d.next_cursor;
                 btn.disabled = false;
-                btn.innerHTML = 'تحميل المزيد <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+                btn.innerHTML = '{{ __('global.load_more') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
             } else {
                 btn.remove();
             }
@@ -67,8 +67,8 @@
         })
         .catch(() => {
             btn.disabled = false;
-            btn.innerHTML = 'تحميل المزيد <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
-            window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __("global.load_error") ?? "حدث خطأ" }}', type: 'error' } }));
+            btn.innerHTML = '{{ __('global.load_more') }} <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+            window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __("global.load_error") }}', type: 'error' } }));
         });
     }
     </script>
