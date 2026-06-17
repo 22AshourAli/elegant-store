@@ -30,6 +30,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('loyalty:notify-expiry --days=30 --batch=100')
             ->dailyAt('09:00')
             ->withoutOverlapping();
+
+        // Auto-cancel return/exchange requests past the 3-day delivery window
+        $schedule->command('orders:expire-requests --force')
+            ->dailyAt('00:00')
+            ->withoutOverlapping();
     }
 
     /**
