@@ -107,7 +107,7 @@ class CheckoutController extends Controller
 
             $data['subtotal'] = $cart->baseTotal();
             $data['discount'] = $cart->getDiscount();
-            $data['shipping_cost'] = 0;
+            // shipping_cost will be calculated by CheckoutService
 
             $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
 

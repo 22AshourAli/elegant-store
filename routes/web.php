@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Shop\HomeController;
@@ -12,34 +11,18 @@ use App\Http\Controllers\Shop\CheckoutController;
 use App\Http\Controllers\Shop\PaymobWebhookController;
 use App\Http\Controllers\Shop\OrderController as ShopOrderController;
 use App\Http\Controllers\Shop\NotificationController;
+use App\Http\Controllers\Shop\UtilityController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/sitemap.xml', function () {
-    $xml = Cache::remember('sitemap_xml', 86400, function () {
-        $categories = App\Models\Category::whereRaw('"is_active" = true')->get(['id', 'slug']);
-        $products   = App\Models\Product::whereRaw('"is_active" = true')->get(['id', 'slug']);
-        return view('sitemap', compact('categories', 'products'))->render();
-    });
-    return response($xml, 200)->header('Content-Type', 'application/xml');
-})->name('sitemap');
+Route::get('/sitemap.xml', [UtilityController::class, 'sitemap'])->name('sitemap');
 
-Route::get('/dashboard', function () {
-    if (auth()->check() && (auth()->user()->isSuperAdmin() || auth()->user()->isManager())) {
-        return redirect()->route('admin.dashboard');
-    }
-    return redirect()->route('home');
-})->name('dashboard')->middleware('auth');
+Route::get('/dashboard', [UtilityController::class, 'dashboard'])->name('dashboard')->middleware('auth');
 
 Route::view('/return-policy', 'shop.return-policy')->name('return.policy');
 
-Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, ['ar', 'en'])) {
-        session()->put('locale', $locale);
-    }
-    return redirect()->back();
-})->name('lang.switch');
+Route::get('/lang/{locale}', [UtilityController::class, 'langSwitch'])->name('lang.switch');
 
 Route::get('/search', [HomeController::class, 'search'])->name('shop.search');
 Route::get('/category/{slug}', [ShopCategoryController::class, 'show'])->name('shop.category');
@@ -50,17 +33,13 @@ Route::post('/cart/add/{variant}', [CartController::class, 'add'])->name('cart.a
 Route::post('/buy-now/{variant}', [CartController::class, 'buyNow'])->name('cart.buy-now');
 Route::patch('/cart/{variant}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/{variant}', [CartController::class, 'remove'])->name('cart.remove');
-Route::get('/cart/count', function(\App\Services\CartService $cart) {
-    return response()->json(['count' => $cart->count()]);
-})->name('cart.count');
+Route::get('/cart/count', [UtilityController::class, 'cartCount'])->name('cart.count');
 Route::post('/coupon/apply', [CartController::class, 'applyCoupon'])->name('coupon.apply');
 Route::post('/coupon/remove', [CartController::class, 'removeCoupon'])->name('coupon.remove');
 
 Route::get('/wishlist', [WishlistController::class, 'index'])->middleware('auth')->name('wishlist.index');
 Route::post('/wishlist/{product}', [WishlistController::class, 'toggle'])->middleware('auth')->name('wishlist.toggle');
-Route::get('/wishlist/count', function() {
-    return response()->json(['count' => auth()->user()->wishlist()->count()]);
-})->middleware('auth')->name('wishlist.count');
+Route::get('/wishlist/count', [UtilityController::class, 'wishlistCount'])->middleware('auth')->name('wishlist.count');
 
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::get('/checkout/auth', [CheckoutController::class, 'showAuthForm'])->name('checkout.auth');
@@ -167,14 +146,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/pos/search', [\App\Http\Controllers\Admin\PosController::class, 'search'])->name('pos.search');
     Route::get('/pos/categories', [\App\Http\Controllers\Admin\PosController::class, 'categories'])->name('pos.categories');
     Route::get('/pos/recent', [\App\Http\Controllers\Admin\PosController::class, 'recentOrders'])->name('pos.recent');
-    Route::get('/pos/cart', function () {
-        $cart = session('pos_cart', []);
-        $controller = new \App\Http\Controllers\Admin\PosController;
-        return response()->json([
-            'cart' => $controller->getEnrichedCart($cart),
-            'total' => $controller->cartTotal($cart),
-        ]);
-    })->name('pos.cart');
+    Route::get('/pos/cart', [\App\Http\Controllers\Admin\PosController::class, 'cart'])->name('pos.cart');
     Route::post('/pos/add', [\App\Http\Controllers\Admin\PosController::class, 'addToCart'])->name('pos.add');
     Route::post('/pos/update', [\App\Http\Controllers\Admin\PosController::class, 'updateCart'])->name('pos.update');
     Route::delete('/pos/remove/{variantId}', [\App\Http\Controllers\Admin\PosController::class, 'removeFromCart'])->name('pos.remove');
@@ -238,9 +210,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/payment-reconciliation', [\App\Http\Controllers\Admin\AnalyticsController::class, 'paymentReconciliation'])->name('payment-reconciliation');
     });
 });
-Route::get('/force-seed-database', function() {
-    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-    return 'تم عمل الـ Seed بنجاح يا هندسة! جرب الـ Login حالا.';
-});
-
 require __DIR__.'/auth.php';

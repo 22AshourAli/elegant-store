@@ -120,9 +120,7 @@ class CheckoutService
                 'gateway' => $data['payment_method'] === 'cash' ? 'cash' : 'paymob',
             ]);
 
-            if ($data['payment_method'] === 'cash') {
-                session()->forget('cart');
-            }
+            session()->forget('cart');
 
             try {
                 $locale = $user->locale ?? app()->getLocale();

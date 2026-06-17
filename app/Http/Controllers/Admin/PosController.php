@@ -316,6 +316,16 @@ class PosController extends Controller
         }
     }
 
+    public function cart()
+    {
+        $cart = session('pos_cart', []);
+
+        return response()->json([
+            'cart' => $this->getEnrichedCart($cart),
+            'total' => $this->cartTotal($cart),
+        ]);
+    }
+
     public function clearCart()
     {
         session()->forget('pos_cart');
