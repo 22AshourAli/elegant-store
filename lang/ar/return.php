@@ -47,4 +47,7 @@ return [
     'exchange_reason_placeholder' => 'اذكر سبب الاستبدال بالتفصيل (الحد الأدنى 10 أحرف)',
     'submit_exchange_request' => 'إرسال طلب الاستبدال',
     'auto_expired_reason' => 'انتهت مهلة الـ 3 أيام من تاريخ التوصيل - تم إلغاء الطلب تلقائياً',
+    'delivered_date' => 'تاريخ التوصيل',
+    'return_window_remaining' => 'متبقي :days يوم لانتهاء مهلة الإرجاع',
+    'return_window_expired' => 'انتهت مهلة الإرجاع والاستبدال',
 ];

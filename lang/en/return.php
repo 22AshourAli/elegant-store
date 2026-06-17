@@ -47,4 +47,7 @@ return [
     'exchange_reason_placeholder' => 'Describe the reason for exchange in detail (minimum 10 characters)',
     'submit_exchange_request' => 'Submit Exchange Request',
     'auto_expired_reason' => 'The 3-day delivery window has expired - request automatically cancelled',
+    'delivered_date' => 'Delivery Date',
+    'return_window_remaining' => ':days day(s) left to return or exchange',
+    'return_window_expired' => 'Return & exchange period has expired',
 ];

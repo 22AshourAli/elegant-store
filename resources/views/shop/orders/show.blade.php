@@ -92,7 +92,7 @@
                                 @else {{ __('global.wallet_status') }} @endif
                             </span>
                         </div>
-                        <div class="flex justify-between pb-3 border-b dark:border-gray-700">
+                        <div class="flex justify-between">
                             <span>{{ __('global.payment_status_label') }}</span>
                             <span class="font-semibold text-gray-900 dark:text-white">
                                 @if($order->payment_status === 'paid') {{ __('global.paid_status') }}
@@ -100,6 +100,33 @@
                                 @else {{ __('global.failed_status') }} @endif
                             </span>
                         </div>
+
+                        @if($order->status === 'delivered' && $order->delivered_at)
+                        <div class="flex justify-between pt-1">
+                            <span class="text-gray-500 dark:text-gray-400">{{ __('return.delivered_date') }}</span>
+                            <span class="font-semibold text-emerald-600 dark:text-emerald-400" dir="ltr">{{ $order->delivered_at->format('Y-m-d') }}</span>
+                        </div>
+                        <div class="mt-3">
+                            @if($order->isWithinReturnWindow())
+                                @php
+                                    $daysElapsed = (int) $order->delivered_at->diffInDays(now());
+                                    $pct = min(100, max(0, ($daysElapsed / 3) * 100));
+                                    $daysLeft = 3 - $daysElapsed;
+                                    $barColor = $daysLeft <= 1 ? 'bg-amber-500' : 'bg-emerald-500';
+                                @endphp
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-1">
+                                    <div class="{{ $barColor }} h-2 rounded-full transition-all" style="width: {{ 100 - $pct }}%"></div>
+                                </div>
+                                <p class="text-xs {{ $daysLeft <= 1 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }} font-medium">
+                                    {{ __('return.return_window_remaining', ['days' => $daysLeft]) }}
+                                </p>
+                            @else
+                                <span class="inline-block text-xs text-gray-400 dark:text-gray-500 font-medium border border-gray-300 dark:border-gray-600 rounded-full px-3 py-0.5">
+                                    {{ __('return.return_window_expired') }}
+                                </span>
+                            @endif
+                        </div>
+                        @endif
 
                         <div class="flex justify-between">
                             <span>{{ __('global.products_total_label') }}</span>
