@@ -15,7 +15,7 @@
      x-transition:leave-start="opacity-100 scale-100"
      x-transition:leave-end="opacity-0 scale-95">
     
-    <a href="{{ route('shop.product', $product->slug) }}" class="block relative overflow-hidden aspect-[4/5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 rounded-t-2xl" aria-label="{{ $product->name }} details">
+    <a href="{{ route('shop.product', $product->slug) }}" class="block relative overflow-hidden aspect-[4/5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 rounded-t-2xl" aria-label="{{ $product->name }} details" dir="auto">
         @php
             $image = $firstVariant?->imageUrl() ?: $product->firstImageUrl();
             $discountPct = $product->isOnSale ? round((1 - $product->current_price / $product->base_price) * 100) : 0;
@@ -47,7 +47,7 @@
     <div class="p-4 text-start bg-white dark:bg-surface-dark">
         <div class="flex items-start justify-between gap-1">
             <h3 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2 min-h-[2.25rem] sm:min-h-[2.75rem]">
-                <a href="{{ route('shop.product', $product->slug) }}" class="hover:text-brand-primary dark:hover:text-accent text-slate-900 dark:text-white transition-colors duration-300 inline-block focus-visible:outline-none focus-visible:underline">
+                <a href="{{ route('shop.product', $product->slug) }}" class="hover:text-brand-primary dark:hover:text-accent text-slate-900 dark:text-white transition-colors duration-300 inline-block focus-visible:outline-none focus-visible:underline" dir="auto">
                     {{ $product->name }}
                 </a>
             </h3>
@@ -69,7 +69,7 @@
                 @endif
             </div>
             @if($product->isOnSale)
-                <p class="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-0.5 flex items-center gap-0.5">
+                <p class="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-0.5 flex items-center gap-0.5" dir="auto">
                     <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                     <span>{{ app()->getLocale() === 'ar' ? 'وفر' : 'Save' }} {{ (int) round($product->base_price - $product->current_price) }} {{ __('global.currency') }}</span>
                 </p>

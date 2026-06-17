@@ -445,6 +445,7 @@ return [
     'search_results_for' => 'Search results for',
     'found' => 'found',
     'filter_no_results' => 'No products match your search.',
+    'filter_no_results_desc' => 'Sorry, we couldn\'t find any products in this section right now.',
     'filter_error' => 'An error occurred while filtering. Please try again.',
 
     // Order notifications

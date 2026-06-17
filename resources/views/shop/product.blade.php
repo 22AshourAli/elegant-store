@@ -29,7 +29,7 @@
                 @endif
                 <li class="inline-flex items-center gap-1.5" aria-current="page">
                     <svg class="w-3 h-3 rtl:rotate-180 text-slate-300 dark:text-slate-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                    <span class="text-slate-800 dark:text-slate-200 truncate max-w-[18rem] font-bold">{{ $product->name }}</span>
+                    <span class="text-slate-800 dark:text-slate-200 truncate max-w-[18rem] font-bold" dir="auto">{{ $product->name }}</span>
                 </li>
             </ol>
         </nav>
@@ -76,7 +76,7 @@
 
         {{-- Product Details --}}
         <div class="flex flex-col text-start">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-3 leading-tight tracking-tight">{{ $product->name }}</h1>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-3 leading-tight tracking-tight" dir="auto">{{ $product->name }}</h1>
 
             {{-- Rating --}}
             <div class="flex items-center gap-2 mb-5">
@@ -146,7 +146,7 @@
                                 :aria-pressed="selectedColor === color">
                             <span class="block w-full h-full rounded-full border border-black/10 dark:border-white/15 overflow-hidden">
                                 <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color"
-                                     @error.once="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
+                                     x-on:error.once="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
                                 <span x-show="!colorImages[normalize(color)]" class="hidden items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase" x-text="color.substring(0,3)"></span>
                             </span>
                             <span x-show="selectedColor === color" class="absolute -top-1 -end-1 bg-brand-primary dark:bg-accent text-white rounded-full p-0.5 shadow-md">

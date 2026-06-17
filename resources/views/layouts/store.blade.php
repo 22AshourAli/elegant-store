@@ -166,13 +166,13 @@
                                    aria-haspopup="true"
                                    :aria-expanded="open.toString()"
                                    class="nav-link-underline px-3.5 py-2.5 text-xs font-bold tracking-wide text-slate-700 dark:text-slate-350 hover:text-brand-primary dark:hover:text-accent rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/55 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
-                                    {{ $cat->name }}
+                                    <span dir="auto">{{ $cat->name }}</span>
                                     <svg class="w-3.5 h-3.5 transition-transform duration-300" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                                 </a>
                                 <div x-show="open" x-cloak class="absolute top-full {{ app()->getLocale() === 'ar' ? 'right-0' : 'left-0' }} mt-2 w-52 bg-white/95 dark:bg-slate-950/80 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-900 py-2 z-50 glass-premium animate-scaleIn">
                                     @foreach($cat->children as $child)
                                         @if(is_object($child) && isset($child->slug))
-                                            <a href="{{ route('shop.category', $child->slug) }}" class="block px-4.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-brand-primary dark:hover:text-accent hover:bg-slate-50/80 dark:hover:bg-slate-900/40 rounded-lg mx-1 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">{{ $child->name }}</a>
+                                            <a href="{{ route('shop.category', $child->slug) }}" class="block px-4.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-brand-primary dark:hover:text-accent hover:bg-slate-50/80 dark:hover:bg-slate-900/40 rounded-lg mx-1 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" dir="auto">{{ $child->name }}</a>
                                         @endif
                                     @endforeach
                                     <div class="border-t border-slate-100 dark:border-slate-900 mt-1.5 pt-1.5">
@@ -181,7 +181,7 @@
                                 </div>
                             </div>
                         @else
-                            <a href="{{ route('shop.category', $cat->slug) }}" aria-label="Category: {{ $cat->name }}" class="nav-link-underline px-3.5 py-2.5 text-xs font-bold tracking-wide text-slate-700 dark:text-slate-350 hover:text-brand-primary dark:hover:text-accent rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/55 transition-all duration-200 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">{{ $cat->name }}</a>
+                            <a href="{{ route('shop.category', $cat->slug) }}" aria-label="Category: {{ $cat->name }}" class="nav-link-underline px-3.5 py-2.5 text-xs font-bold tracking-wide text-slate-700 dark:text-slate-350 hover:text-brand-primary dark:hover:text-accent rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/55 transition-all duration-200 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" dir="auto">{{ $cat->name }}</a>
                         @endif
                     @endif
                 @endforeach
@@ -395,7 +395,7 @@
                     </div>
                 @endif
                 <div class="min-w-0 flex-1">
-                    <div class="font-bold text-sm text-slate-900 dark:text-white truncate">{{ auth()->user()->name }}</div>
+                    <div class="font-bold text-sm text-slate-900 dark:text-white truncate" dir="auto">{{ auth()->user()->name }}</div>
                     <div class="text-[10px] font-medium text-slate-400 truncate">{{ auth()->user()->email }}</div>
                 </div>
             </div>
@@ -417,20 +417,20 @@
                         @if($cat->children && $cat->children->count() > 0)
                             <div x-data="{ open: false }">
                                 <button @click="open = !open" :aria-expanded="open.toString()" class="w-full flex items-center justify-between px-4.5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition">
-                                    <span>{{ $cat->name }}</span>
+                                    <span dir="auto">{{ $cat->name }}</span>
                                     <svg class="w-4 h-4 text-slate-400 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
                                 <div x-show="open" x-cloak class="bg-slate-55/30 dark:bg-slate-900/40 rounded-xl mx-2 py-1">
                                     @foreach($cat->children as $child)
                                         @if(is_object($child) && isset($child->slug))
-                                            <a href="{{ route('shop.category', $child->slug) }}" class="block px-8 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">{{ $child->name }}</a>
+                                            <a href="{{ route('shop.category', $child->slug) }}" class="block px-8 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" dir="auto">{{ $child->name }}</a>
                                         @endif
                                     @endforeach
                                 </div>
                             </div>
                         @else
                             <a href="{{ route('shop.category', $cat->slug) }}" class="w-full flex items-center justify-between px-4.5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 transition">
-                                <span>{{ $cat->name }}</span>
+                                <span dir="auto">{{ $cat->name }}</span>
                             </a>
                         @endif
                     @endif

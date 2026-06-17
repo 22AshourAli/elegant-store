@@ -451,6 +451,7 @@ return [
     'search_results_for' => 'نتائج البحث عن',
     'found' => 'تم العثور عليها',
     'filter_no_results' => 'لا توجد منتجات تطابق بحثك.',
+    'filter_no_results_desc' => 'عذراً، لم نتمكن من العثور على منتجات في هذا القسم حالياً.',
     'filter_error' => 'حدث خطأ أثناء التصفية. حاول مرة أخرى.',
 
     // Order notifications

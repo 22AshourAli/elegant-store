@@ -3,7 +3,8 @@
 cmds = [
     "composer install --no-dev --optimize-autoloader --non-interactive",
     "npm install",
-    "npm run build"
+    "npm run build",
+    "php artisan view:cache"
 ]
 
 [start]
