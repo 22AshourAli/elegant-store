@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
 
 class CursorService
@@ -73,7 +74,7 @@ class CursorService
      * @return array{data: \Illuminate\Support\Collection, next_cursor: string|null, prev_cursor: string|null, has_more: bool, per_page: int}
      */
     public static function applyCursor(
-        Builder $query,
+        Builder|Relation $query,
         ?string $cursor,
         string $sortColumn = 'created_at',
         string $direction = 'desc',

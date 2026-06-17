@@ -72,24 +72,6 @@
                 </div>
             </div>
 
-            {{-- Color swatches --}}
-            @if(count($colors) > 0)
-            <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                <template x-for="color in colors" :key="'swatch-'+color">
-                    <button @click="selectColor(color)"
-                            class="relative flex-shrink-0 w-12 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary group/swatch"
-                            :class="selectedColor === color ? 'border-brand-primary dark:border-accent shadow-lg shadow-brand-primary/20 scale-105' : 'border-slate-200/40 dark:border-slate-800/60 opacity-70 hover:opacity-100 hover:border-brand-primary/40'"
-                            :title="color">
-                        <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color">
-                        <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider" x-text="color"></span>
-                        <span x-show="selectedColor === color" class="absolute inset-0 ring-2 ring-inset ring-white/60 dark:ring-slate-900/60 rounded-xl pointer-events-none"></span>
-                        <span x-show="selectedColor === color" class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-brand-primary dark:text-accent whitespace-nowrap opacity-0 group-hover/swatch:opacity-100 transition-opacity">
-                            <span x-text="color"></span>
-                        </span>
-                    </button>
-                </template>
-            </div>
-            @endif
         </div>
 
         {{-- Product Details --}}
@@ -152,7 +134,7 @@
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
-                    <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __("global.choose_color") }}'"></span>
+                    <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
                 </div>
                 <div class="flex flex-wrap gap-4" role="group" aria-label="{{ __('global.color') }}">
                     <template x-for="color in colors" :key="color">
@@ -163,8 +145,9 @@
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
                             <span class="block w-full h-full rounded-full border border-black/10 dark:border-white/15 overflow-hidden">
-                                <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color">
-                                <span x-show="!colorImages[normalize(color)]" class="flex items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase" x-text="color.substring(0,3)"></span>
+                                <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color"
+                                     @error.once="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
+                                <span x-show="!colorImages[normalize(color)]" class="hidden items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase" x-text="color.substring(0,3)"></span>
                             </span>
                             <span x-show="selectedColor === color" class="absolute -top-1 -end-1 bg-brand-primary dark:bg-accent text-white rounded-full p-0.5 shadow-md">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
