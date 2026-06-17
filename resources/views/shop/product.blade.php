@@ -150,7 +150,7 @@
                                       : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
                                 <img :src="colorImages[normalize(color)] || firstImageUrl"
                                      class="w-full h-full object-cover" :alt="color"
-                                     x-on:error.once="$el.src = firstImageUrl; $el.onerror = null">
+                                     x-on:error.once="$el.src = '{{ asset('images/logo.svg') }}'; $el.onerror = null">
                             </span>
                             <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[3rem] transition-all duration-200"
                                   :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100' : 'opacity-60 group-hover/color:opacity-100'"

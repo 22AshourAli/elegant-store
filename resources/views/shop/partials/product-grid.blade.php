@@ -6,11 +6,11 @@
             </div>
         @endforeach
     </div>
-    <div class="mt-8 flex items-center justify-center">
+    <div class="mt-6 flex items-center justify-center">
         {{ $products->onEachSide(1)->links('pagination.tailwind') }}
     </div>
 @else
-    <div class="text-center text-slate-500 py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+    <div class="text-center text-slate-500 py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
         {{ __('global.filter_no_results') }}
     </div>
 @endif
