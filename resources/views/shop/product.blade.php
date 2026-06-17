@@ -36,16 +36,9 @@
     </div>
 </div>
 
-<script>
-    window.productData = {!! json_encode([
-        'product' => $product,
-        'colors' => $colors,
-        'sizes' => $sizes,
-        'colorImages' => $colorImages,
-    ], JSON_UNESCAPED_UNICODE) !!};
-</script>
 
-<section class="container py-10 md:py-16 mb-10 overflow-x-hidden" x-data="productView(window.productData.product, window.productData.colors, window.productData.sizes, window.productData.colorImages)" @cart-updated.window="cartLoading = false">
+
+<section class="container py-10 md:py-16 mb-10 overflow-x-hidden" x-data="productView(window.productViewData)" @cart-updated.window="cartLoading = false">
     <div class="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
 
         {{-- Image Gallery --}}
@@ -282,139 +275,13 @@
 </section>
 
 <script>
-    document.addEventListener('alpine:init', () => {
-                Alpine.data('productView', (product, colors, sizes, colorImages) => ({
-                    cartLoading: false,
-                    buyLoading: false,
-            colors: colors,
-            sizes: sizes,
-            selectedColor: colors.length > 0 ? colors[0] : '',
-            selectedColorKey: colors.length > 0 ? (typeof colors[0] === 'string' ? colors[0].toLowerCase().trim() : colors[0]) : '',
-            selectedSize: sizes.length > 0 ? sizes[0] : '',
-            colorImages: colorImages,
-            product: product,
-            qty: 1,
-            normalize(v) { return typeof v === 'string' ? v.toLowerCase().trim() : v; },
-
-            init() {
-                this.selectedColorKey = this.normalize(this.selectedColor);
-                if (this.colorImages[this.selectedColorKey]) {
-                    this.currentImage = this.colorImages[this.selectedColorKey];
-                }
-
-                this.$watch('selectedColor', value => {
-                    this.qty = 1; // Reset qty when option changes
-                    this.selectedColorKey = this.normalize(value);
-                    if (this.colorImages[this.selectedColorKey]) {
-                        this.currentImage = this.colorImages[this.selectedColorKey];
-                    }
-                });
-                this.$watch('selectedSize', value => {
-                    this.qty = 1;
-                });
-            },
-
-            get currentVariant() {
-                if(!product.has_variants || product.has_variants == 0) return product.variants[0]; // Default variant
-                if(!this.selectedColor || !this.selectedSize) return null;
-                return product.variants.find(v => this.normalize(v.color) === this.normalize(this.selectedColor) && this.normalize(v.size) === this.normalize(this.selectedSize));
-            },
-
-            get currentPrice() {
-                if((!product.has_variants || product.has_variants == 0) && product.variants[0]) {
-                    let v = product.variants[0];
-                    let base = v.price_override ?? product.base_price;
-                    if(product.is_on_sale) return parseFloat(product.current_price);
-                    return parseFloat(base);
-                }
-                return this.currentVariant ? parseFloat(this.currentVariant.current_price) : parseFloat(product.current_price);
-            },
-
-            get originalPrice() {
-                if((!product.has_variants || product.has_variants == 0) && product.variants[0]) {
-                    return parseFloat(product.variants[0].price_override ?? product.base_price);
-                }
-                return this.currentVariant ? parseFloat(this.currentVariant.price_override ?? product.base_price) : parseFloat(product.base_price);
-            },
-
-            currentImage: @json($product->firstImageUrl()),
-
-            get availableQty() {
-                if (!this.currentVariant) return 0;
-                // Use aggregate stock across all branches so the storefront reflects saved inventory.
-                return this.currentVariant.total_stock ? parseInt(this.currentVariant.total_stock) : 0;
-            },
-
-            get stockStatus() {
-                if((product.has_variants == 1 || product.has_variants == true) && (!this.selectedColor || !this.selectedSize)) {
-                    return 'select_options';
-                }
-                return this.availableQty > 0 ? 'in_stock' : 'out_of_stock';
-            },
-
-            selectColor(color) {
-                this.selectedColor = color;
-            },
-
-            formatPrice(price) {
-                const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
-                const value = Math.round(parseFloat(price || 0));
-                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(value);
-            },
-
-            formatNumber(value) {
-                const locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
-                const num = Math.round(parseFloat(value || 0));
-                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(num);
-            },
-
-            addToCart() {
-                if (!this.currentVariant) return;
-                this.cartLoading = true;
-                fetch(`/cart/add/${this.currentVariant.id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': @json(csrf_token())
-                    },
-                    body: JSON.stringify({
-                        quantity: this.qty
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    this.cartLoading = false;
-                    window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
-                })
-                .catch(err => {
-                    this.cartLoading = false;
-                    console.error(err);
-                    const errMsg = @json(__('global.error_adding_to_cart'));
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: errMsg, type: 'error' } }));
-                });
-            },
-
-            buyNow() {
-                if (!this.currentVariant) return;
-                this.buyLoading = true;
-                fetch(`/buy-now/${this.currentVariant.id}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': @json(csrf_token())
-                    },
-                    body: JSON.stringify({ quantity: this.qty })
-                })
-                .then(() => {
-                    window.location.href = @json(route('checkout'));
-                })
-                .catch(() => {
-                    window.location.href = @json(route('checkout'));
-                });
-            }
-        }));
-    });
+    window.productViewData = {
+        product: @json($product),
+        colors: @json($colors),
+        sizes: @json($sizes),
+        colorImages: @json($colorImages),
+        firstImageUrl: @json($product->firstImageUrl()),
+    };
 </script>
 
 @push('schema')
