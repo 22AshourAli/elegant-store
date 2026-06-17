@@ -73,9 +73,9 @@
                             <div class="flex items-center gap-1.5">
                                 <span>{{ $order->user->name }}</span>
                                 @if(!empty($order->user->email))
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">أونلاين</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">{{ __('global.admin_online') }}</span>
                                 @else
-                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">أوفلاين</span>
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">{{ __('global.admin_offline') }}</span>
                                 @endif
                             </div>
                         </td>

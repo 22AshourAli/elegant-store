@@ -29,7 +29,7 @@ class HomeController extends Controller
                       ->orWhere('description', 'LIKE', "%{$query}%");
                 })
                 ->latest()
-                ->paginate(12)
+                ->paginate(10)
                 ->appends(['search' => $query]);
 
             $wishlistIds = [];
@@ -156,7 +156,7 @@ class HomeController extends Controller
                     break;
             }
 
-            $products = $query->paginate(12)->appends(request()->query());
+            $products = $query->paginate(10)->appends(request()->query());
             Cache::put($cacheKey, $products, now()->addMinutes(10));
 
             if (!Cache::has('homepage_default')) {

@@ -1,16 +1,16 @@
 @extends('admin.layouts.app')
-@section('page-title', 'طلبات الإرجاع')
+@section('page-title', __('global.admin_return_requests'))
 @section('content')
 <div class="bg-white dark:bg-gray-800 rounded shadow overflow-x-auto">
     <table class="w-full text-sm text-right">
         <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
                 <th class="p-3">#</th>
-                <th class="p-3">العميل</th>
-                <th class="p-3">الطلب</th>
-                <th class="p-3 hidden md:table-cell">السبب</th>
-                <th class="p-3">الحالة</th>
-                <th class="p-3 hidden md:table-cell">التاريخ</th>
+                <th class="p-3">{{ __('global.admin_customer') }}</th>
+                <th class="p-3">{{ __('global.admin_order') }}</th>
+                <th class="p-3 hidden md:table-cell">{{ __('global.admin_reason') }}</th>
+                <th class="p-3">{{ __('global.admin_status') }}</th>
+                <th class="p-3 hidden md:table-cell">{{ __('global.admin_date') }}</th>
                 <th class="p-3"></th>
             </tr>
         </thead>
@@ -30,10 +30,10 @@
                         </span>
                     </td>
                     <td class="p-3 text-xs text-gray-500 hidden md:table-cell">{{ $return->created_at->format('Y-m-d') }}</td>
-                    <td class="p-3 text-right"><a href="{{ route('admin.returns.show', $return) }}" class="text-indigo-600 hover:underline text-xs font-bold" onclick="event.stopPropagation()">عرض</a></td>
+                    <td class="p-3 text-right"><a href="{{ route('admin.returns.show', $return) }}" class="text-indigo-600 hover:underline text-xs font-bold" onclick="event.stopPropagation()">{{ __('global.admin_view') }}</a></td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="p-6 text-center text-gray-400">لا توجد طلبات</td></tr>
+                <tr><td colspan="7" class="p-6 text-center text-gray-400">{{ __('global.admin_no_requests') }}</td></tr>
             @endforelse
         </tbody>
     </table>

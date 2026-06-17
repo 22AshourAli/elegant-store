@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>فاتورة #{{ $order->id }} | Elegant Store</title>
+    <title>{{ __('global.admin_invoice_title') }} {{ $order->id }} | Elegant Store</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -104,16 +104,16 @@
 </head>
 <body onload="window.print()">
     <div class="no-print">
-        <button onclick="window.print()">طباعة الفاتورة</button>
+        <button onclick="window.print()">{{ __('global.admin_print_invoice') }}</button>
     </div>
 
     <div class="invoice">
         <!-- الهيدر: اللوجو + عنوان الفاتورة -->
         <div class="header">
             <div class="title-area">
-                <h1>فاتورة ضريبية</h1>
-                <p>رقم الفاتورة: {{ $order->id }}</p>
-                <p>تاريخ الفاتورة: {{ $order->created_at->format('Y/m/d') }}</p>
+                <h1>{{ __('global.admin_tax_invoice') }}</h1>
+                <p>{{ __('global.admin_invoice_no_label') }} {{ $order->id }}</p>
+                <p>{{ __('global.admin_invoice_date_label') }} {{ $order->created_at->format('Y/m/d') }}</p>
             </div>
             <div class="logo">
                 <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -131,47 +131,47 @@
         <!-- معلومات العميل + الدفع -->
         <div class="info-grid">
             <div class="info-box">
-                <h3>معلومات العميل</h3>
-                <p><span class="label">الاسم:</span> <span class="value">{{ $order->user->name }}</span></p>
-                <p><span class="label">رقم الهاتف:</span> <span class="value">{{ $order->user->phone ?? '—' }}</span></p>
-                <p><span class="label">البريد الإلكتروني:</span> <span class="value">{{ $order->user->email }}</span></p>
-                <p style="margin-top:6px"><span class="label">عنوان الشحن:</span></p>
+                <h3>{{ __('global.admin_customer_info') }}</h3>
+                <p><span class="label">{{ __('global.admin_name_label') }}</span> <span class="value">{{ $order->user->name }}</span></p>
+                <p><span class="label">{{ __('global.admin_phone_label') }}</span> <span class="value">{{ $order->user->phone ?? '—' }}</span></p>
+                <p><span class="label">{{ __('global.admin_email_label') }}</span> <span class="value">{{ $order->user->email }}</span></p>
+                <p style="margin-top:6px"><span class="label">{{ __('global.shipping_address_title') }}</span></p>
                 <p class="value">{{ $order->shipping_address }}</p>
                 @if($order->notes)
-                    <p style="margin-top:6px"><span class="label">ملاحظات العميل:</span></p>
+                    <p style="margin-top:6px"><span class="label">{{ __('global.admin_customer_notes') }}</span></p>
                     <p class="value" style="font-style:italic">"{{ $order->notes }}"</p>
                 @endif
             </div>
             <div class="info-box">
-                <h3>بيانات الدفع</h3>
-                <p><span class="label">طريقة الدفع:</span>
+                <h3>{{ __('global.admin_payment_info') }}</h3>
+                <p><span class="label">{{ __('global.admin_payment_method') }}:</span>
                     <span class="value">
-                        @if($order->payment_method === 'cash') الدفع عند الاستلام
-                        @elseif($order->payment_method === 'card') بطاقة بنكية
-                        @else محفظة إلكترونية @endif
+                        @if($order->payment_method === 'cash') {{ __('global.cash_on_delivery_status') }}
+                        @elseif($order->payment_method === 'card') {{ __('global.credit_card_status') }}
+                        @else {{ __('global.wallet_status') }} @endif
                     </span>
                 </p>
-                <p><span class="label">حالة الدفع:</span>
+                <p><span class="label">{{ __('global.payment_status_label') }}</span>
                     <span class="value">
-                        @if($order->payment_status === 'paid') مدفوع
-                        @elseif($order->payment_status === 'unpaid') غير مدفوع
-                        @else فشل الدفع @endif
+                        @if($order->payment_status === 'paid') {{ __('global.admin_paid') }}
+                        @elseif($order->payment_status === 'unpaid') {{ __('global.admin_unpaid') }}
+                        @else {{ __('global.admin_failed') }} @endif
                     </span>
                 </p>
-                <p><span class="label">رقم العملية:</span> <span class="value">{{ $order->payment->transaction_id ?? '—' }}</span></p>
+                <p><span class="label">{{ __('global.admin_transaction_label') }}</span> <span class="value">{{ $order->payment->transaction_id ?? '—' }}</span></p>
             </div>
         </div>
 
         <!-- جدول المنتجات -->
-        <h3 style="font-size:14px;font-weight:700;color:#4f46e5;margin-bottom:10px">المنتجات المطلوبة</h3>
+        <h3 style="font-size:14px;font-weight:700;color:#4f46e5;margin-bottom:10px">{{ __('global.admin_products_ordered') }}</h3>
         <table>
             <thead>
                 <tr>
-                    <th style="width:40%">المنتج</th>
-                    <th>اللون/المقاس</th>
-                    <th class="text-center">الكمية</th>
-                    <th class="text-left">سعر الوحدة</th>
-                    <th class="text-left">الإجمالي</th>
+                    <th style="width:40%">{{ __('global.admin_product') }}</th>
+                    <th>{{ __('global.admin_color_size') }}</th>
+                    <th class="text-center">{{ __('global.admin_qty') }}</th>
+                    <th class="text-left">{{ __('global.admin_unit_price') }}</th>
+                    <th class="text-left">{{ __('global.admin_total') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -179,14 +179,14 @@
                 <tr>
                     <td class="value">{{ $item->product_name }}</td>
                     <td style="color:#6b7280;font-size:12px">
-                        @if($item->color) اللون: {{ $item->color }} @endif
+                        @if($item->color) {{ __('global.color_label') }} {{ $item->color }} @endif
                         @if($item->color && $item->size) | @endif
-                        @if($item->size) المقاس: {{ $item->size }} @endif
+                        @if($item->size) {{ __('global.size_label') }} {{ $item->size }} @endif
                         @if(!$item->color && !$item->size) — @endif
                     </td>
                     <td class="text-center">{{ $item->quantity }}</td>
-                    <td class="text-left">{{ (int) round($item->unit_price) }} ج.م</td>
-                    <td class="text-left value">{{ (int) round($item->total) }} ج.م</td>
+                    <td class="text-left">{{ (int) round($item->unit_price) }} {{ __('global.currency') }}</td>
+                    <td class="text-left value">{{ (int) round($item->total) }} {{ __('global.currency') }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -195,32 +195,32 @@
         <!-- ملخص الفاتورة -->
         <div class="summary">
             <div class="row">
-                <span>مجموع المنتجات</span>
-                <span>{{ (int) round($order->items->sum('total')) }} ج.م</span>
+                <span>{{ __('global.admin_subtotal') }}</span>
+                <span>{{ (int) round($order->items->sum('total')) }} {{ __('global.currency') }}</span>
             </div>
             @if($order->discount && $order->discount > 0)
             <div class="row">
-                <span>الخصم</span>
-                <span>-{{ (int) round($order->discount) }} ج.م</span>
+                <span>{{ __('global.admin_discount') }}</span>
+                <span>-{{ (int) round($order->discount) }} {{ __('global.currency') }}</span>
             </div>
             @endif
             <div class="row">
-                <span>الشحن</span>
-                <span>@if($order->shipping_cost && $order->shipping_cost > 0) {{ (int) round($order->shipping_cost) }} ج.م @else مجاني @endif</span>
+                <span>{{ __('global.admin_shipping') }}</span>
+                <span>@if($order->shipping_cost && $order->shipping_cost > 0) {{ (int) round($order->shipping_cost) }} {{ __('global.currency') }} @else {{ __('global.admin_free') }} @endif</span>
             </div>
             <div class="row total">
-                <span>الإجمالي النهائي</span>
-                <span>{{ (int) round($order->total) }} ج.م</span>
+                <span>{{ __('global.admin_total_amount') }}</span>
+                <span>{{ (int) round($order->total) }} {{ __('global.currency') }}</span>
             </div>
         </div>
 
         <!-- الفوتر -->
         <div class="footer">
-            <div class="thanks">شكراً لتسوقك مع Elegant Store!</div>
+            <div class="thanks">{{ __('global.admin_thanks_message') }}</div>
             <div class="contact">
                 <span>Elegant Store</span>
-                <span>الهاتف: +{{ config('store.admin_phone') }}</span>
-                <span>البريد: {{ config('store.admin_email') }}</span>
+                <span>{{ __('global.admin_phone') }} +{{ config('store.admin_phone') }}</span>
+                <span>{{ __('global.admin_email') }} {{ config('store.admin_email') }}</span>
             </div>
         </div>
     </div>

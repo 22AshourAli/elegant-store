@@ -14,7 +14,7 @@
     <table class="w-full text-sm">
         <thead>
             <tr class="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
-                <th class="p-3 text-right hidden md:table-cell">صورة</th>
+                <th class="p-3 text-right hidden md:table-cell">{{ __('global.admin_image') }}</th>
                 <th class="p-3 text-right">{{ __('global.admin_name') }}</th>
                 <th class="p-3 text-right hidden md:table-cell">{{ __('global.admin_categories') }}</th>
                 <th class="p-3 text-right">{{ __('global.original_price') }}</th>

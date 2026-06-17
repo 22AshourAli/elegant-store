@@ -700,7 +700,7 @@ document.addEventListener('alpine:init', () => {
 
         formatPrice(price) {
             const value = Math.round(parseFloat(price || 0));
-            return new Intl.NumberFormat('{{ app()->getLocale() === "ar" ? "ar-EG" : "en-EG" }}', {
+            return new Intl.NumberFormat('en-US', {
                 style: 'currency', currency: 'EGP', maximumFractionDigits: 0
             }).format(value);
         },

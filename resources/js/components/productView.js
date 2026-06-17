@@ -13,6 +13,7 @@ export default function productView(productViewData) {
         selectedSize: sizes.length > 0 ? sizes[0] : '',
         colorImages,
         product,
+        firstImageUrl: firstImageUrl || '',
         qty: 1,
         currentImage: firstImageUrl || (product.all_images?.[0]) || '',
 
@@ -27,6 +28,8 @@ export default function productView(productViewData) {
                 this.selectedColorKey = normalize(value);
                 if (this.colorImages[this.selectedColorKey]) {
                     this.currentImage = this.colorImages[this.selectedColorKey];
+                } else {
+                    this.currentImage = this.firstImageUrl || (product.all_images?.[0]) || '';
                 }
             });
 
@@ -76,6 +79,10 @@ export default function productView(productViewData) {
 
         selectColor(color) {
             this.selectedColor = color;
+            const el = document.querySelector('.product-main-image');
+            if (el && window.innerWidth < 768) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         },
 
         formatPrice,

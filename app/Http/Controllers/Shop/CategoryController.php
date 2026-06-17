@@ -30,7 +30,7 @@ class CategoryController extends Controller
                 ->active()
                 ->with('media', 'variants')
                 ->latest()
-                ->paginate(12)
+                ->paginate(10)
                 ->appends(request()->query());
 
             Cache::put($cacheKey . '_prods', $products, now()->addMinutes(10));

@@ -45,7 +45,7 @@
         {{-- Image Gallery --}}
         <div class="space-y-4">
             {{-- Main Image --}}
-            <div class="relative bg-white/70 dark:bg-surface-dark/50 rounded-3xl overflow-hidden shadow-lg border border-slate-200/40 dark:border-slate-800/40 aspect-[4/5] md:aspect-square group backdrop-blur-md"
+            <div class="product-main-image relative bg-white/70 dark:bg-surface-dark/50 rounded-3xl overflow-hidden shadow-lg border border-slate-200/40 dark:border-slate-800/40 aspect-[4/5] md:aspect-square group backdrop-blur-md"
                  x-data="{ imgLoaded: false, transitioning: false }"
                  x-init="$watch('currentImage', () => { imgLoaded = false; transitioning = true; }); $nextTick(() => { imgLoaded = true; transitioning = false; })">
                 <img :src="currentImage" alt="{{ $product->name }}"
@@ -137,22 +137,26 @@
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
                     <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
                 </div>
-                <div class="flex flex-wrap gap-4" role="group" aria-label="{{ __('global.color') }}">
+                <div class="flex gap-3 sm:gap-4" role="group" aria-label="{{ __('global.color') }}">
                     <template x-for="color in colors" :key="color">
                         <button @click="selectColor(color)"
-                                class="relative w-12 h-12 rounded-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-primary dark:focus-visible:ring-offset-slate-950 transition-all duration-300"
-                                :class="selectedColor === color ? 'ring-2 ring-offset-2 ring-brand-primary dark:ring-accent shadow-[0_0_20px_rgba(79,70,229,0.45)] scale-110 dark:ring-offset-slate-950' : 'ring-1 ring-slate-300 dark:ring-slate-700 hover:scale-110 hover:shadow-lg'"
+                                class="relative flex flex-col items-center gap-1.5 cursor-pointer focus-visible:outline-none group/color transition-all duration-300"
                                 :title="color"
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
-                            <span class="block w-full h-full rounded-full border border-black/10 dark:border-white/15 overflow-hidden">
+                            <span class="block w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden transition-all duration-300"
+                                  :class="selectedColor === color
+                                      ? 'ring-2 ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_20px_rgba(79,70,229,0.35)] scale-110'
+                                      : 'ring-1 ring-slate-300 dark:ring-slate-700 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/40 dark:group-hover/color:ring-accent/40'">
                                 <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color"
                                      x-on:error.once="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
-                                <span x-show="!colorImages[normalize(color)]" class="hidden items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase" x-text="color.substring(0,3)"></span>
+                                <span x-show="!colorImages[normalize(color)]"
+                                      class="hidden items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase"
+                                      x-text="color.substring(0,3)"></span>
                             </span>
-                            <span x-show="selectedColor === color" class="absolute -top-1 -end-1 bg-brand-primary dark:bg-accent text-white rounded-full p-0.5 shadow-md">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
-                            </span>
+                            <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[3rem] transition-all duration-200"
+                                  :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100 translate-y-0' : 'opacity-0 group-hover/color:opacity-100 translate-y-0.5 group-hover/color:translate-y-0'"
+                                  x-text="color"></span>
                         </button>
                     </template>
                 </div>

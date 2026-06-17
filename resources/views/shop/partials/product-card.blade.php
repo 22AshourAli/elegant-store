@@ -76,7 +76,11 @@
             @endif
         </div>
 
-        <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/60">
+        <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-1 line-clamp-1 leading-relaxed" dir="auto">
+            {{ $descText }}
+        </p>
+
+        <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
             <a href="{{ route('shop.product', $product->slug) }}" class="flex-1 text-center text-xs sm:text-sm bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-2.5 rounded-xl shadow-sm hover:shadow-[0_4px_12px_rgba(79,70,229,0.25)] active:scale-[0.98] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary">
                 {{ __('global.view_details') }}
             </a>

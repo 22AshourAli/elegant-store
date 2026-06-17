@@ -41,14 +41,14 @@
                                     <p class="font-bold truncate">{{ $customer->name }}</p>
                                     <div class="flex gap-1 mt-0.5">
                                         @if(!empty($customer->email))
-                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">أونلاين</span>
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">{{ __('global.admin_online') }}</span>
                                         @else
-                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">أوفلاين</span>
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">{{ __('global.admin_offline') }}</span>
                                         @endif
                                         @if(($customer->orders_count ?? 0) > 0)
-                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">مشتري</span>
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">{{ __('global.admin_buyer') }}</span>
                                         @else
-                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-500">جديد</span>
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-500">{{ __('global.admin_new_customer') }}</span>
                                         @endif
                                     </div>
                                 </div>

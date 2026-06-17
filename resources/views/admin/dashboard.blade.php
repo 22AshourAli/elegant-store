@@ -8,8 +8,8 @@
     <!-- Filter Bar -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
         <div class="flex flex-wrap items-center gap-3">
-            <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">الفترة:</span>
-            @php $periods = ['today' => 'اليوم', '7days' => 'آخر 7 أيام', 'month' => 'هذا الشهر', 'quarter' => 'آخر 3 شهور', 'year' => 'هذا العام', 'all' => 'الكل']; @endphp
+            <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('global.admin_period') }}:</span>
+            @php $periods = ['today' => __('global.period_today'), '7days' => __('global.period_7days'), 'month' => __('global.period_month'), 'quarter' => __('global.period_quarter'), 'year' => __('global.period_year'), 'all' => __('global.period_all')]; @endphp
             @foreach($periods as $key => $label)
             <a href="{{ url()->current() }}?period={{ $key }}"
                class="px-3 py-1.5 text-sm font-semibold rounded-xl transition-all
@@ -26,19 +26,19 @@
         <!-- Net Profit -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between lg:col-span-2">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">صافي الربح</span>
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_net_profit') }}</span>
                 <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
                     {{ number_format((int) round($netProfit)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
                 </h3>
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-1 flex-wrap">
-                    <span>إيراد: <strong class="text-gray-600 dark:text-gray-300">{{ number_format((int) round($totalProductRevenue)) }}</strong></span>
-                    <span>شحن: <strong class="text-amber-600">{{ number_format((int) round($totalShippingCollected)) }}</strong></span>
-                    <span>تكلفة: <strong class="text-orange-600">{{ number_format((int) round($totalCosts)) }}</strong></span>
-                    <span>مصروفات: <strong class="text-red-600">{{ number_format((int) round($totalManualExpenses)) }}</strong></span>
+                    <span>{{ __('global.admin_revenue') }}: <strong class="text-gray-600 dark:text-gray-300">{{ number_format((int) round($totalProductRevenue)) }}</strong></span>
+                    <span>{{ __('global.admin_shipping') }}: <strong class="text-amber-600">{{ number_format((int) round($totalShippingCollected)) }}</strong></span>
+                    <span>{{ __('global.admin_cost') }}: <strong class="text-orange-600">{{ number_format((int) round($totalCosts)) }}</strong></span>
+                    <span>{{ __('global.admin_expenses') }}: <strong class="text-red-600">{{ number_format((int) round($totalManualExpenses)) }}</strong></span>
                 </div>
                 <div class="flex items-center gap-3 text-xs mt-1">
-                    <span>هامش الربح: <strong class="{{ $profitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profitMargin }}%</strong></span>
-                    <span>متوسط الطلب: <strong class="text-indigo-600">{{ number_format((int) round($aov)) }} {{ __('global.currency') }}</strong></span>
+                    <span>{{ __('global.admin_profit_margin') }}: <strong class="{{ $profitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profitMargin }}%</strong></span>
+                    <span>{{ __('global.admin_aov') }}: <strong class="text-indigo-600">{{ number_format((int) round($aov)) }} {{ __('global.currency') }}</strong></span>
                 </div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
@@ -66,7 +66,7 @@
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_customers_count') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalCustomers }}</h3>
-                <div class="text-xs text-gray-400 mt-1">إجمالي العملاء المسجلين</div>
+                <div class="text-xs text-gray-400 mt-1">{{ __('global.admin_total_customers') }}</div>
             </div>
             <div class="p-3.5 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -76,9 +76,9 @@
         <!-- Returns -->
         <a href="{{ route('admin.returns.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 transition">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">طلبات الإرجاع</span>
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_return_requests') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $returnRequestCount }}</h3>
-                <div class="text-xs text-gray-400">قيد الانتظار: <span class="text-amber-600 font-bold">{{ $returnRequestPending }}</span></div>
+                <div class="text-xs text-gray-400">{{ __('global.admin_pending') }} <span class="text-amber-600 font-bold">{{ $returnRequestPending }}</span></div>
             </div>
             <div class="p-3.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
@@ -88,9 +88,9 @@
         <!-- Exchanges -->
         <a href="{{ route('admin.exchanges.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 transition">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">طلبات الاستبدال</span>
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_exchange_requests') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $exchangeCount }}</h3>
-                <div class="text-xs text-gray-400">قيد الانتظار: <span class="text-indigo-600 font-bold">{{ $exchangePending }}</span></div>
+                <div class="text-xs text-gray-400">{{ __('global.admin_pending') }} <span class="text-indigo-600 font-bold">{{ $exchangePending }}</span></div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
@@ -102,7 +102,7 @@
             <div class="space-y-2">
                 <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_low_stock') }}</span>
                 <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $lowStockCount }}</h3>
-                <div class="text-xs text-gray-400 mt-1">أقل من {{ config('store.low_stock_threshold', 5) }} قطع</div>
+                <div class="text-xs text-gray-400 mt-1">{{ __('global.admin_less_than') }} {{ config('store.low_stock_threshold', 5) }} {{ __('global.admin_piece') }}</div>
             </div>
             <div class="p-3.5 {{ $lowStockCount > 0 ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400' }} rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -115,16 +115,16 @@
         <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h4 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                <span>التقرير المالي</span>
+                <span>{{ __('global.admin_financial_report') }}</span>
             </h4>
             <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-400">الإجمالي</span>
+                <span class="text-xs text-gray-400">{{ __('global.admin_total') }}</span>
                 <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 rounded">{{ number_format((int) round($totalProductRevenue + $totalShippingCollected)) }} {{ __('global.currency') }}</span>
                 <div class="relative" x-data="{ open: false }">
                     <button @click="open = !open" @click.away="open = false"
                             class="px-2.5 py-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span>تصدير</span>
+                        <span>{{ __('global.admin_export') }}</span>
                         <svg class="w-3 h-3 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div x-show="open" style="display: none"
@@ -146,40 +146,40 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-green-50 dark:bg-green-950/20 rounded-xl p-4 border border-green-100 dark:border-green-900/30">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">إيراد</span>
+                    <span class="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">{{ __('global.admin_revenue') }}</span>
                 </div>
                 <p class="text-2xl font-extrabold text-green-700 dark:text-green-400">{{ number_format((int) round($totalProductRevenue)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-green-600/70 dark:text-green-500/70 mt-1">مبيعات المنتجات</p>
+                <p class="text-xs text-green-600/70 dark:text-green-500/70 mt-1">{{ __('global.admin_product_sales') }}</p>
             </div>
             <div class="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-100 dark:border-amber-900/30">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">مصاريف الشحن</span>
+                    <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">{{ __('global.admin_shipping_expenses') }}</span>
                 </div>
                 <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">{{ number_format((int) round($totalShippingCollected)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">محصّل من العملاء</p>
+                <p class="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">{{ __('global.admin_collected_from_customers') }}</p>
             </div>
             <div class="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-4 border border-orange-100 dark:border-orange-900/30">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wide">تكلفة البضاعة</span>
+                    <span class="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wide">{{ __('global.admin_cost_of_goods') }}</span>
                 </div>
                 <p class="text-2xl font-extrabold text-orange-700 dark:text-orange-400">{{ number_format((int) round($totalCosts)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-orange-600/70 dark:text-orange-500/70 mt-1">تكلفة الشراء من الموردين</p>
+                <p class="text-xs text-orange-600/70 dark:text-orange-500/70 mt-1">{{ __('global.admin_cost_from_suppliers') }}</p>
             </div>
             <div class="bg-red-50 dark:bg-red-950/20 rounded-xl p-4 border border-red-100 dark:border-red-900/30">
                 <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">مصروفات أخرى</span>
+                    <span class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">{{ __('global.admin_other_expenses') }}</span>
                 </div>
                 <p class="text-2xl font-extrabold text-red-700 dark:text-red-400">{{ number_format((int) round($totalManualExpenses)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
-                <p class="text-xs text-red-600/70 dark:text-red-500/70 mt-1">إيجار، رواتب، فواتير</p>
+                <p class="text-xs text-red-600/70 dark:text-red-500/70 mt-1">{{ __('global.admin_rent_salaries_bills') }}</p>
             </div>
         </div>
 
         <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
             <div class="text-sm text-gray-500 dark:text-gray-400">
-                <span>صافي الربح = إيراد {{ number_format((int) round($totalProductRevenue)) }}
-                - تكلفة {{ number_format((int) round($totalCosts)) }}
-                - شحن {{ number_format((int) round($totalShippingCollected)) }}
-                - مصروفات {{ number_format((int) round($totalManualExpenses)) }}</span>
+                <span>{{ __('global.admin_net_profit_eq') }} {{ number_format((int) round($totalProductRevenue)) }}
+                {{ __('global.admin_minus_cost') }} {{ number_format((int) round($totalCosts)) }}
+                {{ __('global.admin_minus_shipping') }} {{ number_format((int) round($totalShippingCollected)) }}
+                {{ __('global.admin_minus_expenses') }} {{ number_format((int) round($totalManualExpenses)) }}</span>
             </div>
             <div class="text-lg font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
                 = {{ number_format((int) round($netProfit)) }} {{ __('global.currency') }}
@@ -191,10 +191,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
-                <h4 class="text-lg font-bold text-gray-900 dark:text-white">الإيرادات والطلب</h4>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.admin_revenue_and_orders') }}</h4>
                 <div class="flex gap-2 text-xs">
-                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-indigo-500 inline-block"></span> الإيراد</span>
-                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-emerald-500 inline-block dashed"></span> الطلبات</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-indigo-500 inline-block"></span> {{ __('global.admin_revenue') }}</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-emerald-500 inline-block dashed"></span> {{ __('global.admin_orders') }}</span>
                 </div>
             </div>
             <div class="h-72 w-full relative">
@@ -203,7 +203,7 @@
         </div>
         <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
-                <h4 class="text-lg font-bold text-gray-900 dark:text-white">توزيع الطلبات</h4>
+                <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.admin_order_distribution') }}</h4>
             </div>
             <div class="h-72 w-full relative flex items-center justify-center">
                 <canvas id="ordersPieChart"></canvas>
@@ -218,7 +218,7 @@
                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 <span>{{ __('global.admin_low_stock') }}</span>
             </h4>
-            <span class="text-xs text-gray-500 dark:text-gray-400">الحد الأدنى: أقل من {{ config('store.low_stock_threshold', 5) }} قطع</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('global.admin_minimum_threshold') }} {{ config('store.low_stock_threshold', 5) }} {{ __('global.admin_piece') }}</span>
         </div>
 
         <div class="overflow-x-auto">
@@ -246,13 +246,13 @@
                         <td class="px-6 py-4">{{ $item->size ?: '-' }}</td>
                         <td class="px-6 py-4 text-indigo-600 dark:text-indigo-400">{{ $item->branch_name }}</td>
                         <td class="px-6 py-4 font-bold {{ $item->stock <= 1 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400' }}">
-                            {{ $item->stock }} قطعة
+                            {{ $item->stock }} {{ __('global.admin_piece') }}
                         </td>
                         <td class="px-6 py-4">
                             @if($item->stock <= 1)
-                                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full dark:bg-red-900/30 dark:text-red-300 font-semibold">حرج جداً</span>
+                                <span class="bg-red-100 text-red-800 text-xs px-2.5 py-0.5 rounded-full dark:bg-red-900/30 dark:text-red-300 font-semibold">{{ __('global.admin_critical') }}</span>
                             @else
-                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full dark:bg-yellow-900/30 dark:text-yellow-300 font-semibold">منخفض</span>
+                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2.5 py-0.5 rounded-full dark:bg-yellow-900/30 dark:text-yellow-300 font-semibold">{{ __('global.admin_low') }}</span>
                             @endif
                         </td>
                     </tr>
@@ -272,13 +272,13 @@
     @if($recentExpenses && $recentExpenses->count() > 0)
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
         <div class="flex justify-between items-center mb-4">
-            <h4 class="text-lg font-bold text-gray-900 dark:text-white">آخر المصروفات</h4>
-            <a href="{{ route('admin.expenses.index') }}" class="text-xs text-indigo-600 hover:underline font-semibold">عرض الكل</a>
+            <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.admin_recent_expenses') }}</h4>
+            <a href="{{ route('admin.expenses.index') }}" class="text-xs text-indigo-600 hover:underline font-semibold">{{ __('global.admin_view_all') }}</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400">
-                    <tr><th class="px-6 py-3">التصنيف</th><th class="px-6 py-3">الوصف</th><th class="px-6 py-3">المبلغ</th><th class="px-6 py-3">التاريخ</th></tr>
+                    <tr><th class="px-6 py-3">{{ __('global.admin_category') }}</th><th class="px-6 py-3">{{ __('global.admin_description') }}</th><th class="px-6 py-3">{{ __('global.admin_amount') }}</th><th class="px-6 py-3">{{ __('global.admin_date') }}</th></tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach($recentExpenses as $expense)
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
             labels: labels,
             datasets: [
                 {
-                    label: 'الإيراد ({{ __("global.currency") }})',
+                    label: '{{ __("global.admin_revenue") }} ({{ __("global.currency") }})',
                     data: revenue,
                     borderColor: '#6366f1',
                     backgroundColor: function(ctx) {
@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     yAxisID: 'y'
                 },
                 {
-                    label: 'الطلبات',
+                    label: '{{ __("global.admin_orders") }}',
                     data: counts,
                     borderColor: '#10b981',
                     backgroundColor: 'transparent',
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     type: 'linear',
                     display: true,
                     position: 'left',
-                    title: { display: true, text: 'عدد الطلبات', font: { family: 'Cairo' } },
+                    title: { display: true, text: '{{ __("global.admin_order_count") }}', font: { family: 'Cairo' } },
                     grid: { drawOnChartArea: false },
                     ticks: { stepSize: 1, font: { family: 'Cairo', size: 10 } }
                 }

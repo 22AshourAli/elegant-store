@@ -6,7 +6,7 @@ window.Alpine = Alpine;
 
 export function formatPrice(price) {
     const value = Math.round(parseFloat(price || 0));
-    return value.toLocaleString() + ' EGP';
+    return value.toLocaleString('en-US') + ' EGP';
 }
 
 document.addEventListener('alpine:init', () => {

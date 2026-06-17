@@ -286,12 +286,20 @@ class PosController extends Controller
         if (empty($cart)) return [];
 
         $ids = array_keys($cart);
-        $variants = ProductVariant::with('product')->whereIn('id', $ids)->get()->keyBy('id');
+        $variants = ProductVariant::with('product', 'product.media', 'media')->whereIn('id', $ids)->get()->keyBy('id');
 
         $items = [];
         foreach ($cart as $variantId => $item) {
             $variant = $variants->get($variantId);
             if (!$variant) continue;
+
+            $image = $variant->imageUrl();
+            if (!$image && $variant->color) {
+                $sibling = $variant->product->variants
+                    ->where('color', $variant->color)
+                    ->first(fn($v) => $v->image_url || $v->hasMedia('variant_images'));
+                $image = $sibling ? $sibling->imageUrl() : null;
+            }
 
             $items[$variantId] = [
                 'variant_id' => $variantId,
@@ -302,7 +310,7 @@ class PosController extends Controller
                 'quantity' => $item['quantity'],
                 'total' => (float) $variant->current_price * $item['quantity'],
                 'stock' => $variant->total_stock,
-                'image' => $variant->imageUrl(),
+                'image' => $image ?: $variant->product->firstImageUrl(),
             ];
         }
 

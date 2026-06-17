@@ -39,9 +39,7 @@ class ProductController extends Controller
             $variantWithImage = $product->variants
                 ->where('color', $color)
                 ->first(fn($v) => $v->image_url || $v->hasMedia('variant_images'));
-            $colorImages[$key] = $variantWithImage
-                ? $variantWithImage->imageUrl()
-                : $product->firstImageUrl();
+            $colorImages[$key] = $variantWithImage ? $variantWithImage->imageUrl() : $product->firstImageUrl();
         }
 
         \SEOMeta::setTitle($product->name . ' | Elegant Store');

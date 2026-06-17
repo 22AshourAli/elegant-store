@@ -76,7 +76,7 @@ class CartService
         }
 
         $variantIds = array_keys($raw);
-        $variants   = ProductVariant::with('product', 'media')
+        $variants   = ProductVariant::with('product', 'product.media', 'product.variants', 'media')
             ->whereIn('id', $variantIds)
             ->get()
             ->keyBy('id');
@@ -89,14 +89,20 @@ class CartService
                 continue;
             }
             $variant              = $variants[$variantId];
+            $image = $variant->imageUrl();
+            if (!$image && $variant->color) {
+                $sibling = $variant->product->variants
+                    ->where('color', $variant->color)
+                    ->first(fn($v) => $v->image_url || $v->hasMedia('variant_images'));
+                $image = $sibling ? $sibling->imageUrl() : null;
+            }
             $enriched[$variantId] = [
                 'variant_id'   => $variantId,
                 'product_name' => $variant->product->name,
                 'color'        => $variant->color,
                 'size'         => $variant->size,
                 'price'        => $variant->current_price,
-                'image'        => $variant->imageUrl()
-                    ?: $variant->product->firstImageUrl(),
+                'image'        => $image ?: $variant->product->firstImageUrl(),
                 'quantity'     => $item['quantity'],
             ];
         }

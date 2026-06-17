@@ -2,7 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $arabic->utf8Glyphs('التقرير المالي', 50, false) }}</title>
+    <title>{{ $arabic->utf8Glyphs(__('global.admin_financial_report'), 50, false) }}</title>
     <style>
         @page { margin: 20mm 15mm; }
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 13px; color: #1f2937; direction: rtl; unicode-bidi: embed; }
@@ -18,32 +18,32 @@
     </style>
 </head>
 <body>
-    <h1>{{ $arabic->utf8Glyphs('التقرير المالي', 50, false) }}</h1>
+    <h1>{{ $arabic->utf8Glyphs(__('global.admin_financial_report'), 50, false) }}</h1>
     <p class="date">{{ now()->format('Y-m-d') }}</p>
 
     <table>
-        <tr><th>{{ $arabic->utf8Glyphs('البيان', 50, false) }}</th><th>{{ $arabic->utf8Glyphs('القيمة', 50, false) }}</th></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('إجمالي الطلبات', 50, false) }}</td><td>{{ $totalOrders }}</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('طلبات Online', 50, false) }}</td><td>{{ $onlineOrders }}</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('طلبات Offline', 50, false) }}</td><td>{{ $offlineOrders }}</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('إيراد المنتجات', 50, false) }}</td><td>{{ number_format((int) round($totalProductRevenue)) }} EGP</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('شحن محصل', 50, false) }}</td><td>{{ number_format((int) round($totalShippingCollected)) }} EGP</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('تكلفة البضاعة', 50, false) }}</td><td>{{ number_format((int) round($totalCosts)) }} EGP</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('مصروفات أخرى', 50, false) }}</td><td>{{ number_format((int) round($totalManualExpenses)) }} EGP</td></tr>
+        <tr><th>{{ $arabic->utf8Glyphs(__('global.admin_statement'), 50, false) }}</th><th>{{ $arabic->utf8Glyphs(__('global.admin_value'), 50, false) }}</th></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_total_orders'), 50, false) }}</td><td>{{ $totalOrders }}</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_online_orders'), 50, false) }}</td><td>{{ $onlineOrders }}</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_offline_orders'), 50, false) }}</td><td>{{ $offlineOrders }}</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_product_revenue'), 50, false) }}</td><td>{{ number_format((int) round($totalProductRevenue)) }} {{ __('global.currency') }}</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_shipping_collected'), 50, false) }}</td><td>{{ number_format((int) round($totalShippingCollected)) }} {{ __('global.currency') }}</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_cost_of_goods'), 50, false) }}</td><td>{{ number_format((int) round($totalCosts)) }} {{ __('global.currency') }}</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_other_expenses'), 50, false) }}</td><td>{{ number_format((int) round($totalManualExpenses)) }} {{ __('global.currency') }}</td></tr>
         <tr class="total">
-            <td>{{ $arabic->utf8Glyphs('صافي الربح', 50, false) }}</td>
+            <td>{{ $arabic->utf8Glyphs(__('global.admin_net_profit'), 50, false) }}</td>
             <td class="{{ $netProfit >= 0 ? 'profit-positive' : 'profit-negative' }}">
-                {{ number_format((int) round($netProfit)) }} EGP
+                {{ number_format((int) round($netProfit)) }} {{ __('global.currency') }}
             </td>
         </tr>
-        <tr><td>{{ $arabic->utf8Glyphs('هامش الربح', 50, false) }}</td><td>{{ $profitMargin }}%</td></tr>
-        <tr><td>{{ $arabic->utf8Glyphs('متوسط قيمة الطلب', 50, false) }}</td><td>{{ number_format((int) round($aov)) }} EGP</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_profit_margin'), 50, false) }}</td><td>{{ $profitMargin }}%</td></tr>
+        <tr><td>{{ $arabic->utf8Glyphs(__('global.admin_aov'), 50, false) }}</td><td>{{ number_format((int) round($aov)) }} {{ __('global.currency') }}</td></tr>
     </table>
 
     @if(isset($lowStockItems) && $lowStockItems->count() > 0)
-    <div class="section-title">{{ $arabic->utf8Glyphs('تنبيه المخزون المنخفض', 50, false) }}</div>
+    <div class="section-title">{{ $arabic->utf8Glyphs(__('global.admin_low_stock_alert'), 50, false) }}</div>
     <table>
-        <tr><th>{{ $arabic->utf8Glyphs('المنتج', 50, false) }}</th><th>{{ $arabic->utf8Glyphs('الفرع', 50, false) }}</th><th>{{ $arabic->utf8Glyphs('المخزون', 50, false) }}</th></tr>
+        <tr><th>{{ $arabic->utf8Glyphs(__('global.product'), 50, false) }}</th><th>{{ $arabic->utf8Glyphs(__('global.admin_branch'), 50, false) }}</th><th>{{ $arabic->utf8Glyphs(__('global.admin_stock'), 50, false) }}</th></tr>
         @foreach($lowStockItems as $item)
         <tr>
             <td>{{ $item->product_name }} @if($item->sku)({{ $item->sku }})@endif</td>

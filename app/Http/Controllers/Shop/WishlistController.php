@@ -12,7 +12,7 @@ class WishlistController extends Controller
 {
     public function index(CartService $cart)
     {
-        $products = auth()->user()->wishlist()->with('media', 'variants')->latest()->paginate(12);
+        $products = auth()->user()->wishlist()->with('media', 'variants')->latest()->paginate(10);
 
         $wishlistIds = auth()->user()->wishlist()->pluck('product_id')->toArray();
 

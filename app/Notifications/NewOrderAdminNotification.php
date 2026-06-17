@@ -29,7 +29,7 @@ class NewOrderAdminNotification extends Notification
         // Attempt to send a WhatsApp alert to the admin (best-effort) if Twilio is configured
         try {
             $adminNumber = config('store.admin_whatsapp', env('ADMIN_WHATSAPP', env('ADMIN_PHONE')));
-            $message = "طلب جديد رقم #{$this->order->id} من {$this->order->user->name} بقيمة {$this->order->total} ج.م. " . url(route('admin.orders.show', $this->order->id));
+            $message = "طلب جديد رقم #{$this->order->id} من {$this->order->user->name} بقيمة {$this->order->total} EGP. " . url(route('admin.orders.show', $this->order->id));
             if ($adminNumber) {
                 $this->sendWhatsApp($adminNumber, $message);
             }
@@ -40,7 +40,7 @@ class NewOrderAdminNotification extends Notification
         return (new MailMessage)
             ->subject(__('إشعار: طلب جديد #:id', ['id' => $this->order->id]))
             ->greeting(__('مرحباً'))
-            ->line(__('تم استلام طلب جديد رقم #:id من :name بقيمة :amount ج.م.', ['id' => $this->order->id, 'name' => $this->order->user->name, 'amount' => round($this->order->total)]))
+            ->line(__('تم استلام طلب جديد رقم #:id من :name بقيمة :amount EGP.', ['id' => $this->order->id, 'name' => $this->order->user->name, 'amount' => round($this->order->total)]))
             ->action(__('عرض تفاصيل الطلب'), route('admin.orders.show', $this->order->id))
             ->line(__('الرجاء مراجعة الطلب في لوحة التحكم.'));
     }
@@ -49,7 +49,7 @@ class NewOrderAdminNotification extends Notification
     {
         return [
             'order_id' => $this->order->id,
-            'message' => __('طلب جديد من :name بقيمة :amount ج.م.', ['name' => $this->order->user->name, 'amount' => round($this->order->total)]),
+            'message' => __('طلب جديد من :name بقيمة :amount EGP.', ['name' => $this->order->user->name, 'amount' => round($this->order->total)]),
         ];
     }
 

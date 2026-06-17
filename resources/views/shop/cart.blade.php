@@ -233,8 +233,7 @@
             },
 
             formatPrice(price) {
-                var locale = @json(app()->getLocale()) === 'ar' ? 'ar-EG' : 'en-EG';
-                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
             },
 
             get appliedCouponText() {

@@ -197,12 +197,12 @@
                         {{ __('global.admin_whatsapp') }}
                     </a>
                     <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
-                        <p class="px-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">التقارير</p>
+                        <p class="px-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{{ __('global.admin_reports_section') }}</p>
                         <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.reports.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
-                            التقارير والإحصائيات
+                            {{ __('global.admin_reports_stats') }}
                         </a>
                     </div>
                 </nav>
@@ -216,8 +216,8 @@
                             class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white">
                         <svg x-show="!darkMode" class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                         <svg x-show="darkMode" class="w-5 h-5 text-amber-500" style="display: none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>
-                        <span x-show="!darkMode">داكن</span>
-                        <span x-show="darkMode" style="display: none;">فاتح</span>
+                        <span x-show="!darkMode">{{ __('global.admin_dark_mode') }}</span>
+                        <span x-show="darkMode" style="display: none;">{{ __('global.admin_light_mode') }}</span>
                     </button>
 
                     <!-- Language Switcher -->
@@ -225,13 +225,13 @@
                         <button @click="langOpen = !langOpen"
                                 class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a3 3 0 003-3V6.7m-2 9l-3-3m0 0l-3 3m3-3v12M3 12a9 9 0 1118 0 9 9 0 01-18 0z"></path></svg>
-                            <span>{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
+                            <span>{{ app()->getLocale() === 'ar' ? __('global.arabic') : 'English' }}</span>
                             <svg class="w-3 h-3 mr-auto transition-transform" :class="langOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <div x-show="langOpen" @click.away="langOpen = false" style="display: none;"
                              class="mr-10 mt-1 rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 py-1">
                             <a href="{{ route('lang.switch', 'ar') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'ar' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
-                                <span>العربية</span>
+                                <span>{{ __('global.arabic') }}</span>
                                 @if(app()->getLocale() === 'ar') <svg class="w-3 h-3 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> @endif
                             </a>
                             <a href="{{ route('lang.switch', 'en') }}" class="flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 {{ app()->getLocale() === 'en' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : '' }}">
@@ -256,7 +256,7 @@
                         @csrf
                         <button class="p-2 rounded-xl text-sm font-semibold transition bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            <span class="hidden lg:inline">خروج</span>
+                            <span class="hidden lg:inline">{{ __('global.admin_logout') }}</span>
                         </button>
                     </form>
                 </div>

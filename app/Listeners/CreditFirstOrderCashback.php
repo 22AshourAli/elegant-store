@@ -32,7 +32,7 @@ class CreditFirstOrderCashback implements ShouldQueue
             $user->notifications()->create([
                 'type' => 'cashback',
                 'data' => [
-                    'message' => 'تهانينا! تم إضافة 30 ج.م كمكافأة لأول طلب لك! يمكنك استخدامها في طلبك القادم.',
+                    'message' => 'تهانينا! تم إضافة 30 EGP كمكافأة لأول طلب لك! يمكنك استخدامها في طلبك القادم.',
                 ],
             ]);
         });
