@@ -39,8 +39,8 @@
 
 
 
-<section class="container py-10 md:py-16 mb-10 overflow-x-hidden" x-data="productView(window.productViewData)" @cart-updated.window="cartLoading = false">
-    <div class="grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
+<section class="container py-6 md:py-10 overflow-x-hidden" x-data="productView(window.productViewData)" @cart-updated.window="cartLoading = false">
+    <div class="grid md:grid-cols-2 gap-4 md:gap-6 lg:gap-10">
 
         {{-- Image Gallery --}}
         <div class="space-y-4">
@@ -77,10 +77,10 @@
 
         {{-- Product Details --}}
         <div class="flex flex-col text-start">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-3 leading-tight tracking-tight" dir="auto">{{ $product->name }}</h1>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-2 leading-tight tracking-tight" dir="auto">{{ $product->name }}</h1>
 
             {{-- Rating --}}
-            <div class="flex items-center gap-2 mb-5">
+            <div class="flex items-center gap-2 mb-3">
                 <div class="flex text-amber-400">
                     @for($i = 0; $i < 4; $i++)
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
@@ -91,7 +91,7 @@
             </div>
 
             {{-- Price & Countdown --}}
-            <div class="flex flex-col mb-6 pb-6 border-b border-slate-200/40 dark:border-slate-800/60">
+            <div class="flex flex-col mb-4 pb-4 border-b border-slate-200/40 dark:border-slate-800/60">
                 <div class="flex items-center gap-4 flex-wrap">
                     <span x-text="formatPrice(currentPrice)" class="text-3xl sm:text-4xl font-black text-brand-primary dark:text-accent tracking-tight"
                           :class="originalPrice !== currentPrice ? 'text-emerald-600 dark:text-emerald-400' : ''"></span>
@@ -132,34 +132,34 @@
 
             @if(count($colors) > 0)
             {{-- Color Selection --}}
-            <div class="mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
-                    <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
+            <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
+                    <span class="text-xs font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
                 </div>
-                <div class="flex flex-wrap gap-5" role="group" aria-label="{{ __('global.color') }}">
+                <div class="flex flex-wrap gap-3" role="group" aria-label="{{ __('global.color') }}">
                     <template x-for="color in colors" :key="color">
                         <button @click="selectColor(color)"
-                                class="relative flex flex-col items-center gap-1.5 cursor-pointer focus-visible:outline-none group/color transition-all duration-300"
+                                class="relative flex flex-col items-center gap-1 cursor-pointer focus-visible:outline-none group/color transition-all duration-300"
                                 :title="color"
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
-                            <span class="block w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full overflow-hidden transition-all duration-300 shadow-md bg-slate-100 dark:bg-slate-800"
+                            <span class="relative block w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden transition-all duration-300 shadow-sm bg-slate-100 dark:bg-slate-800"
                                   :class="selectedColor === color
-                                      ? 'ring-[3px] ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_24px_rgba(79,70,229,0.4)] scale-110'
-                                      : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
-                                <img :src="colorImages[normalize(color)]"
-                                     class="w-full h-full object-cover"
+                                      ? 'ring-2 ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_16px_rgba(79,70,229,0.35)] scale-110'
+                                      : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-md group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
+                                {{-- Always-visible letter fallback --}}
+                                <span class="absolute inset-0 flex items-center justify-center text-sm font-black text-slate-400 dark:text-slate-500 z-0 select-none pointer-events-none"
+                                      x-text="color.charAt(0)"></span>
+                                {{-- Product image on top --}}
+                                <img :src="colorImages[normalize(color)] || firstImageUrl"
+                                     class="relative w-full h-full object-cover z-10"
                                      :alt="color"
-                                     x-on:error.once="$el.src = firstImageUrl; $el.onerror = null">
+                                     x-on:error.once="$el.classList.add('opacity-0')">
                             </span>
-                            <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[5rem] transition-all duration-200"
-                                  :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100' : 'opacity-70 group-hover/color:opacity-100'"
+                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[3rem] transition-all duration-200"
+                                  :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100' : 'opacity-60 group-hover/color:opacity-100'"
                                   x-text="color"></span>
-                            <span x-show="selectedColor === color"
-                                  class="absolute -top-1 -end-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950 shadow-md flex items-center justify-center">
-                                <svg class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            </span>
                         </button>
                     </template>
                 </div>
@@ -168,7 +168,7 @@
 
             @if(count($sizes) > 0)
             {{-- Size Selection --}}
-            <div class="mb-8">
+            <div class="mb-4">
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.size') }}</label>
                 </div>
@@ -188,7 +188,7 @@
             @endif
 
             {{-- Add to Cart Panel --}}
-            <div class="bg-white/40 dark:bg-surface-dark/40 border border-slate-200/40 dark:border-slate-800/40 p-6 rounded-2xl mb-8 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]">
+            <div class="bg-white/40 dark:bg-surface-dark/40 border border-slate-200/40 dark:border-slate-800/40 p-4 rounded-2xl mb-4 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]">
                 {{-- Stock Status --}}
                 <div class="flex items-center gap-2 mb-4" aria-live="polite" aria-atomic="true">
                     <div x-show="stockStatus === 'in_stock'" x-cloak class="flex items-center text-emerald-600 dark:text-emerald-400 gap-2">
@@ -242,8 +242,8 @@
 
             {{-- Description --}}
             <div class="mt-2">
-                <h3 class="font-extrabold text-sm uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">{{ __('global.description') }}</h3>
-                <div class="text-slate-600 dark:text-slate-300 leading-relaxed text-sm bg-white/40 dark:bg-surface-dark/40 rounded-2xl p-6 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-sm">
+                <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">{{ __('global.description') }}</h3>
+                <div class="text-slate-600 dark:text-slate-300 leading-relaxed text-sm bg-white/40 dark:bg-surface-dark/40 rounded-2xl p-4 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-sm">
                     {!! nl2br($product->description) !!}
                 </div>
             </div>
