@@ -34,12 +34,13 @@
                 </td>
                 <td class="p-3 text-center">
                     <a href="{{ route('admin.governorates.edit', $gov) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1">{{ __('global.admin_edit') }}</a>
-                    <a href="{{ route('admin.governorates.toggle-active', $gov) }}" class="text-amber-600 dark:text-amber-400 hover:underline mx-1" onclick="return confirm('{{ __("global.confirm_toggle") }}')">
-                        {{ $gov->is_active ? __('global.deactivate') : __('global.activate') }}
-                    </a>
+                    <form action="{{ route('admin.governorates.toggle-active', $gov) }}" method="POST" class="inline" onsubmit="return confirm('{{ __("global.confirm_toggle") }}')">
+                        @csrf
+                        <button type="submit" class="text-amber-600 dark:text-amber-400 hover:underline mx-1 cursor-pointer">{{ $gov->is_active ? __('global.deactivate') : __('global.activate') }}</button>
+                    </form>
                     <form action="{{ route('admin.governorates.destroy', $gov) }}" method="POST" class="inline" onsubmit="return confirm('{{ __("global.confirm_delete_governorate") }}')">
                         @csrf @method('DELETE')
-                        <button type="submit" class="text-red-600 dark:text-red-400 hover:underline mx-1">{{ __('global.admin_delete') }}</button>
+                        <button type="submit" class="text-red-600 dark:text-red-400 hover:underline mx-1 cursor-pointer">{{ __('global.admin_delete') }}</button>
                     </form>
                 </td>
             </tr>

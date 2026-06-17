@@ -7,31 +7,30 @@
             value: '{{ old('name') }}',
             touched: false,
             get valid() { return this.value.trim().length >= 2; },
-            get error() { return this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : (this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.name_min_length') }}' : ''); }
-        }" @input="touched = true" class="group">
+            get error() { return this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.name_min_length') }}' : (this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : ''); }
+        }" class="group">
             <x-input-label for="name" :value="__('global.name')" />
-            <div class="relative mt-1.5">
-                <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-                    <svg class="w-4.5 h-4.5 transition-colors duration-200" :class="error ? 'text-red-400' : (valid && value.length > 0 ? 'text-emerald-500' : 'text-slate-400')" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <div class="relative mt-1">
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <svg class="w-4 h-4 transition-colors duration-200" :class="error ? 'text-red-400' : (valid && value.length > 0 ? 'text-emerald-500' : 'text-slate-400')" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </div>
                 <input id="name" type="text" name="name" x-model="value" @blur="touched = true" required autofocus autocomplete="name"
                        placeholder="{{ __('global.name_placeholder') }}"
-                       class="block w-full ps-11 pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm text-sm transition-all duration-200 py-2.5 outline-none"
-                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20')"
-                       :style="error ? 'box-shadow: 0 0 0 3px rgba(239,68,68,0.1)' : (valid && value.length > 0 ? 'box-shadow: 0 0 0 3px rgba(16,185,129,0.1)' : '')">
+                       class="block w-full ps-10 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none"
+                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
-                        <svg class="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </template>
                     <template x-if="error">
-                        <svg class="w-4.5 h-4.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </template>
                 </div>
             </div>
             <template x-if="error">
-                <p class="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1" x-text="error"></p>
+                <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
             </template>
-            <x-input-error :messages="$errors->get('name')" class="mt-1.5" />
+            <x-input-error :messages="$errors->get('name')" class="mt-1" />
         </div>
 
         {{-- Email --}}
@@ -39,31 +38,30 @@
             value: '{{ old('email') }}',
             touched: false,
             get valid() { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value); },
-            get error() { return this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : (this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.email_invalid') }}' : ''); }
-        }" @input="touched = true" class="group">
+            get error() { return this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.email_invalid') }}' : (this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : ''); }
+        }" class="group">
             <x-input-label for="email" :value="__('global.email')" />
-            <div class="relative mt-1.5">
-                <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
-                    <svg class="w-4.5 h-4.5 transition-colors duration-200" :class="error ? 'text-red-400' : (valid && value.length > 0 ? 'text-emerald-500' : 'text-slate-400')" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <div class="relative mt-1">
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                    <svg class="w-4 h-4 transition-colors duration-200" :class="error ? 'text-red-400' : (valid && value.length > 0 ? 'text-emerald-500' : 'text-slate-400')" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <input id="email" type="email" name="email" x-model="value" @blur="touched = true" required autocomplete="username"
                        placeholder="you@example.com"
-                       class="block w-full ps-11 pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm text-sm transition-all duration-200 py-2.5 outline-none"
-                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20')"
-                       :style="error ? 'box-shadow: 0 0 0 3px rgba(239,68,68,0.1)' : (valid && value.length > 0 ? 'box-shadow: 0 0 0 3px rgba(16,185,129,0.1)' : '')">
+                       class="block w-full ps-10 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none"
+                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
-                        <svg class="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </template>
                     <template x-if="error">
-                        <svg class="w-4.5 h-4.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </template>
                 </div>
             </div>
             <template x-if="error">
-                <p class="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1" x-text="error"></p>
+                <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
             </template>
-            <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
+            <x-input-error :messages="$errors->get('email')" class="mt-1" />
         </div>
 
         {{-- Phone --}}
@@ -71,13 +69,6 @@
             value: '{{ old('phone') }}',
             touched: false,
             get digits() { return this.value.replace(/\D/g, ''); },
-            get formatted() {
-                const d = this.digits;
-                if (d.length === 0) return '';
-                if (d.length <= 3) return '+20 ' + d;
-                if (d.length <= 5) return '+20 ' + d.slice(0, 3) + ' ' + d.slice(3);
-                return '+20 ' + d.slice(0, 3) + ' ' + d.slice(3, 5) + ' ' + d.slice(5, 11);
-            },
             get valid() {
                 const d = this.digits;
                 return d.length === 11 && /^01\d{9}$/.test(d);
@@ -90,40 +81,37 @@
             }
         }" class="group">
             <x-input-label for="phone" :value="__('global.phone')" />
-            <div class="relative mt-1.5">
-                <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none z-10">
-                    <span class="text-xs font-black text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md" :class="valid && value.length > 0 ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30' : ''">+20</span>
+            <div class="relative mt-1">
+                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none z-10">
+                    <span class="text-xs font-black text-slate-400" :class="valid && value.length > 0 ? 'text-emerald-500' : ''">+20</span>
                 </div>
                 <input id="phone" type="tel" name="phone" x-model="value" @input="formatInput(); touched = true" @blur="touched = true"
                        autocomplete="tel"
                        placeholder="100 000 0000"
                        inputmode="numeric"
-                       class="block w-full ps-16 pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm text-sm transition-all duration-200 py-2.5 outline-none tracking-wider font-mono"
-                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20')"
-                       :style="error ? 'box-shadow: 0 0 0 3px rgba(239,68,68,0.1)' : (valid && value.length > 0 ? 'box-shadow: 0 0 0 3px rgba(16,185,129,0.1)' : '')">
+                       class="block w-full ps-12 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none tracking-wider font-mono"
+                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
-                        <svg class="w-4.5 h-4.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </template>
                     <template x-if="error">
-                        <svg class="w-4.5 h-4.5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </template>
                 </div>
             </div>
-            {{-- Format preview --}}
-            <div x-show="value.length > 0" x-transition class="mt-1.5 text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-lg px-2.5 py-1 inline-block">
-                <span class="text-slate-300 dark:text-slate-600">+20 </span>
-                <span x-text="formatted.replace('+20 ', '')" class="text-slate-500 dark:text-slate-400"></span>
-            </div>
+            <p x-show="value.length > 0" class="mt-1 text-[10px] font-mono font-bold text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-lg px-2.5 py-1 inline-block">
+                <span class="text-slate-300">+20 </span>
+                <span x-text="'01' + value.slice(2).replace(/(\d{3})(\d{0,4})/, '$1 $2')" class="text-slate-500"></span>
+            </p>
             <template x-if="error">
-                <p class="mt-1.5 text-xs font-semibold text-red-500 flex items-center gap-1" x-text="error"></p>
+                <p class="mt-1 text-xs font-semibold text-red-500" x-text="error"></p>
             </template>
-            {{-- Hint when empty --}}
-            <p x-show="value.length === 0" class="mt-1.5 text-[10px] font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
+            <p x-show="value.length === 0" class="mt-1 text-[10px] font-medium text-slate-400 flex items-center gap-1">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {{ __('global.phone_hint') }}
             </p>
-            <x-input-error :messages="$errors->get('phone')" class="mt-1.5" />
+            <x-input-error :messages="$errors->get('phone')" class="mt-1" />
         </div>
 
         {{-- Password + Confirm --}}
@@ -134,21 +122,20 @@
                 touched: false,
                 show: false,
                 get valid() { return this.value.length >= 8; },
-                get error() { return this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : (this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.password_length') }}' : ''); }
-            }" @input="touched = true" class="group">
+                get error() { return this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.password_length') }}' : (this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : ''); }
+            }" class="group">
                 <x-input-label for="password" :value="__('global.password')" />
-                <div class="relative mt-1.5">
+                <div class="relative mt-1">
                     <input id="password" name="password" x-model="value" @blur="touched = true" x-bind:type="show ? 'text' : 'password'" required autocomplete="new-password"
                            placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-                           class="block w-full pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm text-sm transition-all duration-200 py-2.5 outline-none ps-3"
-                           :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20')"
-                           :style="error ? 'box-shadow: 0 0 0 3px rgba(239,68,68,0.1)' : (valid && value.length > 0 ? 'box-shadow: 0 0 0 3px rgba(16,185,129,0.1)' : '')">
+                           class="block w-full pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none ps-3"
+                           :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
                     <button type="button" @click="show = !show" class="absolute inset-y-0 end-0 flex items-center pe-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
                         <template x-if="!show">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </template>
                         <template x-if="show">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.965 9.965 0 012.223-3.57M6.1 6.1A9.966 9.966 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.985 9.985 0 01-4.12 5.2M3 3l18 18"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.965 9.965 0 012.223-3.57M6.1 6.1A9.966 9.966 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.985 9.985 0 01-4.12 5.2M3 3l18 18"/></svg>
                         </template>
                     </button>
                 </div>
@@ -179,21 +166,20 @@
                 show: false,
                 get passwordVal() { return document.getElementById('password')?.value || ''; },
                 get valid() { return this.value.length > 0 && this.value === this.passwordVal; },
-                get error() { return this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : (this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.password_mismatch') }}' : ''); }
-            }" @input="touched = true" class="group">
+                get error() { return this.touched && this.value.length > 0 && !this.valid ? '{{ __('global.password_mismatch') }}' : (this.touched && this.value.length === 0 ? '{{ __('global.field_required') }}' : ''); }
+            }" class="group">
                 <x-input-label for="password_confirmation" :value="__('global.confirm_password')" />
-                <div class="relative mt-1.5">
+                <div class="relative mt-1">
                     <input id="password_confirmation" name="password_confirmation" x-model="value" @blur="touched = true" x-bind:type="show ? 'text' : 'password'" required autocomplete="new-password"
                            placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
-                           class="block w-full pe-10 rounded-xl border-2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm text-sm transition-all duration-200 py-2.5 outline-none ps-3"
-                           :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-indigo-500/20')"
-                           :style="error ? 'box-shadow: 0 0 0 3px rgba(239,68,68,0.1)' : (valid && value.length > 0 ? 'box-shadow: 0 0 0 3px rgba(16,185,129,0.1)' : '')">
+                           class="block w-full pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none ps-3"
+                           :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
                     <button type="button" @click="show = !show" class="absolute inset-y-0 end-0 flex items-center pe-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
                         <template x-if="!show">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                         </template>
                         <template x-if="show">
-                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.965 9.965 0 012.223-3.57M6.1 6.1A9.966 9.966 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.985 9.985 0 01-4.12 5.2M3 3l18 18"/></svg>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.965 9.965 0 012.223-3.57M6.1 6.1A9.966 9.966 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.985 9.985 0 01-4.12 5.2M3 3l18 18"/></svg>
                         </template>
                     </button>
                 </div>
@@ -219,9 +205,9 @@
 
         {{-- Submit --}}
         <button type="submit"
-                class="w-full relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold py-3 text-sm shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group">
-            <span class="relative z-10 flex items-center justify-center gap-2">
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                class="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold py-3 text-sm shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+            <span class="flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                 {{ __('global.sign_up') }}
             </span>
         </button>

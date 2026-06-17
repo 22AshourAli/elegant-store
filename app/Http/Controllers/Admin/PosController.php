@@ -87,6 +87,12 @@ class PosController extends Controller
                 'is_on_sale' => $p->is_on_sale,
                 'category_id' => $p->category_id,
                 'variants' => $p->variants->map(function ($v) {
+                    $vImg = $v->imageUrl();
+                    if (!$vImg && $v->color) {
+                        $sibling = $p->variants->where('color', $v->color)
+                            ->first(fn($sv) => $sv->image_url || $sv->hasMedia('variant_images'));
+                        $vImg = $sibling ? $sibling->imageUrl() : null;
+                    }
                     return [
                         'id' => $v->id,
                         'color' => $v->color,
@@ -94,6 +100,7 @@ class PosController extends Controller
                         'price' => (float) $v->current_price,
                         'sku' => $v->sku,
                         'stock' => (int) $v->total_stock,
+                        'image' => $vImg ?: $p->firstImageUrl(),
                     ];
                 }),
             ];

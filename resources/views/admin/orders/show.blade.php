@@ -37,9 +37,15 @@
                 @foreach($order->items as $item)
                 <div class="flex items-start py-4 first:pt-0 last:pb-0 gap-3 sm:gap-4">
                     @php
-                        $variantImg = $item->variant->imageUrl()
-                            ?: $item->variant->product->firstImageUrl()
-                            ?: asset('images/logo.svg');
+                        $v = $item->variant;
+                        $variantImg = $v->imageUrl();
+                        if (!$variantImg && $v->color) {
+                            $sibling = $v->product->variants
+                                ->where('color', $v->color)
+                                ->first(fn($sv) => $sv->image_url || $sv->hasMedia('variant_images'));
+                            $variantImg = $sibling ? $sibling->imageUrl() : null;
+                        }
+                        $variantImg = $variantImg ?: $v->product->firstImageUrl() ?: asset('images/logo.svg');
                     @endphp
                     <img src="{{ $variantImg }}" loading="lazy" class="w-12 h-14 sm:w-14 sm:h-16 object-cover rounded-lg border dark:border-gray-700 flex-shrink-0">
                     <div class="flex-1 min-w-0">

@@ -137,26 +137,28 @@
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
                     <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
                 </div>
-                <div class="flex gap-3 sm:gap-4" role="group" aria-label="{{ __('global.color') }}">
+                <div class="flex flex-wrap gap-4" role="group" aria-label="{{ __('global.color') }}">
                     <template x-for="color in colors" :key="color">
                         <button @click="selectColor(color)"
                                 class="relative flex flex-col items-center gap-1.5 cursor-pointer focus-visible:outline-none group/color transition-all duration-300"
                                 :title="color"
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
-                            <span class="block w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden transition-all duration-300"
+                            <span class="block w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden transition-all duration-300 shadow-md"
                                   :class="selectedColor === color
-                                      ? 'ring-2 ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_20px_rgba(79,70,229,0.35)] scale-110'
-                                      : 'ring-1 ring-slate-300 dark:ring-slate-700 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/40 dark:group-hover/color:ring-accent/40'">
-                                <img x-show="colorImages[normalize(color)]" :src="colorImages[normalize(color)]" class="w-full h-full object-cover" :alt="color"
-                                     x-on:error.once="$el.style.display='none'; $el.nextElementSibling.style.display='flex'">
-                                <span x-show="!colorImages[normalize(color)]"
-                                      class="hidden items-center justify-center w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-[10px] text-slate-500 dark:text-slate-300 font-black uppercase"
-                                      x-text="color.substring(0,3)"></span>
+                                      ? 'ring-[3px] ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_24px_rgba(79,70,229,0.4)] scale-110'
+                                      : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
+                                <img :src="colorImages[normalize(color)] || firstImageUrl"
+                                     class="w-full h-full object-cover" :alt="color"
+                                     x-on:error.once="$el.src = '{{ asset('images/logo.svg') }}'">
                             </span>
-                            <span class="text-[9px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[3rem] transition-all duration-200"
-                                  :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100 translate-y-0' : 'opacity-0 group-hover/color:opacity-100 translate-y-0.5 group-hover/color:translate-y-0'"
+                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[4rem] transition-all duration-200"
+                                  :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100' : 'opacity-70 group-hover/color:opacity-100'"
                                   x-text="color"></span>
+                            <span x-show="selectedColor === color"
+                                  class="absolute -top-1 -end-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950 shadow-md flex items-center justify-center">
+                                <svg class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </span>
                         </button>
                     </template>
                 </div>

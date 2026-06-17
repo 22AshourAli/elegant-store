@@ -32,12 +32,13 @@
                 </td>
                 <td class="p-3 text-center">
                     <a href="{{ route('admin.cities.edit', $city) }}" class="text-blue-600 dark:text-blue-400 hover:underline mx-1 text-xs sm:text-sm">{{ __('global.admin_edit') }}</a>
-                    <a href="{{ route('admin.cities.toggle-active', $city) }}" class="text-amber-600 dark:text-amber-400 hover:underline mx-1 text-xs sm:text-sm" onclick="return confirm('{{ __("global.confirm_toggle") }}')">
-                        {{ $city->is_active ? __('global.deactivate') : __('global.activate') }}
-                    </a>
+                    <form action="{{ route('admin.cities.toggle-active', $city) }}" method="POST" class="inline" onsubmit="return confirm('{{ __("global.confirm_toggle") }}')">
+                        @csrf
+                        <button type="submit" class="text-amber-600 dark:text-amber-400 hover:underline mx-1 text-xs sm:text-sm cursor-pointer">{{ $city->is_active ? __('global.deactivate') : __('global.activate') }}</button>
+                    </form>
                     <form action="{{ route('admin.cities.destroy', $city) }}" method="POST" class="inline" onsubmit="return confirm('{{ __("global.confirm_delete_city") }}')">
                         @csrf @method('DELETE')
-                        <button type="submit" class="text-red-600 dark:text-red-400 hover:underline mx-1 text-xs sm:text-sm">{{ __('global.admin_delete') }}</button>
+                        <button type="submit" class="text-red-600 dark:text-red-400 hover:underline mx-1 text-xs sm:text-sm cursor-pointer">{{ __('global.admin_delete') }}</button>
                     </form>
                 </td>
             </tr>

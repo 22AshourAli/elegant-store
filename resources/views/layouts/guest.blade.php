@@ -78,7 +78,6 @@
                                     <path d="M16 8L24 16L16 24L8 16L16 8Z" class="fill-white dark:fill-gray-900"/>
                                     <path d="M16 13L19 16L16 19L13 16L16 13Z" class="fill-indigo-600 dark:fill-indigo-400"/>
                                 </svg>
-                                <div class="absolute -top-1 -end-1 w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
                             </div>
                             <div class="flex flex-col items-center mt-1">
                                 <span class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-none">ELEGANT</span>

@@ -264,7 +264,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-[85vh] overflow-y-auto" @click.stop>
         <div class="flex items-start gap-4 mb-5">
             <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
-                <img :src="selectedProduct?.image || '/images/logo.svg'" class="w-full h-full object-cover">
+                <img :src="selectedVariantImage" class="w-full h-full object-cover">
             </div>
             <div class="flex-1 min-w-0">
                 <h3 class="font-extrabold text-slate-900 dark:text-white text-lg leading-tight" x-text="selectedProduct?.name"></h3>
@@ -461,6 +461,18 @@ document.addEventListener('alpine:init', () => {
         selectedSize: null,
         qty: 1,
         maxStock: 999,
+
+        // Get variant image matching selected color/size
+        get selectedVariantImage() {
+            if (!this.selectedProduct) return '/images/logo.svg';
+            const v = this.selectedVariant;
+            if (v && v.image) return v.image;
+            if (this.selectedColor) {
+                const match = this.selectedProduct.variants?.find(v => v.color === this.selectedColor && v.image);
+                if (match) return match.image;
+            }
+            return this.selectedProduct.image || '/images/logo.svg';
+        },
 
         // Checkout form
         customerName: '',
