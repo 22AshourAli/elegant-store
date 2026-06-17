@@ -876,6 +876,7 @@ return [
     'admin_description' => 'الوصف',
     'admin_amount' => 'المبلغ',
     'admin_date' => 'التاريخ',
+    'auto_refresh' => 'تحديث تلقائي',
 
     // Admin - PDF Export
     'admin_statement' => 'البيان',

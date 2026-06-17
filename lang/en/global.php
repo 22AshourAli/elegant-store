@@ -877,6 +877,7 @@ return [
     'admin_description' => 'Description',
     'admin_amount' => 'Amount',
     'admin_date' => 'Date',
+    'auto_refresh' => 'Auto-Refresh',
 
     // Admin - PDF Export
     'admin_statement' => 'Statement',

@@ -26,7 +26,7 @@ class AdminLoginTest extends TestCase
     {
         $response = $this->post('/admin/login', [
             'email' => 'ashouraligpt@gmail.com',
-            'password' => 'ChangeMe123!',
+            'password' => env('ADMIN_PASSWORD', 'ChangeMe123!'),
         ]);
 
         $response->assertRedirect('/admin/dashboard');
@@ -58,7 +58,7 @@ class AdminLoginTest extends TestCase
     {
         $response = $this->post('/admin/login', [
             'email' => 'ashouraligpt@gmail.com',
-            'password' => 'wrong-password',
+            'password' => 'not-' . env('ADMIN_PASSWORD', 'ChangeMe123!'),
         ]);
 
         $response->assertSessionHasErrors('email');

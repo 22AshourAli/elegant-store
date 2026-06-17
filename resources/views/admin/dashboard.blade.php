@@ -19,34 +19,25 @@
                 </a>
                 @endforeach
             </div>
-            
-            <!-- Auto Refresh Switch -->
-            <div x-data="{ 
-                autoRefresh: false, 
-                timer: null,
-                toggle() {
-                    if (this.autoRefresh) {
-                        this.timer = setInterval(() => {
-                            window.location.reload();
-                        }, 30000);
-                    } else {
-                        if (this.timer) clearInterval(this.timer);
-                    }
-                }
-            }" x-init="$watch('autoRefresh', val => toggle())" class="flex items-center gap-2">
-                <button @click="autoRefresh = !autoRefresh" 
-                        class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                        :class="autoRefresh ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'">
-                    <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                          :class="autoRefresh ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0'"></span>
+            <div class="flex items-center gap-2 ms-auto">
+                {{-- Reset Button --}}
+                @if(request('period'))
+                <a href="{{ url()->current() }}"
+                   class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    {{ __('global.period_all') }}
+                </a>
+                @endif
+
+                {{-- Auto-Refresh Toggle --}}
+                <button @click="toggleAutoRefresh()"
+                    :class="autoRefresh ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 hover:text-indigo-600'"
+                    class="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl transition-all duration-200">
+                    <svg class="w-3.5 h-3.5" :class="autoRefresh ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span x-text="autoRefresh ? countdown + 's' : '{{ __('global.auto_refresh') }}'"></span>
                 </button>
-                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                    <span x-show="autoRefresh" class="flex h-1.5 w-1.5 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                    </span>
-                    <span>{{ app()->getLocale() === 'ar' ? 'تحديث تلقائي (٣٠ ث)' : 'Auto Refresh (30s)' }}</span>
-                </span>
             </div>
         </div>
     </div>
@@ -332,7 +323,53 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 function dashboardPage() {
-    return {};
+    return {
+        autoRefresh: false,
+        countdown: 30,
+        _interval: null,
+
+        init() {
+            // Restore state from localStorage
+            const saved = localStorage.getItem('dashboard_auto_refresh');
+            if (saved === 'true') {
+                this.autoRefresh = true;
+                this._startInterval();
+            }
+        },
+
+        destroy() {
+            this._clearInterval();
+        },
+
+        toggleAutoRefresh() {
+            this.autoRefresh = !this.autoRefresh;
+            localStorage.setItem('dashboard_auto_refresh', this.autoRefresh);
+            if (this.autoRefresh) {
+                this.countdown = 30;
+                this._startInterval();
+            } else {
+                this._clearInterval();
+            }
+        },
+
+        _startInterval() {
+            this.countdown = 30;
+            this._clearInterval();
+            this._interval = setInterval(() => {
+                this.countdown--;
+                if (this.countdown <= 0) {
+                    window.location.reload();
+                }
+            }, 1000);
+        },
+
+        _clearInterval() {
+            if (this._interval) {
+                clearInterval(this._interval);
+                this._interval = null;
+            }
+        }
+    };
 }
 
 document.addEventListener('DOMContentLoaded', function () {
