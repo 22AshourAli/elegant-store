@@ -137,22 +137,23 @@
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
                     <span class="text-sm font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
                 </div>
-                <div class="flex flex-wrap gap-4" role="group" aria-label="{{ __('global.color') }}">
+                <div class="flex flex-wrap gap-5" role="group" aria-label="{{ __('global.color') }}">
                     <template x-for="color in colors" :key="color">
                         <button @click="selectColor(color)"
                                 class="relative flex flex-col items-center gap-1.5 cursor-pointer focus-visible:outline-none group/color transition-all duration-300"
                                 :title="color"
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
-                            <span class="block w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden transition-all duration-300 shadow-md"
+                            <span class="block w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full overflow-hidden transition-all duration-300 shadow-md bg-slate-100 dark:bg-slate-800"
                                   :class="selectedColor === color
                                       ? 'ring-[3px] ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_24px_rgba(79,70,229,0.4)] scale-110'
                                       : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
-                                <img :src="colorImages[normalize(color)] || firstImageUrl"
-                                     class="w-full h-full object-cover" :alt="color"
-                                     x-on:error.once="$el.src = '{{ asset('images/logo.svg') }}'">
+                                <img :src="colorImages[normalize(color)]"
+                                     class="w-full h-full object-cover"
+                                     :alt="color"
+                                     x-on:error.once="$el.src = firstImageUrl; $el.onerror = null">
                             </span>
-                            <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[4rem] transition-all duration-200"
+                            <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[5rem] transition-all duration-200"
                                   :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100' : 'opacity-70 group-hover/color:opacity-100'"
                                   x-text="color"></span>
                             <span x-show="selectedColor === color"

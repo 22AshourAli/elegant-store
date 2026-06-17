@@ -19,7 +19,7 @@
                 <input id="email" type="email" name="email" x-model="value" @blur="touched = true" required autofocus autocomplete="username"
                        placeholder="you@example.com"
                        class="block w-full ps-10 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none"
-                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
+                       :class="error ? 'border-2 border-red-400' : (valid && value.length > 0 ? 'border-2 border-emerald-400' : 'border border-slate-300 dark:border-slate-600 focus:border-2 focus:border-indigo-500')">
                 <div class="absolute inset-y-0 end-0 flex items-center pe-3">
                     <template x-if="value.length > 0 && !error">
                         <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -51,7 +51,7 @@
                 <input id="password" name="password" x-model="value" @blur="touched = true" x-bind:type="show ? 'text' : 'password'" required autocomplete="current-password"
                        placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
                        class="block w-full ps-10 pe-12 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-200 py-2.5 outline-none"
-                       :class="error ? 'border-red-300 dark:border-red-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20' : (valid && value.length > 0 ? 'border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20')">
+                       :class="error ? 'border-2 border-red-400' : (valid && value.length > 0 ? 'border-2 border-emerald-400' : 'border border-slate-300 dark:border-slate-600 focus:border-2 focus:border-indigo-500')">
                 <button type="button" @click="show = !show" class="absolute inset-y-0 end-0 flex items-center pe-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus:outline-none">
                     <template x-if="!show">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
