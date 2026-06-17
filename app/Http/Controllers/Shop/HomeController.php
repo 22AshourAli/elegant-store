@@ -74,6 +74,7 @@ class HomeController extends Controller
         $nextCursor = $result['next_cursor'];
         $prevCursor = $result['prev_cursor'];
         $hasMore = $result['has_more'];
+        $totalProducts = Product::count();
 
         if ($request->ajax() || $request->has('ajax')) {
             $html = view('shop.partials.product-grid', compact(
@@ -131,7 +132,7 @@ class HomeController extends Controller
         return view('shop.home', compact(
             'products', 'categories', 'slides',
             'wishlistIds', 'cartProductIds',
-            'nextCursor', 'prevCursor', 'hasMore',
+            'nextCursor', 'prevCursor', 'hasMore', 'totalProducts',
         ));
     }
 

@@ -77,7 +77,7 @@
             <div class="w-10 h-10 sm:w-12 sm:h-12 mx-auto bg-indigo-500/10 dark:bg-brand-primary/10 text-indigo-600 dark:text-indigo-350 rounded-xl flex items-center justify-center mb-3 border border-indigo-500/20 dark:border-brand-primary/20">
                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
             </div>
-            <div class="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ $products->total() ?? 0 }}+</div>
+            <div class="text-xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{{ $totalProducts ?? 0 }}+</div>
             <div class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 font-bold uppercase tracking-wider">{{ __('global.product') }}</div>
         </div>
         <div class="glass-premium dark:bg-slate-900/60 rounded-2xl p-4 sm:p-6 text-center border border-slate-200 dark:border-slate-800/60 shadow-sm hover:shadow-md hover:border-luxury-gold/30 dark:hover:border-luxury-gold/45 hover:scale-[1.03] transition-all duration-300">
