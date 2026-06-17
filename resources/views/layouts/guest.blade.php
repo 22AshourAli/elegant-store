@@ -26,7 +26,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 dark:text-gray-100 min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 transition-colors duration-300 px-4"
+    <body class="font-sans text-gray-900 dark:text-gray-100 min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 transition-colors duration-300 px-4 overflow-x-hidden"
           :class="darkMode ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-slate-950' : 'bg-gradient-to-br from-indigo-50 via-white to-purple-50'"
           dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 

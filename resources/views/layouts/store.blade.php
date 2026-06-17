@@ -17,16 +17,16 @@
             this.fetchNotifCount();
         },
         fetchCartCount() {
-            fetch('{{ route('cart.count') }}').then(r => r.json()).then(d => this.cartCount = d.count);
+            fetch('{{ route('cart.count') }}', { headers: { 'Accept': 'application/json' } }).then(r => r.json()).then(d => this.cartCount = d.count);
         },
         fetchWishlistCount() {
             @auth
-            fetch('{{ route('wishlist.count') }}').then(r => r.json()).then(d => this.wishlistCount = d.count).catch(() => {});
+            fetch('{{ route('wishlist.count') }}', { headers: { 'Accept': 'application/json' } }).then(r => r.json()).then(d => this.wishlistCount = d.count).catch(() => {});
             @endauth
         },
         fetchNotifCount() {
             @auth
-            fetch('{{ route('notifications.unread-count') }}').then(r => r.json()).then(d => this.notifCount = d.count).catch(() => {});
+            fetch('{{ route('notifications.unread-count') }}', { headers: { 'Accept': 'application/json' } }).then(r => r.json()).then(d => this.notifCount = d.count).catch(() => {});
             @endauth
         }
       }"
@@ -735,7 +735,7 @@
 
                 async fetchUnread() {
                     try {
-                        const res = await fetch("{{ route('notifications.unread-count') }}");
+                        const res = await fetch("{{ route('notifications.unread-count') }}", { headers: { 'Accept': 'application/json' } });
                         if (!res.ok) return false;
                         const data = await res.json();
                         const isNew = this.latestId && data.latest_id && data.latest_id !== this.latestId && data.count > 0;

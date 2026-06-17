@@ -463,7 +463,7 @@
 
                 async fetchUnread() {
                     try {
-                        const res = await fetch("{{ route('admin.notifications.unread-count') }}");
+                        const res = await fetch("{{ route('admin.notifications.unread-count') }}", { headers: { 'Accept': 'application/json' } });
                         if (!res.ok) return false;
                         const data = await res.json();
                         const isNew = this.latestId && data.latest_id && data.latest_id !== this.latestId && data.count > 0;
