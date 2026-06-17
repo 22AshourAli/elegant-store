@@ -134,7 +134,7 @@
                     </div>
                     @endif
 
-                    @if($order->status === 'delivered' && $order->delivered_at && $order->delivered_at->diffInDays(now()) <= 3)
+                    @if($order->isWithinReturnWindow())
                         @php
                             $hasPendingReturn = $order->returnRequests()->whereIn('status', ['pending', 'approved'])->exists();
                             $hasPendingExchange = $order->exchanges()->whereIn('status', ['pending', 'approved'])->exists();

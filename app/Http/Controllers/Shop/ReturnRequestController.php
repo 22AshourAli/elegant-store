@@ -21,11 +21,7 @@ class ReturnRequestController extends Controller
             abort(403);
         }
 
-        if ($order->status !== 'delivered') {
-            return back()->with('error', __('return.can_only_return_delivered'));
-        }
-
-        if ($order->delivered_at && $order->delivered_at->diffInDays(now()) > 3) {
+        if (!$order->isWithinReturnWindow()) {
             return back()->with('error', __('return.return_period_expired'));
         }
 

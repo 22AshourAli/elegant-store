@@ -88,4 +88,17 @@ class Order extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    public function isWithinReturnWindow(): bool
+    {
+        if ($this->status !== 'delivered') {
+            return false;
+        }
+
+        if ($this->delivered_at === null) {
+            return false;
+        }
+
+        return $this->delivered_at->diffInDays(now()) <= 3;
+    }
 }
