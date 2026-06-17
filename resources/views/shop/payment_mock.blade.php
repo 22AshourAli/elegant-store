@@ -1,6 +1,7 @@
 @extends('layouts.store')
 
-@section('title', __('بوابة الدفع التجريبية'))
+@section('title', 'Mock Payment - Elegant Store')
+@section('og_title', 'Mock Payment')
 
 @section('content')
 <div class="max-w-md mx-auto my-12 px-4">

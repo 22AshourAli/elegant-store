@@ -47,6 +47,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}">
     <meta name="description" content="@yield('meta_description', __('global.hero_desc'))">
+    <title>@yield('title', config('app.name'))</title>
     <meta property="og:title" content="@yield('og_title', config('app.name'))">
     <meta property="og:description" content="@yield('og_description', __('global.hero_desc'))">
     <meta property="og:image" content="@yield('og_image', asset('images/logo.svg'))">

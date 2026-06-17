@@ -1,5 +1,9 @@
 @extends('layouts.store')
 
+@section('title', config('app.name') . ' - ' . __('global.hero_title'))
+@section('og_title', config('app.name'))
+@section('meta_description', __('global.hero_desc'))
+
 @section('content')
 <!-- Hero Slider Section -->
 <section x-data="{

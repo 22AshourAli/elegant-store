@@ -3,10 +3,10 @@
 @section('meta_description', Str::limit($category->description ?? $category->name, 160))
 @section('og_title', $category->name)
 @section('og_description', Str::limit($category->description ?? $category->name, 200))
+@section('title', $category->name . ' - Elegant Store')
 @section('og_image', asset('images/logo.svg'))
 
 @push('head')
-    <title>{{ $category->name }} - Elegant Store</title>
     <meta property="og:type" content="website">
 @endpush
 

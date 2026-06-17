@@ -3,6 +3,7 @@
 @section('meta_description', Str::limit(strip_tags($product->description ?: $product->name), 160))
 @section('og_title', $product->name)
 @section('og_description', Str::limit(strip_tags($product->description ?: $product->name), 200))
+@section('title', $product->name . ' - Elegant Store')
 @section('og_image', $product->firstImageUrl())
 
 @push('head')
