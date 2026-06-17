@@ -58,7 +58,7 @@
     "isDynamicEntry": true
   },
   "node_modules/pusher-js/dist/web/pusher.js": {
-    "file": "assets/pusher-DYCP4Lss.js",
+    "file": "assets/pusher-D4q3tub0.js",
     "name": "pusher",
     "src": "node_modules/pusher-js/dist/web/pusher.js",
     "isDynamicEntry": true,
@@ -76,7 +76,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-1_2KtF-7.js",
+    "file": "assets/app-C4ehtr9P.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

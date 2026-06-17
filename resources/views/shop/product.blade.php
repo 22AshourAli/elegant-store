@@ -190,12 +190,20 @@
             <div class="bg-white/40 dark:bg-surface-dark/40 border border-slate-200/40 dark:border-slate-800/40 p-4 rounded-2xl mb-4 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]">
                 {{-- Stock Status --}}
                 <div class="flex items-center gap-2 mb-4" aria-live="polite" aria-atomic="true">
-                    <div x-show="stockStatus === 'in_stock'" x-cloak class="flex items-center text-emerald-600 dark:text-emerald-400 gap-2">
-                        <span class="relative flex h-2.5 w-2.5">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                        </span>
-                        <span class="font-bold text-sm">{{ __('global.in_stock') }} (<span x-text="availableQty"></span>)</span>
+                    <div x-show="stockStatus === 'in_stock'" x-cloak class="flex flex-col gap-1 text-start">
+                        <div class="flex items-center text-emerald-600 dark:text-emerald-400 gap-2">
+                            <span class="relative flex h-2.5 w-2.5">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            </span>
+                            <span class="font-bold text-sm">{{ __('global.in_stock') }} (<span x-text="availableQty"></span>)</span>
+                        </div>
+                        <template x-if="availableQty <= 5">
+                            <div class="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1 animate-pulse mt-0.5">
+                                <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                <span>{{ app()->getLocale() === 'ar' ? 'متبقي كمية محدودة جداً!' : 'Very limited quantity left!' }}</span>
+                            </div>
+                        </template>
                     </div>
                     <div x-show="stockStatus === 'out_of_stock'" x-cloak class="flex items-center text-red-500 dark:text-red-400 gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

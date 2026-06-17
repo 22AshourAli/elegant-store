@@ -87,6 +87,7 @@ export default function productView(productViewData) {
 
         formatPrice,
         formatNumber: formatPrice,
+        normalize,
 
         addToCart() {
             if (!this.currentVariant) return;
