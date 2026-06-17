@@ -75,12 +75,11 @@
             @endforeach
         </div>
 
-        @php
-        $nextCursor = $result['next_cursor'] ?? null;
-        $prevCursor = $result['prev_cursor'] ?? null;
-        $hasMore = $result['has_more'] ?? false;
-        @endphp
-        <x-admin-cursor-pagination :next-cursor="$nextCursor" :prev-cursor="$prevCursor" :has-more="$hasMore" />
+        @if($notifications->hasPages())
+            <div class="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                {{ $notifications->links() }}
+            </div>
+        @endif
     @endif
 </div>
 @endsection

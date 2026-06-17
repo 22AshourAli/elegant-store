@@ -6,21 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class WishlistController extends Controller
 {
-    public function index(Request $request, CartService $cart)
+    public function index(CartService $cart)
     {
-        $result = CursorService::applyCursor(
-            auth()->user()->wishlist()->with('media', 'variants')->reorder(),
-            $request->input('cursor'),
-            'created_at',
-            'desc',
-            12
-        );
-        $products = $result['data'];
+        $products = auth()->user()->wishlist()->with('media', 'variants')->latest()->paginate(12);
 
         $wishlistIds = auth()->user()->wishlist()->pluck('product_id')->toArray();
 
@@ -35,7 +27,7 @@ class WishlistController extends Controller
                 ->toArray();
         }
 
-        return view('shop.wishlist', compact('products', 'wishlistIds', 'cartProductIds', 'result'));
+        return view('shop.wishlist', compact('products', 'wishlistIds', 'cartProductIds'));
     }
 
     public function toggle(Product $product, Request $request)

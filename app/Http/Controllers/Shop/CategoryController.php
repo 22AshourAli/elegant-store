@@ -7,7 +7,6 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -27,18 +26,13 @@ class CategoryController extends Controller
                 $categoryIds = array_merge($categoryIds, $category->children->pluck('id')->toArray());
             }
 
-            $query = Product::whereIn('category_id', $categoryIds)
+            $products = Product::whereIn('category_id', $categoryIds)
                 ->active()
-                ->with('media', 'variants');
+                ->with('media', 'variants')
+                ->latest()
+                ->paginate(12)
+                ->appends(request()->query());
 
-            $result = CursorService::applyCursor(
-                $query->reorder(),
-                $request->input('cursor'),
-                'created_at',
-                'desc',
-                12
-            );
-            $products = $result['data'];
             Cache::put($cacheKey . '_prods', $products, now()->addMinutes(10));
 
             $wishlistIds = [];
@@ -56,7 +50,7 @@ class CategoryController extends Controller
             \SEOMeta::setDescription('تسوق أحدث منتجات ' . $category->name . ' بأفضل الأسعار.');
             \OpenGraph::setTitle($category->name . ' - Elegant Store');
 
-            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds', 'result'));
+            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds'));
         } catch (\PDOException $e) {
             $products = Cache::get($cacheKey . '_prods');
             $category = Cache::get($cacheKey . '_cat');
@@ -68,7 +62,7 @@ class CategoryController extends Controller
             $wishlistIds = [];
             $cartProductIds = [];
 
-            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds', 'result'));
+            return view('shop.category', compact('category', 'products', 'wishlistIds', 'cartProductIds'));
         }
     }
 }

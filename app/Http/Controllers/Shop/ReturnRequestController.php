@@ -7,22 +7,14 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\ReturnRequest;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class ReturnRequestController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $result = CursorService::applyCursor(
-            auth()->user()->returnRequests()->with('order')->reorder(),
-            $request->input('cursor'),
-            'created_at',
-            'desc',
-            10
-        );
-        $returns = $result['data'];
-        return view('shop.returns.index', compact('returns', 'result'));
+        $returns = auth()->user()->returnRequests()->with('order')->latest()->paginate(10);
+        return view('shop.returns.index', compact('returns'));
     }
 
     public function store(Request $request, Order $order)
@@ -49,7 +41,6 @@ class ReturnRequestController extends Controller
             'reason' => $validated['reason'],
         ]);
 
-        // Notify all admins
         $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
         foreach ($admins as $admin) {
             try {

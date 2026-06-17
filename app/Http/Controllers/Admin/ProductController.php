@@ -6,24 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Branch;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $result = CursorService::applyCursor(
-            Product::with('category', 'media'),
-            $request->get('cursor'),
-            'created_at',
-            'desc',
-            20
-        );
-        $products = $result['data'];
-        return view('admin.products.index', compact('products', 'result'));
+        $products = Product::with('category', 'media')->latest()->paginate(20);
+        return view('admin.products.index', compact('products'));
     }
 
     public function create()

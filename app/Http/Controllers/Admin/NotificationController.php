@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -29,15 +28,9 @@ class NotificationController extends Controller
             ]);
         }
 
-        $result = CursorService::applyCursor(
-            auth()->user()->notifications(),
-            $request->get('cursor'),
-            'created_at',
-            'desc',
-            20
-        );
-        $notifications = $result['data'];
-        return view('admin.notifications.index', compact('notifications', 'result'));
+        $notifications = auth()->user()->notifications()->latest()->paginate(20);
+
+        return view('admin.notifications.index', compact('notifications'));
     }
 
     public function markRead($id)

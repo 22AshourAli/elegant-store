@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -14,25 +13,21 @@ class CustomerController extends Controller
     {
         $search = $request->input('search');
 
-        $result = CursorService::applyCursor(
-            User::where('role', UserRole::Customer->value)
-                ->withCount(['orders as orders_count'])
-                ->withSum(['orders as total_spent'], 'total')
-                ->when($search, function ($q) use ($search) {
-                    $q->where(function ($q) use ($search) {
-                        $q->where('name', 'LIKE', "%{$search}%")
-                          ->orWhere('phone', 'LIKE', "%{$search}%")
-                          ->orWhere('email', 'LIKE', "%{$search}%");
-                    });
-                }),
-            $request->get('cursor'),
-            'created_at',
-            'desc',
-            20
-        );
-        $customers = $result['data'];
+        $customers = User::where('role', UserRole::Customer->value)
+            ->withCount(['orders as orders_count'])
+            ->withSum(['orders as total_spent'], 'total')
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%{$search}%")
+                      ->orWhere('phone', 'LIKE', "%{$search}%")
+                      ->orWhere('email', 'LIKE', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(20)
+            ->appends($request->query());
 
-        return view('admin.customers.index', compact('customers', 'search', 'result'));
+        return view('admin.customers.index', compact('customers', 'search'));
     }
 
     public function show(User $user)

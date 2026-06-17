@@ -15,11 +15,6 @@
 @endsection
 
 @section('content')
-@php
-    $nextCursor = $result['next_cursor'] ?? null;
-    $prevCursor = $result['prev_cursor'] ?? null;
-    $hasMore = $result['has_more'] ?? false;
-@endphp
 {{-- Category Header --}}
 <div class="relative overflow-hidden bg-white/40 dark:bg-bg-dark/40 border-b border-slate-200/40 dark:border-slate-800/40 py-10 backdrop-blur-md">
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-bg-light/10 dark:to-bg-dark/10 pointer-events-none"></div>
@@ -116,7 +111,7 @@
             </div>
 
             <div class="mt-12">
-                <x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" />
+                {{ $products->links() }}
             </div>
         @else
             {{-- Empty state --}}

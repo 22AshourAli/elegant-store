@@ -5,11 +5,6 @@
 @endsection
 
 @section('content')
-@php
-    $nextCursor = $result['next_cursor'] ?? null;
-    $prevCursor = $result['prev_cursor'] ?? null;
-    $hasMore = $result['has_more'] ?? false;
-@endphp
 <div class="bg-gray-50 dark:bg-gray-800/50 py-8 border-b border-gray-200 dark:border-gray-700">
     <div class="container mx-auto px-4">
         <nav class="flex text-sm text-gray-500 mb-4" aria-label="Breadcrumb">
@@ -37,9 +32,11 @@
             @endforeach
         </div>
 
-        <div class="mt-10">
-            <x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" />
-        </div>
+        @if($products->hasPages())
+            <div class="mt-10">
+                {{ $products->links() }}
+            </div>
+        @endif
     @else
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
             <div class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">

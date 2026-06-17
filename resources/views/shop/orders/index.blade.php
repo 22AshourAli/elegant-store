@@ -1,11 +1,6 @@
 @extends('layouts.store')
 
 @section('content')
-@php
-    $nextCursor = $result['next_cursor'] ?? null;
-    $prevCursor = $result['prev_cursor'] ?? null;
-    $hasMore = $result['has_more'] ?? false;
-@endphp
 <div class="container mx-auto px-4 py-12">
     <h1 class="text-3xl font-extrabold mb-8 text-gray-900 dark:text-white">{{ __('global.my_orders') }}</h1>
 
@@ -103,9 +98,11 @@
                 </table>
             </div>
 
-            <div class="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                <x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" />
-            </div>
+            @if($orders->hasPages())
+                <div class="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                    {{ $orders->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </div>

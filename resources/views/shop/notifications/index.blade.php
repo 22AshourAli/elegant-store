@@ -1,11 +1,6 @@
 @extends('layouts.store')
 
 @section('content')
-@php
-    $nextCursor = $result['next_cursor'] ?? null;
-    $prevCursor = $result['prev_cursor'] ?? null;
-    $hasMore = $result['has_more'] ?? false;
-@endphp
 <div class="container mx-auto px-4 py-12 max-w-2xl">
     <h1 class="text-3xl font-extrabold mb-8 text-gray-900 dark:text-white">الإشعارات</h1>
 
@@ -51,7 +46,6 @@
                                     : null)
                                 : route('returns.index');
                         } elseif (isset($data['order_id'])) {
-                            // If order was returned, link to returns page instead of order details
                             if (($data['status'] ?? '') === 'returned') {
                                 $notifUrl = $isAdmin ? route('admin.returns.index') : route('returns.index');
                             } else {
@@ -75,9 +69,11 @@
                 </div>
             @endforeach
 
-            <div class="mt-6">
-                <x-cursor-pagination :next-cursor="$nextCursor ?? null" :prev-cursor="$prevCursor ?? null" :has-more="$hasMore ?? false" />
-            </div>
+            @if($notifications->hasPages())
+                <div class="mt-6">
+                    {{ $notifications->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </div>

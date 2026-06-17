@@ -7,23 +7,14 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Exchange;
 use App\Models\Order;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class ExchangeRequestController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $result = CursorService::applyCursor(
-            auth()->user()->exchanges()->with('order')->reorder(),
-            $request->input('cursor'),
-            'created_at',
-            'desc',
-            10
-        );
-        $exchanges = $result['data'];
-
-        return view('shop.exchanges.index', compact('exchanges', 'result'));
+        $exchanges = auth()->user()->exchanges()->with('order')->latest()->paginate(10);
+        return view('shop.exchanges.index', compact('exchanges'));
     }
 
     public function create(Order $order)
@@ -70,7 +61,6 @@ class ExchangeRequestController extends Controller
             'items.*.new_variant_id' => 'required|exists:product_variants,id',
         ]);
 
-        // Verify all items belong to this order
         $orderItemIds = $order->items->pluck('id')->toArray();
         foreach ($validated['items'] as $item) {
             if (!in_array($item['order_item_id'], $orderItemIds)) {
@@ -86,7 +76,6 @@ class ExchangeRequestController extends Controller
             'items' => $validated['items'],
         ]);
 
-        // Notify all admins
         $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
         foreach ($admins as $admin) {
             try {

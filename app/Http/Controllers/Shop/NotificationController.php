@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -31,16 +30,9 @@ class NotificationController extends Controller
 
         auth()->user()->unreadNotifications->markAsRead();
 
-        $result = CursorService::applyCursor(
-            auth()->user()->notifications()->reorder(),
-            $request->input('cursor'),
-            'created_at',
-            'desc',
-            20
-        );
-        $notifications = $result['data'];
+        $notifications = auth()->user()->notifications()->latest()->paginate(20);
 
-        return view('shop.notifications.index', compact('notifications', 'result'));
+        return view('shop.notifications.index', compact('notifications'));
     }
 
     public function markRead($id)

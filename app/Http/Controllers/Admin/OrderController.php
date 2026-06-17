@@ -13,7 +13,6 @@ use App\Models\Order;
 use App\Models\ReturnRequest;
 use App\Models\StockMovement;
 use App\Notifications\OrderStatusChanged;
-use App\Services\CursorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -43,16 +42,9 @@ class OrderController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $result = CursorService::applyCursor(
-            $query->latest(),
-            $request->get('cursor'),
-            'created_at',
-            'desc',
-            20
-        );
-        $orders = $result['data'];
+        $orders = $query->latest()->paginate(20)->appends($request->query());
         $branches = Cache::remember('admin_branches', 3600, fn() => Branch::all());
-        return view('admin.orders.index', compact('orders', 'branches', 'result'));
+        return view('admin.orders.index', compact('orders', 'branches'));
     }
 
     public function show(Order $order)
