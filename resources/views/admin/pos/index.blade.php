@@ -286,7 +286,7 @@
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">{{ __('global.admin_color') }}</label>
                     <div class="flex flex-wrap gap-2">
                         <template x-for="v in uniqueColors" :key="v">
-                            <button @click="selectedColor = v"
+                            <button @click="pickColor(v)"
                                     class="px-3 py-1.5 text-xs font-bold rounded-lg border-2 transition-all"
                                     :class="selectedColor === v ? 'border-brand-primary bg-brand-primary/10 text-brand-primary dark:border-accent dark:bg-accent/20 dark:text-accent' : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-brand-primary/40'"
                                     x-text="v"></button>
@@ -297,7 +297,7 @@
                     <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">{{ __('global.admin_size') }}</label>
                     <div class="flex flex-wrap gap-2">
                         <template x-for="v in uniqueSizes" :key="v">
-                            <button @click="selectedSize = v"
+                            <button @click="pickSize(v)"
                                     class="px-3 py-1.5 text-xs font-bold rounded-lg border-2 transition-all"
                                     :class="selectedSize === v ? 'border-brand-primary bg-brand-primary/10 text-brand-primary dark:border-accent dark:bg-accent/20 dark:text-accent' : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-brand-primary/40'"
                                     x-text="v"></button>
@@ -462,6 +462,26 @@ document.addEventListener('alpine:init', () => {
         qty: 1,
         maxStock: 999,
 
+        // Select color and clear size if incompatible
+        pickColor(color) {
+            this.selectedColor = color;
+            const sizesWithColor = [...new Set(this.selectedProduct.variants
+                .filter(v => v.color === color).map(v => v.size).filter(Boolean))];
+            if (this.selectedSize && !sizesWithColor.includes(this.selectedSize)) {
+                this.selectedSize = sizesWithColor.length > 0 ? sizesWithColor[0] : null;
+            }
+        },
+
+        // Select size and clear color if incompatible
+        pickSize(size) {
+            this.selectedSize = size;
+            const colorsWithSize = [...new Set(this.selectedProduct.variants
+                .filter(v => v.size === size).map(v => v.color).filter(Boolean))];
+            if (this.selectedColor && !colorsWithSize.includes(this.selectedColor)) {
+                this.selectedColor = colorsWithSize.length > 0 ? colorsWithSize[0] : null;
+            }
+        },
+
         // Get variant image matching selected color/size
         get selectedVariantImage() {
             if (!this.selectedProduct) return '/images/logo.svg';
@@ -608,6 +628,14 @@ document.addEventListener('alpine:init', () => {
                 this.maxStock = product.variants[0].stock;
             } else if (product.has_variants) {
                 this.maxStock = Math.max(...product.variants.map(v => v.stock), 0);
+                const colors = [...new Set(product.variants.map(v => v.color).filter(Boolean))];
+                const sizes = [...new Set(product.variants.map(v => v.size).filter(Boolean))];
+                if (colors.length === 1) this.selectedColor = colors[0];
+                if (sizes.length === 1) this.selectedSize = sizes[0];
+                if (colors.length === 1 && sizes.length === 1) {
+                    const match = product.variants.find(v => v.color === colors[0] && v.size === sizes[0]);
+                    if (match) this.maxStock = match.stock;
+                }
             }
 
             this.showVariantModal = true;
@@ -615,12 +643,20 @@ document.addEventListener('alpine:init', () => {
 
         get uniqueColors() {
             if (!this.selectedProduct) return [];
-            return [...new Set(this.selectedProduct.variants.map(v => v.color).filter(Boolean))];
+            let variants = this.selectedProduct.variants;
+            if (this.selectedSize) {
+                variants = variants.filter(v => v.size === this.selectedSize);
+            }
+            return [...new Set(variants.map(v => v.color).filter(Boolean))];
         },
 
         get uniqueSizes() {
             if (!this.selectedProduct) return [];
-            return [...new Set(this.selectedProduct.variants.map(v => v.size).filter(Boolean))];
+            let variants = this.selectedProduct.variants;
+            if (this.selectedColor) {
+                variants = variants.filter(v => v.color === this.selectedColor);
+            }
+            return [...new Set(variants.map(v => v.size).filter(Boolean))];
         },
 
         get selectedVariant() {
