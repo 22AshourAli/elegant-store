@@ -144,22 +144,21 @@
                                 :title="color"
                                 :aria-label="color"
                                 :aria-pressed="selectedColor === color">
-                            <span class="relative block w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden transition-all duration-300 shadow-sm bg-slate-100 dark:bg-slate-800"
+                            <span class="block w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden transition-all duration-300 shadow-md bg-slate-100 dark:bg-slate-800"
                                   :class="selectedColor === color
-                                      ? 'ring-2 ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_16px_rgba(79,70,229,0.35)] scale-110'
-                                      : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-md group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
-                                {{-- Always-visible letter fallback --}}
-                                <span class="absolute inset-0 flex items-center justify-center text-sm font-black text-slate-400 dark:text-slate-500 z-0 select-none pointer-events-none"
-                                      x-text="color.charAt(0)"></span>
-                                {{-- Product image on top --}}
+                                      ? 'ring-[3px] ring-brand-primary dark:ring-accent ring-offset-2 dark:ring-offset-slate-950 shadow-[0_0_24px_rgba(79,70,229,0.4)] scale-110'
+                                      : 'ring-1 ring-slate-300 dark:ring-slate-600 group-hover/color:scale-110 group-hover/color:shadow-lg group-hover/color:ring-brand-primary/50 dark:group-hover/color:ring-accent/50'">
                                 <img :src="colorImages[normalize(color)] || firstImageUrl"
-                                     class="relative w-full h-full object-cover z-10"
-                                     :alt="color"
-                                     x-on:error.once="$el.classList.add('opacity-0')">
+                                     class="w-full h-full object-cover" :alt="color"
+                                     x-on:error.once="$el.src = firstImageUrl; $el.onerror = null">
                             </span>
                             <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate max-w-[3rem] transition-all duration-200"
                                   :class="selectedColor === color ? 'text-brand-primary dark:text-accent opacity-100' : 'opacity-60 group-hover/color:opacity-100'"
                                   x-text="color"></span>
+                            <span x-show="selectedColor === color"
+                                  class="absolute -top-1 -end-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950 shadow-md flex items-center justify-center">
+                                <svg class="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            </span>
                         </button>
                     </template>
                 </div>
