@@ -46,7 +46,7 @@
     
     <div class="p-3 text-start bg-white dark:bg-surface-dark">
         <div class="flex items-start justify-between gap-1">
-            <h3 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2 min-h-[2.25rem] sm:min-h-[2.75rem]">
+            <h3 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2">
                 <a href="{{ route('shop.product', $product->slug) }}" class="hover:text-brand-primary dark:hover:text-accent text-slate-900 dark:text-white transition-colors duration-300 inline-block focus-visible:outline-none focus-visible:underline" dir="auto">
                     {{ $product->name }}
                 </a>
