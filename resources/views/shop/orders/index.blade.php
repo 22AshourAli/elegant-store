@@ -24,6 +24,7 @@
                             <th class="p-4">{{ __('global.payment_method') }}</th>
                             <th class="p-4">{{ __('global.payment_status_label') }}</th>
                             <th class="p-4">{{ __('global.order_status') }}</th>
+                            <th class="p-4">{{ __('return.delivered_date') }}</th>
                             <th class="p-4">{{ __('global.total') }}</th>
                             <th class="p-4 text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}">{{ __('global.actions') }}</th>
                         </tr>
@@ -65,6 +66,27 @@
                                         echo $t === $k ? ucfirst(str_replace('_', ' ', $order->status)) : $t;
                                     @endphp
                                 </span>
+                            </td>
+                            <td class="p-4">
+                                @if($order->status === 'delivered')
+                                    @if($order->delivered_at)
+                                        <span class="text-xs font-medium" dir="ltr">{{ $order->delivered_at->format('Y-m-d') }}</span>
+                                        @if($order->isWithinReturnWindow())
+                                            @php $dl = 3 - (int) $order->delivered_at->diffInDays(now()); @endphp
+                                            <span class="block text-xs {{ $dl <= 1 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }} font-semibold">
+                                                {{ __('return.return_window_remaining', ['days' => $dl]) }}
+                                            </span>
+                                        @else
+                                            <span class="block text-xs text-gray-400 dark:text-gray-500 font-medium">
+                                                {{ __('return.return_window_expired') }}
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="text-xs text-gray-400">—</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-gray-400">—</span>
+                                @endif
                             </td>
                             <td class="p-4 font-bold">{{ (int) round($order->total) }} {{ __('global.currency') }}</td>
                             <td class="p-4 text-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}">

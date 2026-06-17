@@ -35,6 +35,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('orders:expire-requests --force')
             ->dailyAt('00:00')
             ->withoutOverlapping();
+
+        // Remind customers 1 day before return window expires (they ordered 2 days ago)
+        $schedule->command('orders:remind-window-expiry')
+            ->dailyAt('10:00')
+            ->withoutOverlapping();
     }
 
     /**
