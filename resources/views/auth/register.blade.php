@@ -101,7 +101,7 @@
                 </div>
                 <input id="phone" type="tel" name="phone" x-model="value" @input="formatInput(); touched = true" @blur="touched = true"
                        autocomplete="tel"
-                       placeholder="100 000 0000"
+                       placeholder="01012345678"
                        inputmode="numeric"
                        class="block w-full ps-12 pe-10 rounded-xl border bg-white/70 dark:bg-gray-900/70 text-sm transition-all duration-300 py-2.5 outline-none focus:outline-none focus:ring-4 shadow-sm tracking-wider font-mono"
                        :class="error ? 'border-red-450 focus:border-red-500 focus:ring-red-500/10' : (valid && value.length > 0 ? 'border-emerald-450 focus:border-emerald-500 focus:ring-emerald-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10')">
