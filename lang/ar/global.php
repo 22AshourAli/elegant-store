@@ -59,6 +59,8 @@ return [
     'admin_no_branch' => 'بدون فرع',
     'admin_total_spent' => 'إجمالي الإنفاق',
     'admin_last_order' => 'آخر طلب',
+    'admin_order_details' => 'تفاصيل الطلب',
+    'admin_customer_colon' => 'العميل:',
     'admin_order_history' => 'سجل الطلبات',
     'admin_customer_since' => 'عميل منذ',
     'admin_view_orders' => 'عرض الطلبات',

@@ -21,7 +21,11 @@ class ExchangeController extends Controller
             $query->whereHas('order', fn($q) => $q->where('branch_id', $user->branch_id));
         }
 
-        $exchanges = $query->latest()->paginate(20);
+        if ($type = request('type')) {
+            $query->whereHas('order', fn($q) => $q->where('order_type', $type));
+        }
+
+        $exchanges = $query->latest()->paginate(20)->withQueryString();
         return view('admin.exchanges.index', compact('exchanges'));
     }
 
@@ -62,30 +66,38 @@ class ExchangeController extends Controller
                 : collect();
 
             foreach ($exchange->items ?? [] as $item) {
-                $orderItem = $order->items->firstWhere('id', $item['order_item_id']);
-                if (!$orderItem) continue;
+                $orderItem = isset($item['order_item_id'])
+                    ? $order->items->firstWhere('id', $item['order_item_id'])
+                    : null;
+
+                $quantity = $item['quantity'] ?? 1;
 
                 // Restore old variant stock
-                $oldVariant = $orderItem->variant;
+                $oldVariant = $orderItem?->variant;
+                if (!$oldVariant && isset($item['variant_id'])) {
+                    $oldVariant = ProductVariant::find($item['variant_id']);
+                }
                 if ($oldVariant) {
                     $branch = $oldVariant->branches->first(fn($b) => $b->id == $branchId);
                     if ($branch) {
                         DB::table('branch_product_variant')
                             ->where('product_variant_id', $oldVariant->id)
                             ->where('branch_id', $branchId)
-                            ->update(['stock' => $branch->pivot->stock + $orderItem->quantity]);
+                            ->update(['stock' => $branch->pivot->stock + $quantity]);
                     }
                 }
 
                 // Deduct new variant stock
-                $newVariant = $newVariants->get($item['new_variant_id']);
+                $newVariant = isset($item['new_variant_id'])
+                    ? $newVariants->get($item['new_variant_id'])
+                    : null;
                 if ($newVariant) {
                     $branch = $newVariant->branches->first(fn($b) => $b->id == $branchId);
-                    if ($branch && $branch->pivot->stock >= $orderItem->quantity) {
+                    if ($branch && $branch->pivot->stock >= $quantity) {
                         DB::table('branch_product_variant')
                             ->where('product_variant_id', $newVariant->id)
                             ->where('branch_id', $branchId)
-                            ->update(['stock' => $branch->pivot->stock - $orderItem->quantity]);
+                            ->update(['stock' => $branch->pivot->stock - $quantity]);
                     }
                 }
             }

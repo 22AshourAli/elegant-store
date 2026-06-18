@@ -58,6 +58,8 @@ return [
     'admin_no_branch' => 'No Branch',
     'admin_total_spent' => 'Total Spent',
     'admin_last_order' => 'Last Order',
+    'admin_order_details' => 'Order Details',
+    'admin_customer_colon' => 'Customer:',
     'admin_order_history' => 'Order History',
     'admin_customer_since' => 'Customer since',
     'admin_view_orders' => 'View Orders',
