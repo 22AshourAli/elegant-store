@@ -116,7 +116,7 @@ async function openCustomerModal(id) {
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6" onclick="event.stopPropagation()">
                 <div class="flex items-start gap-4 mb-6">
                     <div class="w-14 h-14 rounded-full bg-brand-primary/10 text-brand-primary dark:bg-accent/20 dark:text-accent flex items-center justify-center text-sm font-black shrink-0 border-2 border-slate-200 dark:border-slate-600">
-                        {{ mb_substr('${data.name}', 0, 2) }}
+                        ${data.name.substring(0, 2)}
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="font-extrabold text-lg">${data.name}</h3>
