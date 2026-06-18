@@ -14,7 +14,7 @@
                 <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">{{ __('global.admin_online') }}</p>
             </div>
             <div class="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 text-center">
-                <p class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ $withPhone }}</p>
+                <p class="text-2xl font-bold text-amber-700 dark:text-amber-300">{{ $withoutEmail }}</p>
                 <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">{{ __('global.admin_offline_customer') }}</p>
             </div>
             <div class="bg-green-50 dark:bg-green-950/30 rounded-lg p-3 text-center">
