@@ -43,7 +43,7 @@ class BackupController extends Controller
             }
 
             return redirect()->route('admin.backups.index')->with('error', __('global.backup_failed_check_logs'));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return redirect()->route('admin.backups.index')->with('error', __('global.backup_failed') . ': ' . $e->getMessage());
         }
     }
