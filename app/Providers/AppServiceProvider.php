@@ -3,6 +3,14 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Models\Coupon;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Review;
+use App\Observers\CouponObserver;
+use App\Observers\OrderObserver;
+use App\Observers\ProductObserver;
+use App\Observers\ReviewObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -47,6 +55,11 @@ class AppServiceProvider extends ServiceProvider
                 \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
             );
         }
+
+        Product::observe(ProductObserver::class);
+        Coupon::observe(CouponObserver::class);
+        Review::observe(ReviewObserver::class);
+        Order::observe(OrderObserver::class);
 
         View::composer('layouts.store', function ($view) {
             $navbarCategories = Cache::remember('navbar_categories', 3600, function () {

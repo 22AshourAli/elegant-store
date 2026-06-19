@@ -208,6 +208,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('shipping-rates', \App\Http\Controllers\Admin\ShippingRateController::class)->except(['show']);
     Route::get('shipping-rates/get-cities', [\App\Http\Controllers\Admin\ShippingRateController::class, 'getCities'])->name('shipping-rates.get-cities');
 
+    // Backups
+    Route::get('/backups', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('backups.index');
+    Route::post('/backups/create', [\App\Http\Controllers\Admin\BackupController::class, 'create'])->name('backups.create');
+    Route::get('/backups/{file}/download', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('backups.download');
+    Route::delete('/backups/{file}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('backups.destroy');
+
+    // Activity Logs (super admin only)
+    Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
     // Reports & Analytics
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('index');

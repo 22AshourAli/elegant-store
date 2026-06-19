@@ -49,9 +49,16 @@ class NotificationController extends Controller
     public function unreadCount()
     {
         $latest = auth()->user()->notifications()->latest()->first();
+        $unread = auth()->user()->unreadNotifications;
+
+        $orderCount = $unread->filter(function ($n) {
+            $data = $n->data;
+            return isset($data['order_id']);
+        })->count();
 
         return response()->json([
-            'count' => auth()->user()->unreadNotifications->count(),
+            'count' => $unread->count(),
+            'order_count' => $orderCount,
             'latest_id' => $latest?->id,
             'latest_created_at' => $latest?->created_at?->toIso8601String(),
         ]);
