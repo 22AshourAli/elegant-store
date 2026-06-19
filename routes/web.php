@@ -225,6 +225,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/dead-stock', [\App\Http\Controllers\Admin\AnalyticsController::class, 'deadStock'])->name('dead-stock');
         Route::get('/cart-funnel', [\App\Http\Controllers\Admin\AnalyticsController::class, 'cartFunnel'])->name('cart-funnel');
         Route::get('/payment-reconciliation', [\App\Http\Controllers\Admin\AnalyticsController::class, 'paymentReconciliation'])->name('payment-reconciliation');
+        Route::get('/export-csv', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('export-csv');
     });
 });
 require __DIR__.'/auth.php';
