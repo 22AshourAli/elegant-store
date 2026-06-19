@@ -23,8 +23,9 @@ class Numbers
         return self::toArabic($formatted);
     }
 
-    public static function formatCurrency($number, string $currency = 'EGP'): string
+    public static function formatCurrency($number, ?string $currency = null): string
     {
+        $currency ??= __('global.currency');
         return self::format($number, 2) . ' ' . $currency;
     }
 
