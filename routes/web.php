@@ -72,6 +72,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/exchanges', [\App\Http\Controllers\Shop\ExchangeRequestController::class, 'index'])->name('exchanges.index');
     Route::get('/orders/{order}/exchange', [\App\Http\Controllers\Shop\ExchangeRequestController::class, 'create'])->name('exchanges.create');
     Route::post('/orders/{order}/exchange', [\App\Http\Controllers\Shop\ExchangeRequestController::class, 'store'])->name('exchanges.store');
+
+    Route::post('/products/{product}/review', [\App\Http\Controllers\Shop\ReviewController::class, 'store'])->name('reviews.store');
 });
 
 use App\Http\Controllers\Admin\Auth\LoginController;
@@ -122,6 +124,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/exchanges/{exchange}', [\App\Http\Controllers\Admin\ExchangeController::class, 'show'])->name('exchanges.show');
     Route::any('/exchanges/{exchange}/approve', [\App\Http\Controllers\Admin\ExchangeController::class, 'approve'])->name('exchanges.approve');
     Route::any('/exchanges/{exchange}/reject', [\App\Http\Controllers\Admin\ExchangeController::class, 'reject'])->name('exchanges.reject');
+
+    // Reviews
+    Route::get('/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
+    Route::post('/reviews/{review}/approve', [\App\Http\Controllers\Admin\ReviewController::class, 'approve'])->name('reviews.approve');
+    Route::post('/reviews/{review}/reject', [\App\Http\Controllers\Admin\ReviewController::class, 'reject'])->name('reviews.reject');
 
     // Notifications
     Route::get('/notifications', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');

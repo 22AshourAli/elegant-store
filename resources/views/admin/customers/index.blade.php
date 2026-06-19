@@ -102,7 +102,7 @@ async function openCustomerModal(id) {
                     <p class="text-[10px] text-slate-400 mt-0.5">${o.created_at} · ${o.items_count} {{ __('global.admin_items') }} · ${o.payment_method}</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm font-black">${o.total.toLocaleString()} {{ __('global.currency') }}</p>
+                    <p class="text-sm font-black">${o.total.toLocaleString(document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US')} {{ __('global.currency') }}</p>
                     <span class="text-[10px] px-1.5 py-0.5 rounded-full font-bold ${o.status === 'confirmed' || o.status === 'delivered' ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' : o.status === 'cancelled' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}">${o.status}</span>
                 </div>
             </div>
@@ -143,7 +143,7 @@ async function openCustomerModal(id) {
                         <p class="text-xs text-slate-500 mt-1">{{ __('global.admin_orders') }}</p>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3 text-center">
-                        <p class="text-lg font-black text-emerald-600">${data.total_spent.toLocaleString()} {{ __('global.currency') }}</p>
+                        <p class="text-lg font-black text-emerald-600">${data.total_spent.toLocaleString(document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US')} {{ __('global.currency') }}</p>
                         <p class="text-xs text-slate-500 mt-1">{{ __('global.admin_total_spent') }}</p>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3 text-center">

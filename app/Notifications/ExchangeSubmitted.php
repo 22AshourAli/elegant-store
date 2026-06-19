@@ -28,10 +28,13 @@ class ExchangeSubmitted extends Notification
 
     public function toMail($notifiable): MailMessage
     {
+        $locale = $notifiable->locale ?? app()->getLocale();
+        app()->setLocale($locale);
+
         return (new MailMessage)
-            ->subject("طلب استبدال جديد #{$this->exchange->id}")
-            ->line("تم تقديم طلب استبدال جديد من {$this->exchange->user->name}")
-            ->action('عرض الطلب', route('admin.exchanges.show', $this->exchange));
+            ->subject(__('global.exchange_submitted_subject', ['id' => $this->exchange->id]))
+            ->line(__('global.exchange_submitted_body', ['name' => $this->exchange->user->name]))
+            ->action(__('global.view_order'), route('admin.exchanges.show', $this->exchange));
     }
 
     public function toArray($notifiable): array
@@ -40,7 +43,7 @@ class ExchangeSubmitted extends Notification
             'exchange_id' => $this->exchange->id,
             'order_id' => $this->exchange->order_id,
             'type' => 'exchange_submitted',
-            'message' => "طلب استبدال جديد من {$this->exchange->user->name} للطلب رقم #{$this->exchange->order_id}",
+            'message' => __('global.exchange_submitted_body', ['name' => $this->exchange->user->name]) . ' ' . __('global.order') . ' #' . $this->exchange->order_id,
         ];
     }
 }

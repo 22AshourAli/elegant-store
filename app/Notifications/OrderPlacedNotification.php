@@ -25,15 +25,24 @@ class OrderPlacedNotification extends Notification
 
     public function toMail($notifiable)
     {
+        $locale = $notifiable->locale ?? app()->getLocale();
+        app()->setLocale($locale);
+
+        $currency = __('global.currency');
+
+        $items = $this->order->items->map(fn($i) =>
+            "{$i->product_name} × {$i->quantity} = " . (int)round($i->total) . " {$currency}"
+        )->implode("<br>");
+
         return (new MailMessage)
             ->subject(__('global.order_confirmed_subject', ['id' => $this->order->id]))
-            ->greeting(__('global.order_confirmed_greeting', ['name' => $notifiable->name]))
+            ->greeting(__('global.greeting', ['name' => $notifiable->name]))
             ->line(__('global.order_confirmed_line', ['id' => $this->order->id]))
-            ->line(__('global.order_products') . ':')
-            ->line($this->order->items->map(fn($i) => "{$i->product_name} × {$i->quantity} = " . (int)round($i->total) . " " . __('global.currency'))->implode("\n"))
-            ->line(__('global.order_total_label') . ': ' . (int)round($this->order->total) . ' ' . __('global.currency'))
+            ->line(__('global.order_products'))
+            ->line($items)
+            ->line(__('global.order_total_label') . ': ' . (int)round($this->order->total) . ' ' . $currency)
             ->action(__('global.view_order'), route('orders.show', $this->order->id))
-            ->line(__('global.order_thanks'));
+            ->line(__('global.thanks_short'));
     }
 
     public function toDatabase($notifiable)

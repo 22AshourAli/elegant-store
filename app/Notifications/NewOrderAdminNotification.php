@@ -26,10 +26,16 @@ class NewOrderAdminNotification extends Notification
 
     public function toMail($notifiable)
     {
+        $currency = __('global.currency');
+
         // Attempt to send a WhatsApp alert to the admin (best-effort) if Twilio is configured
         try {
             $adminNumber = config('store.admin_whatsapp', env('ADMIN_WHATSAPP', env('ADMIN_PHONE')));
-            $message = "طلب جديد رقم #{$this->order->id} من {$this->order->user->name} بقيمة {$this->order->total} EGP. " . url(route('admin.orders.show', $this->order->id));
+            $message = __('global.admin_new_order_db', [
+                'name' => $this->order->user->name,
+                'amount' => round($this->order->total),
+                'currency' => $currency,
+            ]) . ' ' . url(route('admin.orders.show', $this->order->id));
             if ($adminNumber) {
                 $this->sendWhatsApp($adminNumber, $message);
             }
@@ -38,18 +44,27 @@ class NewOrderAdminNotification extends Notification
         }
 
         return (new MailMessage)
-            ->subject(__('إشعار: طلب جديد #:id', ['id' => $this->order->id]))
-            ->greeting(__('مرحباً'))
-            ->line(__('تم استلام طلب جديد رقم #:id من :name بقيمة :amount EGP.', ['id' => $this->order->id, 'name' => $this->order->user->name, 'amount' => round($this->order->total)]))
-            ->action(__('عرض تفاصيل الطلب'), route('admin.orders.show', $this->order->id))
-            ->line(__('الرجاء مراجعة الطلب في لوحة التحكم.'));
+            ->subject(__('global.admin_new_order_subject', ['id' => $this->order->id]))
+            ->greeting(__('global.greeting_admin'))
+            ->line(__('global.admin_new_order_body', [
+                'id' => $this->order->id,
+                'name' => $this->order->user->name,
+                'amount' => round($this->order->total),
+                'currency' => $currency,
+            ]))
+            ->action(__('global.admin_new_order_action'), route('admin.orders.show', $this->order->id))
+            ->line(__('global.admin_new_order_footer'));
     }
 
     public function toDatabase($notifiable)
     {
         return [
             'order_id' => $this->order->id,
-            'message' => __('طلب جديد من :name بقيمة :amount EGP.', ['name' => $this->order->user->name, 'amount' => round($this->order->total)]),
+            'message' => __('global.admin_new_order_db', [
+                'name' => $this->order->user->name,
+                'amount' => round($this->order->total),
+                'currency' => __('global.currency'),
+            ]),
         ];
     }
 

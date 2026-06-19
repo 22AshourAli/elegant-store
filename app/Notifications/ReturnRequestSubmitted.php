@@ -28,22 +28,31 @@ class ReturnRequestSubmitted extends Notification
 
     public function toMail($notifiable): MailMessage
     {
-        $type = $this->returnRequest->type === 'exchange' ? 'استبدال' : 'إرجاع';
+        $locale = $notifiable->locale ?? app()->getLocale();
+        app()->setLocale($locale);
+
+        $type = $this->returnRequest->type === 'exchange'
+            ? __('global.admin_exchange')
+            : __('global.admin_return');
+
         return (new MailMessage)
-            ->subject("طلب {$type} جديد #{$this->returnRequest->id}")
-            ->line("تم تقديم طلب {$type} جديد من {$this->returnRequest->user->name}")
-            ->action('عرض الطلب', route('admin.returns.show', $this->returnRequest));
+            ->subject(__('global.return_submitted_subject', ['type' => $type, 'id' => $this->returnRequest->id]))
+            ->line(__('global.return_submitted_body', ['type' => $type, 'name' => $this->returnRequest->user->name]))
+            ->action(__('global.view_order'), route('admin.returns.show', $this->returnRequest));
     }
 
     public function toArray($notifiable): array
     {
         $type = $this->returnRequest->type === 'exchange' ? 'exchange' : 'return';
-        $typeLabel = $this->returnRequest->type === 'exchange' ? 'استبدال' : 'إرجاع';
+        $typeLabel = $this->returnRequest->type === 'exchange'
+            ? __('global.admin_exchange')
+            : __('global.admin_return');
+
         return [
             'return_request_id' => $this->returnRequest->id,
             'order_id' => $this->returnRequest->order_id,
             'type' => $type,
-            'message' => "طلب {$typeLabel} جديد من {$this->returnRequest->user->name} للطلب رقم #{$this->returnRequest->order_id}",
+            'message' => __('global.return_submitted_body', ['type' => $typeLabel, 'name' => $this->returnRequest->user->name]) . ' ' . __('global.order') . ' #' . $this->returnRequest->order_id,
         ];
     }
 }

@@ -4,6 +4,10 @@
     $firstVariant = $product->variants->first();
     $hasStock = $firstVariant && $firstVariant->total_stock > 0;
     $isOutOfStock = $product->variants->isNotEmpty() && $product->variants->every(fn($v) => $v->total_stock <= 0);
+    $allColors = $product->variants->pluck('color')->unique()->filter()->values();
+    $allSizes = $product->variants->pluck('size')->unique()->filter()->values();
+    $hasColorVar = $allColors->isNotEmpty();
+    $hasSizeVar = $allSizes->isNotEmpty();
 @endphp
 <article class="group product-card relative overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:glow-indigo"
      x-data="{ inWishlist: {{ $inWish ? 'true' : 'false' }}, inCart: {{ $inCart ? 'true' : 'false' }}, removed: false, addingToCart: false }"
@@ -21,7 +25,11 @@
             $discountPct = $product->isOnSale ? round((1 - $product->current_price / $product->base_price) * 100) : 0;
             $descText = $product->description ? Str::limit(strip_tags($product->description), 60) : __('High-end luxury product');
         @endphp
-        <img src="{{ $image }}" alt="{{ $product->name }} - {{ $descText }} - Elegant Store" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out transform-gpu group-hover:scale-110 group-hover:brightness-105">
+        <img src="{{ $image }}" alt="{{ $product->name }} - {{ $descText }} - Elegant Store" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 ease-out transform-gpu group-hover:scale-110 group-hover:brightness-105"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="absolute inset-0 bg-slate-100 dark:bg-slate-800 items-center justify-center" style="display:none">
+            <svg class="w-10 h-10 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
 
         @if($product->isOnSale)
             <div class="absolute top-3 right-3 z-10 bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-[11px] sm:text-xs font-black px-2.5 py-1.5 rounded-lg shadow-[0_4px_20px_rgba(16,185,129,0.5)] border border-white/20 flex items-center gap-1.5 animate-pulse">
@@ -44,7 +52,23 @@
         </div>
     </a>
     
-    <div class="p-3 text-start bg-white dark:bg-surface-dark">
+    <div class="p-3 pt-2 text-start bg-white dark:bg-surface-dark">
+        @if($hasColorVar || $hasSizeVar)
+        <div class="flex items-center gap-2.5 mb-1.5" dir="auto">
+            @if($hasColorVar)
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500" title="{{ $allColors->implode(' · ') }}">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                <span>{{ $allColors->count() }}</span>
+            </span>
+            @endif
+            @if($hasSizeVar)
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                <span>{{ $allSizes->count() }}</span>
+            </span>
+            @endif
+        </div>
+        @endif
         <div class="flex items-start justify-between gap-1">
             <h3 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2">
                 <a href="{{ route('shop.product', $product->slug) }}" class="hover:text-brand-primary dark:hover:text-accent text-slate-900 dark:text-white transition-colors duration-300 inline-block focus-visible:outline-none focus-visible:underline" dir="auto">
@@ -60,18 +84,22 @@
         </div>
 
         <div class="mt-2">
+            @php
+                $locale = app()->getLocale();
+                $fmtNum = fn($n) => $locale === 'ar' ? str_replace(['0','1','2','3','4','5','6','7','8','9'], ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'], (string)(int)round($n)) : (int)round($n);
+            @endphp
             <div class="flex items-baseline gap-1.5 sm:gap-2">
                 @if($product->isOnSale)
-                    <span class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ (int) round($product->current_price) }} {{ __('global.currency') }}</span>
-                    <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 line-through font-bold">{{ (int) round($product->base_price) }} {{ __('global.currency') }}</span>
+                    <span class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 line-through font-bold">{{ $fmtNum($product->base_price) }} {{ __('global.currency') }}</span>
                 @else
-                    <span class="text-sm sm:text-base font-black text-brand-primary dark:text-accent tracking-tight">{{ (int) round($product->current_price) }} {{ __('global.currency') }}</span>
+                    <span class="text-sm sm:text-base font-black text-brand-primary dark:text-accent tracking-tight">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>
                 @endif
             </div>
             @if($product->isOnSale)
                 <p class="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-0.5 flex items-center gap-0.5" dir="auto">
                     <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'وفر' : 'Save' }} {{ (int) round($product->base_price - $product->current_price) }} {{ __('global.currency') }}</span>
+                    <span>{{ app()->getLocale() === 'ar' ? 'وفر' : 'Save' }} {{ $fmtNum($product->base_price - $product->current_price) }} {{ __('global.currency') }}</span>
                 </p>
             @endif
         </div>

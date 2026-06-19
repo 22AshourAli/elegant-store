@@ -39,8 +39,8 @@
 
 
 
-<section class="container py-6 md:py-10 overflow-x-hidden" x-data="productView(window.productViewData)" @cart-updated.window="cartLoading = false">
-    <div class="grid md:grid-cols-2 gap-4 md:gap-6 lg:gap-10">
+<section class="container py-4 md:py-8 overflow-x-hidden" x-data="productView(window.productViewData)" @cart-updated.window="cartLoading = false">
+    <div class="grid md:grid-cols-2 gap-3 md:gap-5 lg:gap-8">
 
         {{-- Image Gallery --}}
         <div class="space-y-4">
@@ -79,19 +79,8 @@
         <div class="flex flex-col text-start">
             <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-2 leading-tight tracking-tight" dir="auto">{{ $product->name }}</h1>
 
-            {{-- Rating --}}
-            <div class="flex items-center gap-2 mb-3">
-                <div class="flex text-amber-400">
-                    @for($i = 0; $i < 4; $i++)
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                    @endfor
-                    <svg class="w-4 h-4 text-slate-300 dark:text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                </div>
-                <span class="text-xs font-semibold text-slate-400 dark:text-slate-500">(12 {{ __('global.rating_label') }})</span>
-            </div>
-
             {{-- Price & Countdown --}}
-            <div class="flex flex-col mb-4 pb-4 border-b border-slate-200/40 dark:border-slate-800/60">
+            <div class="flex flex-col mb-3 pb-3 border-b border-slate-200/40 dark:border-slate-800/60">
                 <div class="flex items-center gap-4 flex-wrap">
                     <span x-text="formatPrice(currentPrice)" class="text-3xl sm:text-4xl font-black text-brand-primary dark:text-accent tracking-tight"
                           :class="originalPrice !== currentPrice ? 'text-emerald-600 dark:text-emerald-400' : ''"></span>
@@ -100,7 +89,7 @@
                     <span x-show="originalPrice !== currentPrice" x-cloak
                           class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 text-xs font-black shadow-sm">
                         <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                        <span x-text="'{{ __('global.save') }} ' + formatNumber(originalPrice - currentPrice)"></span>
+                        <span x-text="'{{ __('global.save') }} ' + formatPrice(originalPrice - currentPrice)"></span>
                     </span>
                 </div>
                 @if($product->discount_end)
@@ -132,7 +121,7 @@
 
             @if(count($colors) > 0)
             {{-- Color Selection --}}
-            <div class="mb-4">
+            <div class="mb-3">
                 <div class="flex justify-between items-center mb-2">
                     <label class="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.color') }}</label>
                     <span class="text-xs font-bold" :class="selectedColor ? 'text-brand-primary dark:text-accent' : 'text-slate-400'" x-text="selectedColor || '{{ __('global.choose_color') }}'"></span>
@@ -167,7 +156,7 @@
 
             @if(count($sizes) > 0)
             {{-- Size Selection --}}
-            <div class="mb-4">
+            <div class="mb-3">
                 <div class="flex justify-between items-center mb-3">
                     <label class="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{{ __('global.size') }}</label>
                 </div>
@@ -187,9 +176,9 @@
             @endif
 
             {{-- Add to Cart Panel --}}
-            <div class="bg-white/40 dark:bg-surface-dark/40 border border-slate-200/40 dark:border-slate-800/40 p-4 rounded-2xl mb-4 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]">
+            <div class="bg-white/40 dark:bg-surface-dark/40 border border-slate-200/40 dark:border-slate-800/40 p-3.5 rounded-2xl mb-3 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]">
                 {{-- Stock Status --}}
-                <div class="flex items-center gap-2 mb-4" aria-live="polite" aria-atomic="true">
+                <div class="flex items-center gap-2 mb-3" aria-live="polite" aria-atomic="true">
                     <div x-show="stockStatus === 'in_stock'" x-cloak class="flex flex-col gap-1 text-start">
                         <div class="flex items-center text-emerald-600 dark:text-emerald-400 gap-2">
                             <span class="relative flex h-2.5 w-2.5">
@@ -218,15 +207,15 @@
                 <div class="flex flex-col sm:flex-row gap-4">
                     {{-- Quantity Stepper --}}
                     <div class="flex items-center border border-slate-200/60 dark:border-slate-800/80 rounded-xl bg-white/70 dark:bg-slate-950/70 overflow-hidden shadow-sm" role="group" aria-label="Quantity">
-                        <button @click="if(qty > 1) qty--" aria-label="Decrease quantity" class="px-4 py-3 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-lg cursor-pointer">−</button>
-                        <input type="number" x-model.number="qty" min="1" :max="availableQty" aria-label="Quantity" class="w-12 text-center bg-transparent border-0 focus:ring-0 p-0 font-black text-slate-900 dark:text-slate-100" readonly>
-                        <button @click="if(qty < availableQty) qty++" aria-label="Increase quantity" class="px-4 py-3 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-lg cursor-pointer">+</button>
+                        <button @click="if(qty > 1) qty--" aria-label="Decrease quantity" class="px-3 py-2.5 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-lg cursor-pointer">−</button>
+                        <input type="number" x-model.number="qty" min="1" :max="availableQty" aria-label="Quantity" class="w-10 text-center bg-transparent border-0 focus:ring-0 p-0 font-black text-slate-900 dark:text-slate-100" readonly>
+                        <button @click="if(qty < availableQty) qty++" aria-label="Increase quantity" class="px-3 py-2.5 text-slate-500 hover:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-accent/5 focus-visible:outline-none transition-all duration-200 font-extrabold text-lg cursor-pointer">+</button>
                     </div>
 
                     {{-- Add to Cart --}}
                     <button @click="addToCart"
                             :disabled="stockStatus !== 'in_stock' || cartLoading"
-                            class="w-full sm:flex-1 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-3.5 px-5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.97] shadow-[0_4px_20px_rgba(79,70,229,0.25)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.45)] hover:-translate-y-0.5 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer btn-shimmer"
+                            class="w-full sm:flex-1 bg-gradient-to-r from-brand-primary to-accent hover:from-brand-hover hover:to-accent-hover text-white font-extrabold py-3 px-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.97] shadow-[0_4px_20px_rgba(79,70,229,0.25)] hover:shadow-[0_8px_30px_rgba(79,70,229,0.45)] hover:-translate-y-0.5 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary cursor-pointer btn-shimmer"
                             aria-label="{{ __('global.add_to_cart') }}">
                         <svg x-show="!cartLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         <svg x-show="cartLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -237,7 +226,7 @@
                     {{-- Buy Now --}}
                     <button @click="buyNow"
                             :disabled="stockStatus !== 'in_stock' || buyLoading"
-                            class="w-full sm:flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3.5 px-5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.97] shadow-[0_4px_20px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
+                            class="w-full sm:flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold py-3 px-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.97] shadow-[0_4px_20px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_30px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
                             aria-label="{{ __('global.buy_now') }}">
                         <svg x-show="!buyLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                         <svg x-show="buyLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -248,11 +237,140 @@
             </div>
 
             {{-- Description --}}
-            <div class="mt-2">
-                <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">{{ __('global.description') }}</h3>
+            <div class="mt-1.5">
+                <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">{{ __('global.description') }}</h3>
                 <div class="text-slate-600 dark:text-slate-300 leading-relaxed text-sm bg-white/40 dark:bg-surface-dark/40 rounded-2xl p-4 border border-slate-200/40 dark:border-slate-800/40 backdrop-blur-sm">
                     {!! nl2br($product->description) !!}
                 </div>
+            </div>
+
+            {{-- Reviews Section --}}
+            <div class="mt-4" x-data="{
+                rating: 0,
+                hoverRating: 0,
+                comment: '',
+                submitting: false,
+                submitted: false,
+                message: '',
+                showForm: false,
+                userCanReview: {{ json_encode($userCanReview) }},
+                isGuest: {{ auth()->check() ? 'false' : 'true' }},
+                submitReview() {
+                    if (this.rating === 0) return;
+                    this.submitting = true;
+                    fetch('{{ route('reviews.store', $product) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ rating: this.rating, comment: this.comment })
+                    })
+                    .then(r => r.json())
+                    .then(d => {
+                        this.submitting = false;
+                        this.submitted = true;
+                        this.message = d.message;
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: d.message, type: 'success' } }));
+                    })
+                    .catch(e => {
+                        this.submitting = false;
+                        if (e.response) {
+                            e.response.json().then(d => {
+                                this.message = d.message;
+                                window.dispatchEvent(new CustomEvent('toast', { detail: { message: d.message, type: 'error' } }));
+                            });
+                        }
+                    });
+                },
+                promptLogin() {
+                    window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __('global.login_required') }}', type: 'info' } }));
+                    setTimeout(() => { window.location.href = '{{ route('login', ['redirect' => url()->current()]) }}'; }, 1500);
+                }
+            }">
+                {{-- Aggregate Rating --}}
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex items-center gap-0.5">
+                        @for($i = 1; $i <= 5; $i++)
+                            <svg class="w-4 h-4 {{ $avgRating && $i <= round($avgRating) ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        @endfor
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                        @if($totalReviews > 0)
+                            {{ number_format($avgRating, 1) }} {{ __('global.out_of') }} 5 ({{ $totalReviews }} {{ __('global.reviews') }})
+                        @else
+                            {{ __('global.no_reviews_yet') }}
+                        @endif
+                    </span>
+                </div>
+
+                {{-- Add Review Trigger --}}
+                <button @click="
+                    if (isGuest) { promptLogin(); return; }
+                    if (userCanReview === 'already_reviewed') {
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ app()->getLocale() === 'ar' ? 'لقد قمت بتقييم هذا المنتج مسبقاً.' : 'You have already reviewed this product.' }}', type: 'info' } }));
+                        return;
+                    }
+                    if (userCanReview === false) {
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ app()->getLocale() === 'ar' ? 'التقييم متاح فقط لأصحاب الطلبات المستلمة للمنتج لضمان المصداقية.' : 'Reviews are only available for customers who have purchased and received this product.' }}', type: 'info' } }));
+                        return;
+                    }
+                    showForm = !showForm;
+                " class="text-xs font-bold text-brand-primary dark:text-accent hover:underline transition mb-3 inline-flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                    <span>{{ __('global.add_review') }}</span>
+                </button>
+
+                {{-- Review Form --}}
+                <div x-show="showForm" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" class="bg-white/40 dark:bg-surface-dark/40 border border-slate-200/40 dark:border-slate-800/40 rounded-2xl p-4 mb-3 backdrop-blur-sm">
+                    {{-- Interactive Stars --}}
+                    <div class="flex items-center gap-1 mb-3" dir="ltr">
+                        <template x-for="star in [1,2,3,4,5]" :key="star">
+                            <button @click="rating = star" @mouseenter="hoverRating = star" @mouseleave="hoverRating = 0"
+                                    class="cursor-pointer focus-visible:outline-none transition-transform duration-150 hover:scale-110"
+                                    :aria-label="'Rate ' + star + ' stars'">
+                                <svg class="w-7 h-7" :class="(hoverRating || rating) >= star ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            </button>
+                        </template>
+                    </div>
+                    {{-- Comment --}}
+                    <textarea x-model="comment" rows="3"
+                              class="w-full border-2 border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 focus:border-brand-primary dark:focus:border-accent focus:ring-0 transition resize-none"
+                              :placeholder="'{{ app()->getLocale() === 'ar' ? 'اكتب مراجعتك...' : 'Write your review...' }}'"></textarea>
+                    {{-- Submit --}}
+                    <div class="flex justify-end mt-2">
+                        <button @click="submitReview" :disabled="rating === 0 || submitting"
+                                class="bg-brand-primary hover:bg-brand-hover text-white text-xs font-extrabold px-4 py-2 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5 cursor-pointer">
+                            <svg x-show="!submitting" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            <svg x-show="submitting" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <span x-text="submitting ? '{{ __('global.sending') }}...' : '{{ __('global.send') }}'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Existing Reviews --}}
+                @if($totalReviews > 0)
+                <div class="space-y-3">
+                    @foreach($reviews as $review)
+                    <div class="bg-white/30 dark:bg-surface-dark/30 border border-slate-200/30 dark:border-slate-800/30 rounded-xl p-3">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="flex items-center gap-0.5">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <svg class="w-3 h-3 {{ $i <= $review->rating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                @endfor
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ $review->user->name }}</span>
+                            <span class="text-[10px] text-slate-300 dark:text-slate-600">·</span>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ $review->created_at->diffForHumans() }}</span>
+                        </div>
+                        @if($review->comment)
+                        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" dir="auto">{{ $review->comment }}</p>
+                        @endif
+                    </div>
+                    @endforeach
+                </div>
+                @endif
             </div>
         </div>
     </div>

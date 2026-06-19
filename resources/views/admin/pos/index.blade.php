@@ -831,7 +831,8 @@ document.addEventListener('alpine:init', () => {
         // --- Format Price ---
         formatPrice(price) {
             const value = Math.round(parseFloat(price || 0));
-            return new Intl.NumberFormat('en-US', {
+            const locale = document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US';
+            return new Intl.NumberFormat(locale, {
                 style: 'currency', currency: 'EGP', maximumFractionDigits: 0
             }).format(value);
         }

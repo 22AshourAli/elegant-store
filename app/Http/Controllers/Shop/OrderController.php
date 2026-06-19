@@ -55,7 +55,7 @@ class OrderController extends Controller
             $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
             foreach ($admins as $admin) {
                 try {
-                    $admin->notify(new \App\Notifications\OrderStatusChanged($order, OrderStatus::Cancelled->value));
+                    $admin->notify(new \App\Notifications\OrderStatusChanged($order, OrderStatus::Cancelled->value, forAdmin: true));
                 } catch (\Throwable $e) {
                     \Log::error('Cancel notif failed for ' . $admin->email . ': ' . $e->getMessage());
                 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
@@ -42,11 +43,32 @@ class ProductController extends Controller
             $colorImages[$key] = $variantWithImage ? $variantWithImage->imageUrl() : $product->firstImageUrl();
         }
 
+        $reviews = $product->approvedReviews()->with('user')->latest()->get();
+        $avgRating = $reviews->avg('rating');
+        $totalReviews = $reviews->count();
+
+        $userCanReview = null; // null = guest, true = can review, false = cannot
+        if (auth()->check()) {
+            $user = auth()->user();
+            $hasReviewed = \App\Models\Review::where('user_id', $user->id)
+                ->where('product_id', $product->id)
+                ->exists();
+            if ($hasReviewed) {
+                $userCanReview = 'already_reviewed';
+            } else {
+                $hasPurchased = $user->orders()
+                    ->where('status', OrderStatus::Delivered->value)
+                    ->whereHas('items', fn($q) => $q->whereHas('variant', fn($v) => $v->where('product_id', $product->id)))
+                    ->exists();
+                $userCanReview = $hasPurchased;
+            }
+        }
+
         \SEOMeta::setTitle($product->name . ' | Elegant Store');
         \SEOMeta::setDescription($product->meta_description ?? mb_substr(strip_tags($product->description), 0, 160));
         \OpenGraph::setTitle($product->name);
         \OpenGraph::addImage($product->firstImageUrl());
 
-        return view('shop.product', compact('product', 'colors', 'sizes', 'colorImages'));
+        return view('shop.product', compact('product', 'colors', 'sizes', 'colorImages', 'reviews', 'avgRating', 'totalReviews', 'userCanReview'));
     }
 }

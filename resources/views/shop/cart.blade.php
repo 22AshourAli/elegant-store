@@ -233,7 +233,8 @@
             },
 
             formatPrice(price) {
-                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
+                const locale = document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US';
+                return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EGP', maximumFractionDigits: 0 }).format(Math.round(price));
             },
 
             get appliedCouponText() {

@@ -63,6 +63,8 @@
         }
         thead th:first-child { border-radius: 0 8px 8px 0; }
         thead th:last-child { border-radius: 8px 0 0 8px; }
+        tr { page-break-inside: avoid; }
+        .footer { page-break-before: auto; page-break-after: avoid; }
         tbody td {
             padding: 10px 12px; border-bottom: 1px solid #f3f4f6;
             font-size: 13px; vertical-align: middle;
@@ -216,11 +218,11 @@
 
         <!-- الفوتر -->
         <div class="footer">
-            <div class="thanks">{{ __('global.admin_thanks_message') }}</div>
+            <div class="thanks">{{ __('global.invoice_thanks') }}</div>
             <div class="contact">
-                <span>Elegant Store</span>
-                <span>{{ __('global.admin_phone') }} +{{ config('store.admin_phone') }}</span>
-                <span>{{ __('global.admin_email') }} {{ config('store.admin_email') }}</span>
+                <span style="font-weight:700;color:#4f46e5">{{ config('app.name', 'Elegant Store') }}</span>
+                <span style="display:block;margin-top:4px">{{ __('global.admin_phone') }}: {{ config('store.admin_phone', '201094022327') }}</span>
+                <span>{{ __('global.admin_email') }}: {{ config('store.admin_email', 'ashourali1v@gmail.com') }}</span>
             </div>
         </div>
     </div>

@@ -345,7 +345,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var D = typeof CHECKOUT_DATA !== 'undefined' ? CHECKOUT_DATA : {};
 
     function fmtPrice(v) {
-        return Math.round(parseFloat(v || 0)).toLocaleString('en-US') + ' ' + D.currency;
+        const locale = document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US';
+        return Math.round(parseFloat(v || 0)).toLocaleString(locale) + ' ' + D.currency;
     }
 
     function updateShippingDisplay(cost, known) {
@@ -484,7 +485,8 @@ document.addEventListener('alpine:init', () => {
 
         formatPrice(price) {
             var value = Math.round(parseFloat(price || 0));
-            return value.toLocaleString('en-US') + ' {{ __('global.currency') }}';
+            var locale = document.documentElement.lang === 'ar' ? 'ar-EG' : 'en-US';
+            return value.toLocaleString(locale) + ' {{ __('global.currency') }}';
         },
 
         get shipping() {

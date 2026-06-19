@@ -48,6 +48,16 @@ class Product extends Model implements HasMedia
         return $this->hasMany(ProductColorImage::class)->orderBy('sort_order');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function approvedReviews()
+    {
+        return $this->reviews()->where('status', 'approved');
+    }
+
     public function colorGroupedImages(): array
     {
         $groups = [];

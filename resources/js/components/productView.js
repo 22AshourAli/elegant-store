@@ -1,4 +1,4 @@
-import { formatPrice } from '../app';
+import { formatPrice, formatNumber } from '../app';
 
 export default function productView(productViewData) {
     const { product, colors, sizes, colorImages, firstImageUrl } = productViewData;
@@ -86,7 +86,7 @@ export default function productView(productViewData) {
         },
 
         formatPrice,
-        formatNumber: formatPrice,
+        formatNumber,
         normalize,
 
         addToCart() {

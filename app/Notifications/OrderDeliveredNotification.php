@@ -34,11 +34,11 @@ class OrderDeliveredNotification extends Notification
 
         return (new MailMessage)
             ->subject(__('return.delivery_notification_subject', ['id' => $this->order->id]))
-            ->greeting(__('مرحباً :name', ['name' => $notifiable->name]))
+            ->greeting(__('global.greeting', ['name' => $notifiable->name]))
             ->line(__('return.delivery_notification_body', ['id' => $this->order->id, 'date' => $deliveredAt]))
             ->line(__('return.delivery_notification_window'))
-            ->action(__('return.view_order'), route('orders.show', $this->order->id))
-            ->line(__('return.thanks'));
+            ->action(__('global.view_order'), route('orders.show', $this->order->id))
+            ->line(__('global.thanks_short'));
     }
 
     public function toDatabase($notifiable): array

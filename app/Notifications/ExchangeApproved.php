@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notification;
 class ExchangeApproved extends Notification
 {
     public Order $order;
-    public $exchange; // Exchange or ReturnRequest model
+    public $exchange;
 
     public function __construct(Order $order, $exchange)
     {
@@ -28,10 +28,13 @@ class ExchangeApproved extends Notification
 
     public function toMail($notifiable): MailMessage
     {
+        $locale = $notifiable->locale ?? app()->getLocale();
+        app()->setLocale($locale);
+
         return (new MailMessage)
-            ->subject('تم الموافقة على طلب الاستبدال')
-            ->line('تمت الموافقة على طلب الاستبدال للطلب رقم #' . $this->order->id)
-            ->action('عرض التفاصيل', route('exchanges.index'));
+            ->subject(__('global.exchange_approved_subject'))
+            ->line(__('global.exchange_approved_body', ['order_id' => $this->order->id]))
+            ->action(__('global.view_order'), route('exchanges.index'));
     }
 
     public function toArray($notifiable): array
@@ -40,7 +43,7 @@ class ExchangeApproved extends Notification
             'order_id' => $this->order->id,
             'return_request_id' => $this->exchange->id,
             'type' => 'exchange_approved',
-            'message' => 'تمت الموافقة على طلب الاستبدال للطلب رقم #' . $this->order->id,
+            'message' => __('global.exchange_approved_body', ['order_id' => $this->order->id]),
         ];
     }
 }

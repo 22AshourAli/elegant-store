@@ -25,34 +25,46 @@ class AbandonedCartReminder extends Notification
 
     public function toMail($notifiable): MailMessage
     {
+        $locale = $notifiable->locale ?? app()->getLocale();
+        app()->setLocale($locale);
+
+        $currency = __('global.currency');
+
         $mail = (new MailMessage)
-            ->subject(__('سلة التسوق في انتظارك!'))
-            ->greeting(__('مرحباً :name', ['name' => $notifiable->name ?? '']))
-            ->line(__('تذكرنا أنك تركت بعض المنتجات في سلة التسوق.'))
-            ->line(__('قيمة مشترياتك: :total EGP', ['total' => number_format($this->cart->total, 2)]));
+            ->subject(__('global.abandoned_cart_subject'))
+            ->greeting(__('global.greeting', ['name' => $notifiable->name ?? '']))
+            ->line(__('global.abandoned_cart_line1'))
+            ->line(__('global.abandoned_cart_total', ['total' => number_format($this->cart->total, 2), 'currency' => $currency]));
 
         if ($this->couponCode) {
-            $mail->line(__('استخدم كود الخصم :code للحصول على خصم 10%!', ['code' => $this->couponCode]))
-                ->line(__('الكود صالح لمدة 3 أيام فقط.'));
+            $mail->line(__('global.abandoned_cart_coupon', ['code' => $this->couponCode]))
+                ->line(__('global.abandoned_cart_coupon_valid'));
         }
 
-        $mail->action(__('العودة إلى السلة'), $this->recoveryUrl)
-            ->line(__('لا تترك منتجاتك المفضلة، عد وأكمل طلبك!'));
+        $mail->action(__('global.abandoned_cart_action'), $this->recoveryUrl)
+            ->line(__('global.abandoned_cart_footer'));
 
         return $mail;
     }
 
     public function toDatabase($notifiable): array
     {
+        $locale = $notifiable->locale ?? app()->getLocale();
+        app()->setLocale($locale);
+
+        $currency = __('global.currency');
+        $couponNote = $this->couponCode ? ' — ' . __('global.coupon_discount_label') . ': ' . $this->couponCode : '';
+
         return [
             'cart_id' => $this->cart->id,
             'total' => (float) $this->cart->total,
             'coupon_code' => $this->couponCode,
             'reminder_count' => $this->reminderCount,
             'recovery_url' => $this->recoveryUrl,
-            'message' => __('سلة التسوق في انتظارك بقيمة :total EGP' . ($this->couponCode ? ' — كود خصم :code' : ''), [
+            'message' => __('global.abandoned_cart_db_message', [
                 'total' => number_format($this->cart->total, 2),
-                'code' => $this->couponCode ?? '',
+                'currency' => $currency,
+                'coupon_note' => $couponNote,
             ]),
         ];
     }
