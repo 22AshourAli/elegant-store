@@ -24,6 +24,10 @@
     .print-header h1 { font-size: 16pt; font-weight: 800; color: #111; margin: 0; }
     .print-header .date { font-size: 9pt; color: #666; }
     .chart-box { page-break-inside: avoid; }
+    .dark\:text-white, .text-white { color: #000000 !important; }
+    .dark\:text-gray-100, .text-gray-100 { color: #111111 !important; }
+    .dark\:text-gray-300, .text-gray-300 { color: #222222 !important; }
+    .dark\:text-gray-400, .text-gray-400 { color: #333333 !important; }
 }
 .print-only { display: none; }
 </style>
@@ -298,6 +302,7 @@
     const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
     const textColor = isDark ? '#94a3b8' : '#64748b';
     const fontFamily = "'Inter', system-ui, sans-serif";
+    const currency = @json(__('global.currency'));
 
     const salesCtx = document.getElementById('salesTrendChart');
     if (salesCtx) {
@@ -324,7 +329,7 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ctx.parsed.y.toFixed(2) + ' EGP'
+                            label: ctx => ctx.parsed.y.toFixed(2) + ' ' + currency
                         }
                     }
                 },
@@ -366,7 +371,7 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: ctx => ctx.parsed.x.toFixed(2) + ' EGP'
+                            label: ctx => ctx.parsed.x.toFixed(2) + ' ' + currency
                         }
                     }
                 },

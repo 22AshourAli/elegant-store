@@ -23,24 +23,50 @@
     .kpi-card h3 { font-size: 14pt !important; }
     .kpi-card span.label { font-size: 7pt !important; }
     .chart-container { page-break-inside: avoid; max-height: 220px !important; }
+    .dark\:text-white, .text-white { color: #000000 !important; }
+    .dark\:text-gray-100, .text-gray-100 { color: #111111 !important; }
+    .dark\:text-gray-300, .text-gray-300 { color: #222222 !important; }
+    .dark\:text-gray-400, .text-gray-400 { color: #333333 !important; }
 }
 </style>
 
 @section('content')
 <div class="space-y-6 text-start" x-data="dashboardPage()">
     {{-- Filter Bar --}}
-    <div class="filter-bar bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+    <div class="filter-bar bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 dark:border-amber-500/20 shadow-lg shadow-amber-500/5 p-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                 <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('global.admin_period') }}:</span>
-                @php $periods = ['today' => __('global.period_today'), '7days' => __('global.period_7days'), 'month' => __('global.period_month'), 'quarter' => __('global.period_quarter'), 'year' => __('global.period_year'), 'all' => __('global.period_all')]; @endphp
-                @foreach($periods as $key => $label)
-                <a href="{{ url()->current() }}?period={{ $key }}"
-                   class="px-3 py-1.5 text-sm font-semibold rounded-xl transition-all
-                   {{ $period === $key ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">
-                    {{ $label }}
-                </a>
-                @endforeach
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" @click.away="open = false"
+                        class="flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition cursor-pointer min-w-[130px]">
+                        <span x-text="{
+                            'today': '{{ __('global.period_today') }}',
+                            '7days': '{{ __('global.period_7days') }}',
+                            'month': '{{ __('global.period_month') }}',
+                            'quarter': '{{ __('global.period_quarter') }}',
+                            'year': '{{ __('global.period_year') }}',
+                            'all': '{{ __('global.period_all') }}'
+                        }['{{ $period }}'] || '{{ __('global.period_month') }}'"></span>
+                        <svg class="w-3.5 h-3.5 text-amber-500 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="open" x-cloak
+                        class="absolute top-full right-0 mt-1 min-w-[160px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-xl shadow-lg border border-amber-500/20 z-50 py-1 overflow-hidden">
+                        @php $periods = ['today' => 'period_today', '7days' => 'period_7days', 'month' => 'period_month', 'quarter' => 'period_quarter', 'year' => 'period_year', 'all' => 'period_all']; @endphp
+                        @foreach($periods as $key => $label)
+                        <a href="{{ url()->current() }}?period={{ $key }}"
+                           class="flex items-center gap-2 px-3 py-2 text-xs font-bold transition {{ $period === $key ? 'text-amber-600 dark:text-amber-400 bg-amber-500/10' : 'text-gray-600 dark:text-gray-400 hover:bg-amber-500/5 hover:text-amber-600 dark:hover:text-amber-400' }}">
+                            @if($period === $key)
+                            <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            @else
+                            <span class="w-3.5 h-3.5"></span>
+                            @endif
+                            {{ __("global.$label") }}
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
             </div>
             <div class="flex items-center gap-2 ms-auto no-print">
                 @if(request('period'))
