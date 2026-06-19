@@ -10,27 +10,7 @@
     $hasSizeVar = $allSizes->isNotEmpty();
     $locale = app()->getLocale();
     $fmtNum = fn($n) => $locale === 'ar' ? str_replace(['0','1','2','3','4','5','6','7','8','9'], ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'], (string)(int)round($n)) : (int)round($n);
-    $colorMap = [
-        'أبيض' => '#FFFFFF', 'أسود' => '#000000', 'كحلي' => '#1E3A5F',
-        'أحمر' => '#EF4444', 'أزرق' => '#3B82F6', 'أخضر' => '#22C55E',
-        'أصفر' => '#EAB308', 'بنفسجي' => '#A855F7', 'وردي' => '#EC4899',
-        'برتقالي' => '#F97316', 'رمادي' => '#6B7280', 'بني' => '#8B4513',
-        'بيج' => '#D4A574', 'ذهبي' => '#D4AF37', 'فضي' => '#C0C0C0',
-        'بترولي' => '#006D6F', 'موف' => '#7B5EA7', 'عنابي' => '#800020',
-        'سماوي' => '#00BFFF', 'زيتوني' => '#556B2F',
-        'white' => '#FFFFFF', 'black' => '#000000', 'navy' => '#1E3A5F',
-        'red' => '#EF4444', 'blue' => '#3B82F6', 'green' => '#22C55E',
-        'yellow' => '#EAB308', 'purple' => '#A855F7', 'pink' => '#EC4899',
-        'orange' => '#F97316', 'gray' => '#6B7280', 'grey' => '#6B7280',
-        'brown' => '#8B4513', 'beige' => '#D4A574', 'gold' => '#D4AF37',
-        'silver' => '#C0C0C0', 'teal' => '#006D6F', 'mauve' => '#7B5EA7',
-        'burgundy' => '#800020', 'sky blue' => '#00BFFF', 'olive' => '#556B2F',
-    ];
-    $getHex = fn($c) => $colorMap[\Illuminate\Support\Str::lower(trim($c))] ?? '#CBD5E1';
-    $colorSamples = $allColors->take(5);
-    $colorRemain = max(0, $allColors->count() - 5);
-    $sizeSamples = $allSizes->take(4);
-    $sizeRemain = max(0, $allSizes->count() - 4);
+
 @endphp
 <article class="group product-card relative overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:glow-indigo"
      x-data="{ inWishlist: {{ $inWish ? 'true' : 'false' }}, inCart: {{ $inCart ? 'true' : 'false' }}, removed: false, addingToCart: false }"
@@ -75,34 +55,7 @@
         </div>
     </a>
 
-    @if($hasColorVar || $hasSizeVar)
-    <div class="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50/60 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700/30">
-        @if($hasColorVar)
-        <div class="flex items-center gap-1" title="{{ $allColors->implode(' · ') }}">
-            @foreach($colorSamples as $color)
-            <span class="block w-3 h-3 rounded-full ring-1 ring-inset ring-slate-300 dark:ring-slate-600" style="background-color: {{ $getHex($color) }}"></span>
-            @endforeach
-            @if($colorRemain)
-            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 ml-0.5 leading-none">+{{ $colorRemain }}</span>
-            @endif
-        </div>
-        @endif
-        @if($hasColorVar && $hasSizeVar)
-        <span class="text-slate-300 dark:text-slate-600 select-none text-[10px]">·</span>
-        @endif
-        @if($hasSizeVar)
-        <div class="flex items-center gap-1">
-            @foreach($sizeSamples as $size)
-            <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 px-1.5 py-[3px] rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 leading-none">{{ $size }}</span>
-            @endforeach
-            @if($sizeRemain)
-            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">+{{ $sizeRemain }}</span>
-            @endif
-        </div>
-        @endif
-    </div>
-    @endif
-
+    
     <div class="p-3 pt-2 text-start bg-white dark:bg-surface-dark">
         <div class="flex items-start justify-between gap-1">
             <h3 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2">
@@ -118,20 +71,32 @@
             @endif
         </div>
 
-        <div class="mt-2">
-            <div class="flex items-baseline gap-1.5 sm:gap-2">
+        <div class="mt-2 flex items-start justify-between gap-2">
+            <div class="min-w-0">
+                <div class="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+                    @if($product->isOnSale)
+                        <span class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-tight whitespace-nowrap">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>
+                        <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 line-through font-bold whitespace-nowrap">{{ $fmtNum($product->base_price) }} {{ __('global.currency') }}</span>
+                    @else
+                        <span class="text-sm sm:text-base font-black text-brand-primary dark:text-accent tracking-tight whitespace-nowrap">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>
+                    @endif
+                </div>
                 @if($product->isOnSale)
-                    <span class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>
-                    <span class="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500 line-through font-bold">{{ $fmtNum($product->base_price) }} {{ __('global.currency') }}</span>
-                @else
-                    <span class="text-sm sm:text-base font-black text-brand-primary dark:text-accent tracking-tight">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>
+                    <p class="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-0.5 flex items-center gap-0.5" dir="auto">
+                        <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        <span>{{ $locale === 'ar' ? 'وفر' : 'Save' }} {{ $fmtNum($product->base_price - $product->current_price) }} {{ __('global.currency') }}</span>
+                    </p>
                 @endif
             </div>
-            @if($product->isOnSale)
-                <p class="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold mt-0.5 flex items-center gap-0.5" dir="auto">
-                    <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <span>{{ app()->getLocale() === 'ar' ? 'وفر' : 'Save' }} {{ $fmtNum($product->base_price - $product->current_price) }} {{ __('global.currency') }}</span>
-                </p>
+            @if($hasColorVar || $hasSizeVar)
+            <div class="flex-shrink-0 text-end">
+                <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed whitespace-nowrap">
+                    {{ $locale === 'ar' ? 'متوفر' : 'Available' }}
+                    @if($hasColorVar){{ $fmtNum($allColors->count()) }} {{ $locale === 'ar' ? 'ألوان' : 'colors' }}@endif
+                    @if($hasColorVar && $hasSizeVar) {{ $locale === 'ar' ? 'و' : '&' }} @endif
+                    @if($hasSizeVar){{ $fmtNum($allSizes->count()) }} {{ $locale === 'ar' ? 'مقاسات' : 'sizes' }}@endif
+                </span>
+            </div>
             @endif
         </div>
 
