@@ -17,7 +17,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-5">
                     <div>
                         <h2 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">{{ __('global.review') }}</h2>
-                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ __('submission_date') }}: {{ $review->created_at->format('Y-m-d H:i') }}</p>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{{ __('global.submission_date') }}: {{ $review->created_at->format('Y-m-d H:i') }}</p>
                     </div>
                     <div class="flex-shrink-0">
                         @if($review->status === 'pending')
@@ -97,7 +97,7 @@
                         <span dir="ltr">{{ $review->user->phone }}</span>
                     </div>
                 @endif
-                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">{{ __('registered') }}: {{ $review->user->created_at->format('Y-m-d') }}</p>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">{{ __('global.registered') }}: {{ $review->user->created_at->format('Y-m-d') }}</p>
             </div>
 
             {{-- Product Info --}}
