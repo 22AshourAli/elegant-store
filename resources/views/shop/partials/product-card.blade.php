@@ -10,6 +10,27 @@
     $hasSizeVar = $allSizes->isNotEmpty();
     $locale = app()->getLocale();
     $fmtNum = fn($n) => $locale === 'ar' ? str_replace(['0','1','2','3','4','5','6','7','8','9'], ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'], (string)(int)round($n)) : (int)round($n);
+    $colorMap = [
+        'أبيض' => '#FFFFFF', 'أسود' => '#000000', 'كحلي' => '#1E3A5F',
+        'أحمر' => '#EF4444', 'أزرق' => '#3B82F6', 'أخضر' => '#22C55E',
+        'أصفر' => '#EAB308', 'بنفسجي' => '#A855F7', 'وردي' => '#EC4899',
+        'برتقالي' => '#F97316', 'رمادي' => '#6B7280', 'بني' => '#8B4513',
+        'بيج' => '#D4A574', 'ذهبي' => '#D4AF37', 'فضي' => '#C0C0C0',
+        'بترولي' => '#006D6F', 'موف' => '#7B5EA7', 'عنابي' => '#800020',
+        'سماوي' => '#00BFFF', 'زيتوني' => '#556B2F',
+        'white' => '#FFFFFF', 'black' => '#000000', 'navy' => '#1E3A5F',
+        'red' => '#EF4444', 'blue' => '#3B82F6', 'green' => '#22C55E',
+        'yellow' => '#EAB308', 'purple' => '#A855F7', 'pink' => '#EC4899',
+        'orange' => '#F97316', 'gray' => '#6B7280', 'grey' => '#6B7280',
+        'brown' => '#8B4513', 'beige' => '#D4A574', 'gold' => '#D4AF37',
+        'silver' => '#C0C0C0', 'teal' => '#006D6F', 'mauve' => '#7B5EA7',
+        'burgundy' => '#800020', 'sky blue' => '#00BFFF', 'olive' => '#556B2F',
+    ];
+    $getHex = fn($c) => $colorMap[\Illuminate\Support\Str::lower(trim($c))] ?? '#CBD5E1';
+    $colorSamples = $allColors->take(5);
+    $colorRemain = max(0, $allColors->count() - 5);
+    $sizeSamples = $allSizes->take(4);
+    $sizeRemain = max(0, $allSizes->count() - 4);
 @endphp
 <article class="group product-card relative overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:glow-indigo"
      x-data="{ inWishlist: {{ $inWish ? 'true' : 'false' }}, inCart: {{ $inCart ? 'true' : 'false' }}, removed: false, addingToCart: false }"
@@ -53,22 +74,36 @@
             </span>
         </div>
     </a>
-    
-    <div class="p-3 pt-2 text-start bg-white dark:bg-surface-dark">
-        @if($hasColorVar || $hasSizeVar)
-        <div class="flex items-center gap-2.5 mb-1.5 flex-wrap" dir="auto">
-            @if($hasColorVar)
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400" title="{{ $allColors->implode(' · ') }}">
-                {{ $locale === 'ar' ? 'ألوان' : 'Colors' }}: {{ $fmtNum($allColors->count()) }}
-            </span>
-            @endif
-            @if($hasSizeVar)
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                {{ $locale === 'ar' ? 'مقاسات' : 'Sizes' }}: {{ $fmtNum($allSizes->count()) }}
-            </span>
+
+    @if($hasColorVar || $hasSizeVar)
+    <div class="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50/60 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-700/30">
+        @if($hasColorVar)
+        <div class="flex items-center gap-1" title="{{ $allColors->implode(' · ') }}">
+            @foreach($colorSamples as $color)
+            <span class="block w-3 h-3 rounded-full ring-1 ring-inset ring-slate-300 dark:ring-slate-600" style="background-color: {{ $getHex($color) }}"></span>
+            @endforeach
+            @if($colorRemain)
+            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 ml-0.5 leading-none">+{{ $colorRemain }}</span>
             @endif
         </div>
         @endif
+        @if($hasColorVar && $hasSizeVar)
+        <span class="text-slate-300 dark:text-slate-600 select-none text-[10px]">·</span>
+        @endif
+        @if($hasSizeVar)
+        <div class="flex items-center gap-1">
+            @foreach($sizeSamples as $size)
+            <span class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 px-1.5 py-[3px] rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 leading-none">{{ $size }}</span>
+            @endforeach
+            @if($sizeRemain)
+            <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 leading-none">+{{ $sizeRemain }}</span>
+            @endif
+        </div>
+        @endif
+    </div>
+    @endif
+
+    <div class="p-3 pt-2 text-start bg-white dark:bg-surface-dark">
         <div class="flex items-start justify-between gap-1">
             <h3 class="text-xs sm:text-sm font-extrabold tracking-tight text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2">
                 <a href="{{ route('shop.product', $product->slug) }}" class="hover:text-brand-primary dark:hover:text-accent text-slate-900 dark:text-white transition-colors duration-300 inline-block focus-visible:outline-none focus-visible:underline" dir="auto">
