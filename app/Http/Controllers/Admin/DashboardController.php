@@ -32,27 +32,25 @@ class DashboardController extends Controller
     public function exportCsv(Request $request)
     {
         $data = $this->getReportData($request);
-        $period = $request->get('period', 'month');
-        $filename = 'تقرير-المبيعات-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'elegant-store-report-' . now()->format('Y-m-d') . '.csv';
 
         return response()->streamDownload(function () use ($data) {
             $handle = fopen('php://output', 'w');
-            // UTF-8 BOM for Excel Arabic support
-            fputs($handle, "\xEF\xBB\xBF");
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            fputcsv($handle, ['التقرير المالي', date('Y-m-d')]);
+            fputcsv($handle, ['Elegant Store — Financial Report', now()->format('Y-m-d')]);
             fputcsv($handle, []);
-            fputcsv($handle, ['البيان', 'القيمة']);
-            fputcsv($handle, ['إجمالي الطلبات', $data['totalOrders']]);
-            fputcsv($handle, ['طلبات Online', $data['onlineOrders']]);
-            fputcsv($handle, ['طلبات Offline', $data['offlineOrders']]);
-            fputcsv($handle, ['إيراد المنتجات', number_format((int) round($data['totalProductRevenue'])) . ' EGP']);
-            fputcsv($handle, ['شحن محصل', number_format((int) round($data['totalShippingCollected'])) . ' EGP']);
-            fputcsv($handle, ['تكلفة البضاعة', number_format((int) round($data['totalCosts'])) . ' EGP']);
-            fputcsv($handle, ['مصروفات أخرى', number_format((int) round($data['totalManualExpenses'])) . ' EGP']);
-            fputcsv($handle, ['صافي الربح', number_format((int) round($data['netProfit'])) . ' EGP']);
-            fputcsv($handle, ['هامش الربح', $data['profitMargin'] . '%']);
-            fputcsv($handle, ['متوسط قيمة الطلب', number_format((int) round($data['aov'])) . ' EGP']);
+            fputcsv($handle, ['Metric', 'Value']);
+            fputcsv($handle, ['Total Orders', $data['totalOrders']]);
+            fputcsv($handle, ['Online Orders', $data['onlineOrders']]);
+            fputcsv($handle, ['Offline Orders', $data['offlineOrders']]);
+            fputcsv($handle, ['Product Revenue', number_format((int) round($data['totalProductRevenue'])) . ' EGP']);
+            fputcsv($handle, ['Shipping Collected', number_format((int) round($data['totalShippingCollected'])) . ' EGP']);
+            fputcsv($handle, ['Cost of Goods Sold', number_format((int) round($data['totalCosts'])) . ' EGP']);
+            fputcsv($handle, ['Other Expenses', number_format((int) round($data['totalManualExpenses'])) . ' EGP']);
+            fputcsv($handle, ['Net Profit', number_format((int) round($data['netProfit'])) . ' EGP']);
+            fputcsv($handle, ['Profit Margin', $data['profitMargin'] . '%']);
+            fputcsv($handle, ['Average Order Value', number_format((int) round($data['aov'])) . ' EGP']);
 
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
@@ -61,8 +59,7 @@ class DashboardController extends Controller
     public function exportExcel(Request $request)
     {
         $data = $this->getReportData($request);
-        $period = $request->get('period', 'month');
-        $filename = 'تقرير-المبيعات-' . now()->format('Y-m-d') . '.xlsx';
+        $filename = 'elegant-store-report-' . now()->format('Y-m-d') . '.xlsx';
 
         return Excel::download(new DashboardExport($data), $filename);
     }
@@ -80,9 +77,8 @@ class DashboardController extends Controller
                 return $item;
             });
         }
-        $period = $request->get('period', 'month');
         $pdf = Pdf::loadView('admin.dashboard-export-pdf', $data);
-        return $pdf->download('تقرير-المبيعات-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->download('elegant-store-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
     private function getReportData(Request $request): array
@@ -93,38 +89,57 @@ class DashboardController extends Controller
         $period = $request->get('period', 'month');
         $dates = $this->parsePeriod($period, $request);
 
+        $completedStatuses = [
+            OrderStatus::Confirmed->value,
+            OrderStatus::Delivered->value,
+            OrderStatus::Collected->value,
+        ];
+        $excludedStatuses = [
+            OrderStatus::Cancelled->value,
+            OrderStatus::Returned->value,
+        ];
+
         $orderQuery = Order::query();
-        $revenueQuery = Order::whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
+        $activeQuery = Order::whereNotIn('status', $excludedStatuses);
+        $completedQuery = Order::whereIn('status', $completedStatuses);
         $returnedQuery = Order::where('status', OrderStatus::Returned->value);
 
         if ($branchId) {
             $orderQuery->where('branch_id', $branchId);
-            $revenueQuery->where('branch_id', $branchId);
+            $activeQuery->where('branch_id', $branchId);
+            $completedQuery->where('branch_id', $branchId);
             $returnedQuery->where('branch_id', $branchId);
         }
 
         if ($dates) {
             $orderQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
-            $revenueQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
+            $activeQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
+            $completedQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
             $returnedQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
         }
 
         $totalOrders = (clone $orderQuery)->count();
         $onlineOrders = (clone $orderQuery)->where('order_type', OrderType::Online->value)->count();
         $offlineOrders = (clone $orderQuery)->where('order_type', OrderType::Offline->value)->count();
-        $totalRevenue = (float) (clone $revenueQuery)->sum('total');
-        $totalProductRevenue = (float) (clone $revenueQuery)->sum('subtotal');
-        $totalShippingCollected = (float) (clone $revenueQuery)->sum('shipping_cost');
-        $totalCustomers = User::where('role', UserRole::Customer->value)->count();
+
+        // --- Financial aggregates ---
+        $totalSales = (float) (clone $activeQuery)->sum('total');
+        $totalProductRevenue = (float) (clone $activeQuery)->sum('subtotal');
+        $totalShippingCollected = (float) (clone $activeQuery)->sum('shipping_cost');
         $returnedAmount = (float) (clone $returnedQuery)->sum('total');
         $returnedCount = (clone $returnedQuery)->count();
 
+        // --- Customers ---
+        $totalCustomers = User::where('role', UserRole::Customer->value)->count();
+
+        // --- Low stock ---
         $threshold = config('store.low_stock_threshold', 5);
         $lowStockCount = ProductVariant::whereHas('branches', function ($q) use ($branchId, $threshold) {
             $q->where('stock', '>', 0)->where('stock', '<', $threshold);
             if ($branchId) $q->where('branch_id', $branchId);
         })->count();
 
+        // --- Returns & exchanges ---
         $returnRequestQuery = ReturnRequest::query();
         $exchangeQuery = Exchange::query();
         if ($branchId) {
@@ -136,21 +151,46 @@ class DashboardController extends Controller
         $exchangeCount = (clone $exchangeQuery)->count();
         $exchangePending = (clone $exchangeQuery)->where('status', ExchangeStatus::Pending->value)->count();
 
-        // --- Chart Data ---
-        $chartDays = match ($period) { 'today' => 0, '7days' => 6, 'month' => 29, 'quarter' => 89, 'year' => 364, default => 29 };
-        $chartMonths = match ($period) { 'today' => 0, '7days' => 0, 'month' => 0, 'quarter' => 2, 'year' => 11, default => 11 };
+        // --- COGS ---
+        $cogsQuery = DB::table('order_items')
+            ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereNotIn('orders.status', $excludedStatuses)
+            ->whereNotNull('product_variants.cost_price');
+        if ($branchId) $cogsQuery->where('orders.branch_id', $branchId);
+        if ($dates) $cogsQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
+        $totalCosts = (float) ($cogsQuery->selectRaw('COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) as total_cost')->value('total_cost') ?? 0);
+
+        // --- Manual expenses ---
+        $expensesQuery = Expense::query();
+        if ($branchId) $expensesQuery->where('branch_id', $branchId);
+        if ($dates) $expensesQuery->whereBetween('expense_date', [$dates['from'], $dates['to']]);
+        $totalManualExpenses = (float) (clone $expensesQuery)->sum('amount');
+
+        // --- Net profit ---
+        $totalExpenses = $totalManualExpenses + $totalShippingCollected;
+        $netProfit = $totalProductRevenue - $totalCosts - $totalExpenses;
+        $profitMargin = $totalProductRevenue > 0 ? round(($netProfit / $totalProductRevenue) * 100, 1) : 0;
+        $aov = $totalOrders > 0 ? round($totalSales / $totalOrders, 2) : 0;
+
+        // --- Chart data ---
+        $chartDays = match ($period) {
+            'today' => 0, '7days' => 6, 'month' => 29, 'quarter' => 89, 'year' => 364, default => 29
+        };
+        $chartMonths = match ($period) {
+            'today' => 0, '7days' => 0, 'month' => 0, 'quarter' => 2, 'year' => 11, default => 11
+        };
         $chartDaily = $chartDays > 0;
 
         if ($chartDaily) {
             $dailyQuery = Order::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('SUM(total) as revenue'),
-                DB::raw('COUNT(*) as count'),
-                DB::raw('SUM(CASE WHEN status NOT IN (\'' . OrderStatus::Cancelled->value . '\',\'' . OrderStatus::Returned->value . '\') THEN subtotal ELSE 0 END) - SUM(CASE WHEN status NOT IN (\'' . OrderStatus::Cancelled->value . '\',\'' . OrderStatus::Returned->value . '\') THEN (SELECT COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) FROM order_items JOIN product_variants ON order_items.product_variant_id = product_variants.id WHERE order_items.order_id = orders.id) ELSE 0 END) as profit')
+                DB::raw('COUNT(DISTINCT id) as count')
             )->where('created_at', '>=', now()->subDays($chartDays)->startOfDay())
-            ->whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
+                ->whereNotIn('status', $excludedStatuses);
             if ($branchId) $dailyQuery->where('branch_id', $branchId);
-            $dailySales = (clone $dailyQuery)->groupBy('date')->orderBy('date')->get();
+            $dailySales = (clone $dailyQuery)->groupBy(DB::raw('DATE(created_at)'))->orderBy('date')->get();
 
             $chartData = [];
             for ($i = $chartDays; $i >= 0; $i--) {
@@ -163,14 +203,14 @@ class DashboardController extends Controller
                         'label' => $sale->date,
                         'revenue' => (float) $sale->revenue,
                         'count' => (int) $sale->count,
-                        'profit' => (float) ($sale->profit ?? 0),
+                        'profit' => 0,
                     ];
                 }
             }
             $chartLabels = collect($chartData)->map(fn($d, $k) => \Carbon\Carbon::parse($k)->format('d M'))->values();
         } else {
             $driver = DB::connection()->getDriverName();
-            $monthFormat = match($driver) {
+            $monthFormat = match ($driver) {
                 'sqlite' => "strftime('%Y-%m', created_at) as month",
                 'pgsql' => "TO_CHAR(created_at, 'YYYY-MM') as month",
                 default => "DATE_FORMAT(created_at, '%Y-%m') as month",
@@ -178,9 +218,9 @@ class DashboardController extends Controller
             $monthlyQuery = Order::select(
                 DB::raw($monthFormat),
                 DB::raw('SUM(total) as revenue'),
-                DB::raw('COUNT(*) as count')
+                DB::raw('COUNT(DISTINCT id) as count')
             )->where('created_at', '>=', now()->subMonths(max($chartMonths, 1))->startOfMonth())
-            ->whereNotIn('status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value]);
+                ->whereNotIn('status', $excludedStatuses);
             if ($branchId) $monthlyQuery->where('branch_id', $branchId);
             $monthlySales = (clone $monthlyQuery)->groupBy('month')->orderBy('month')->get();
 
@@ -195,30 +235,10 @@ class DashboardController extends Controller
                     $chartData[$sale->month]['count'] = (int) $sale->count;
                 }
             }
-            $chartLabels = collect($chartData)->map(fn($d, $k) => \Carbon\Carbon::parse($k.'-01')->format('M Y'))->values();
+            $chartLabels = collect($chartData)->map(fn($d, $k) => \Carbon\Carbon::parse($k . '-01')->format('M Y'))->values();
         }
 
-        // --- COGS ---
-        $cogsQuery = DB::table('order_items')
-            ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereNotIn('orders.status', [OrderStatus::Cancelled->value, OrderStatus::Returned->value])
-            ->whereNotNull('product_variants.cost_price');
-        if ($branchId) $cogsQuery->where('orders.branch_id', $branchId);
-        if ($dates) $cogsQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
-        $totalCosts = (float) (clone $cogsQuery)->select(DB::raw('SUM(order_items.quantity * product_variants.cost_price) as total_cost'))->value('total_cost') ?? 0;
-
-        // --- Expenses ---
-        $expensesQuery = Expense::query();
-        if ($branchId) $expensesQuery->where('branch_id', $branchId);
-        if ($dates) $expensesQuery->whereBetween('expense_date', [$dates['from'], $dates['to']]);
-        $totalManualExpenses = (float) (clone $expensesQuery)->sum('amount');
-        $totalExpenses = $totalManualExpenses + $totalShippingCollected;
-
-        $netProfit = $totalProductRevenue - $totalCosts - $totalExpenses;
-        $profitMargin = $totalProductRevenue > 0 ? round(($netProfit / $totalProductRevenue) * 100, 1) : 0;
-        $aov = $totalOrders > 0 ? round($totalRevenue / $totalOrders, 2) : 0;
-
+        // --- Low stock items ---
         $lowStockQuery = DB::table('branch_product_variant')
             ->join('branches', 'branch_product_variant.branch_id', '=', 'branches.id')
             ->join('product_variants', 'branch_product_variant.product_variant_id', '=', 'product_variants.id')
@@ -235,6 +255,7 @@ class DashboardController extends Controller
         if ($branchId) $lowStockQuery->where('branch_product_variant.branch_id', $branchId);
         $lowStockItems = (clone $lowStockQuery)->orderBy('branch_product_variant.stock', 'asc')->limit(10)->get();
 
+        // --- Recent expenses ---
         $recentExpenses = null;
         if (!$dates || now()->diffInDays(\Carbon\Carbon::parse($dates['from'])) <= 365) {
             $recentExpensesQuery = Expense::orderBy('expense_date', 'desc')->orderBy('created_at', 'desc');
@@ -245,7 +266,7 @@ class DashboardController extends Controller
         return compact(
             'period',
             'totalOrders', 'onlineOrders', 'offlineOrders',
-            'totalRevenue', 'totalProductRevenue', 'totalShippingCollected',
+            'totalSales', 'totalProductRevenue', 'totalShippingCollected',
             'totalCustomers', 'lowStockCount',
             'chartData', 'chartLabels',
             'lowStockItems',

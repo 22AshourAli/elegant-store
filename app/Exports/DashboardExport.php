@@ -3,10 +3,11 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 
-class DashboardExport implements FromArray, WithHeadings, WithTitle
+class DashboardExport extends DefaultValueBinder implements FromArray, WithCustomValueBinder, WithTitle
 {
     protected array $data;
 
@@ -18,29 +19,24 @@ class DashboardExport implements FromArray, WithHeadings, WithTitle
     public function array(): array
     {
         return [
-            ['التقرير المالي', now()->format('Y-m-d')],
+            ['Elegant Store — Financial Report', now()->format('Y-m-d')],
             [],
-            ['البيان', 'القيمة'],
-            ['إجمالي الطلبات', $this->data['totalOrders']],
-            ['طلبات Online', $this->data['onlineOrders']],
-            ['طلبات Offline', $this->data['offlineOrders']],
-            ['إيراد المنتجات', number_format((int) round($this->data['totalProductRevenue'])) . ' EGP'],
-            ['شحن محصل', number_format((int) round($this->data['totalShippingCollected'])) . ' EGP'],
-            ['تكلفة البضاعة', number_format((int) round($this->data['totalCosts'])) . ' EGP'],
-            ['مصروفات أخرى', number_format((int) round($this->data['totalManualExpenses'])) . ' EGP'],
-            ['صافي الربح', number_format((int) round($this->data['netProfit'])) . ' EGP'],
-            ['هامش الربح', $this->data['profitMargin'] . '%'],
-            ['متوسط قيمة الطلب', number_format((int) round($this->data['aov'])) . ' EGP'],
+            ['Metric', 'Value'],
+            ['Total Orders', $this->data['totalOrders']],
+            ['Online Orders', $this->data['onlineOrders']],
+            ['Offline Orders', $this->data['offlineOrders']],
+            ['Product Revenue', number_format((int) round($this->data['totalProductRevenue'])) . ' EGP'],
+            ['Shipping Collected', number_format((int) round($this->data['totalShippingCollected'])) . ' EGP'],
+            ['Cost of Goods Sold', number_format((int) round($this->data['totalCosts'])) . ' EGP'],
+            ['Other Expenses', number_format((int) round($this->data['totalManualExpenses'])) . ' EGP'],
+            ['Net Profit', number_format((int) round($this->data['netProfit'])) . ' EGP'],
+            ['Profit Margin', $this->data['profitMargin'] . '%'],
+            ['Average Order Value', number_format((int) round($this->data['aov'])) . ' EGP'],
         ];
-    }
-
-    public function headings(): array
-    {
-        return [];
     }
 
     public function title(): string
     {
-        return 'تقرير المبيعات';
+        return 'Financial Report';
     }
 }

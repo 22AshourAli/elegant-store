@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
 use App\Models\AbandonedCart;
+use App\Models\Expense;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Services\AnalyticsService;
 use App\Services\PaymentReconciliationService;
 use Illuminate\Http\Request;
@@ -22,137 +22,173 @@ class AnalyticsController extends Controller
     public function index(Request $request)
     {
         $period = $request->input('period', 'month');
-        $dateFrom = match ($period) {
-            'today' => now()->startOfDay(),
-            'week' => now()->startOfWeek(),
-            'month' => now()->startOfMonth(),
-            'year' => now()->startOfYear(),
-            'all' => null,
-            default => now()->startOfMonth(),
-        };
+        $dates = $this->parsePeriod($period, $request);
 
         $completedStatuses = [
             OrderStatus::Confirmed->value,
             OrderStatus::Delivered->value,
             OrderStatus::Collected->value,
         ];
+        $excludedStatuses = [
+            OrderStatus::Cancelled->value,
+            OrderStatus::Returned->value,
+        ];
+        $activeStatuses = array_merge($completedStatuses, [
+            OrderStatus::Pending->value,
+            OrderStatus::Processing->value,
+            OrderStatus::Shipped->value,
+            OrderStatus::OutForDelivery->value,
+        ]);
 
-        // Base order query
-        $ordersQuery = Order::query();
-        if ($dateFrom) {
-            $ordersQuery->where('created_at', '>=', $dateFrom);
+        // --- Base order scopes ---
+        $baseQuery = Order::query();
+        $activeQuery = Order::whereNotIn('status', $excludedStatuses);
+        $completedQuery = Order::whereIn('status', $completedStatuses);
+        if ($dates) {
+            $baseQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
+            $activeQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
+            $completedQuery->whereBetween('created_at', [$dates['from'], $dates['to']]);
         }
 
-        // Completed orders query
-        $completedQuery = clone $ordersQuery;
-        $completedQuery->whereIn('status', $completedStatuses);
-
-        // Total completed orders
+        // --- Counts with DISTINCT to prevent item-join duplication ---
+        $totalOrders = (clone $baseQuery)->count();
         $completedOrders = (clone $completedQuery)->count();
+        $onlineOrders = (clone $baseQuery)->where('order_type', 'online')->count();
+        $offlineOrders = (clone $baseQuery)->where('order_type', 'offline')->count();
 
-        // Total sales (sum of total for completed orders)
-        $totalSales = (clone $completedQuery)->sum('total');
+        // --- Financial aggregates (completed orders only) ---
+        $totalSales = (float) (clone $completedQuery)->sum('total');
+        $totalProductRevenue = (float) (clone $completedQuery)->sum('subtotal');
+        $totalShippingCollected = (float) (clone $completedQuery)->sum('shipping_cost');
 
-        // Total orders (all statuses)
-        $totalOrders = (clone $ordersQuery)->count();
+        // --- COGS: cost_price * quantity via order_items ---
+        $cogsQuery = DB::table('order_items')
+            ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereIn('orders.status', $completedStatuses)
+            ->whereNotNull('product_variants.cost_price');
+        if ($dates) {
+            $cogsQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
+        }
+        $totalCosts = (float) ($cogsQuery->selectRaw('COALESCE(SUM(order_items.quantity * product_variants.cost_price), 0) as total')->value('total') ?? 0);
 
-        // Conversion rate
+        // --- Manual expenses ---
+        $expensesQuery = Expense::query();
+        if ($dates) {
+            $expensesQuery->whereBetween('expense_date', [$dates['from'], $dates['to']]);
+        }
+        $totalManualExpenses = (float) (clone $expensesQuery)->sum('amount');
+
+        // --- Net profit ---
+        $totalExpenses = $totalManualExpenses + $totalShippingCollected;
+        $netProfit = $totalProductRevenue - $totalCosts - $totalExpenses;
+        $profitMargin = $totalProductRevenue > 0 ? round(($netProfit / $totalProductRevenue) * 100, 1) : 0;
+
+        // --- Conversion rate ---
         $conversionRate = $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 1) : 0;
 
-        // Net profit
-        $profitQuery = DB::table('order_items')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
-            ->whereIn('orders.status', $completedStatuses);
-        if ($dateFrom) {
-            $profitQuery->where('orders.created_at', '>=', $dateFrom);
-        }
-        $netProfit = $profitQuery
-            ->selectRaw('COALESCE(SUM((order_items.unit_price - COALESCE(product_variants.cost_price, 0)) * order_items.quantity), 0) as profit')
-            ->value('profit');
-        $netProfit = round((float) $netProfit, 2);
+        // --- AOV ---
+        $aov = $completedOrders > 0 ? round($totalSales / $completedOrders, 2) : 0;
 
-        // Daily/monthly sales trend
-        $trendQuery = DB::table('orders')
-            ->whereIn('status', $completedStatuses);
-        if ($dateFrom) {
-            $trendQuery->where('created_at', '>=', $dateFrom);
-        }
-        $salesTrend = $trendQuery
-            ->selectRaw('DATE(created_at) as date, SUM(total) as total')
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->orderBy('date')
-            ->get();
-        $salesTrendLabels = $salesTrend->pluck('date')->map(fn($d) => (string) $d);
-        $salesTrendData = $salesTrend->pluck('total')->map(fn($v) => (float) $v);
+        // --- Sales trend (daily) ---
+        $trendDays = match ($period) {
+            'today' => 0, 'week' => 6, 'month' => 29, 'quarter' => 89, 'year' => 364, default => 29
+        };
+        $chartDaily = $trendDays > 0;
 
-        // Top products by revenue
+        if ($chartDaily) {
+            $dailyQuery = DB::table('orders')
+                ->whereIn('status', $completedStatuses)
+                ->where('created_at', '>=', now()->subDays($trendDays)->startOfDay());
+            $dailySales = (clone $dailyQuery)
+                ->selectRaw('DATE(created_at) as date, SUM(total) as revenue, COUNT(DISTINCT id) as count')
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->orderBy('date')
+                ->get();
+
+            $chartData = [];
+            for ($i = $trendDays; $i >= 0; $i--) {
+                $date = now()->subDays($i)->format('Y-m-d');
+                $chartData[$date] = ['revenue' => 0, 'count' => 0];
+            }
+            foreach ($dailySales as $sale) {
+                if (isset($chartData[$sale->date])) {
+                    $chartData[$sale->date] = [
+                        'revenue' => (float) $sale->revenue,
+                        'count' => (int) $sale->count,
+                    ];
+                }
+            }
+            $chartLabels = collect($chartData)->map(fn($d, $k) => \Carbon\Carbon::parse($k)->format('d M'))->values();
+            $chartValues = collect($chartData)->pluck('revenue')->values();
+        } else {
+            $chartLabels = collect([]);
+            $chartValues = collect([]);
+        }
+
+        // --- Top products ---
         $topProductsQuery = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->whereIn('orders.status', $completedStatuses);
-        if ($dateFrom) {
-            $topProductsQuery->where('orders.created_at', '>=', $dateFrom);
+        if ($dates) {
+            $topProductsQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
         }
-        $topProducts = $topProductsQuery
+        $topProducts = (clone $topProductsQuery)
             ->selectRaw('order_items.product_name, SUM(order_items.total) as total, SUM(order_items.quantity) as quantity')
             ->groupBy('order_items.product_name')
             ->orderByDesc('total')
             ->limit(10)
             ->get();
-        $topProductLabels = $topProducts->pluck('product_name');
-        $topProductData = $topProducts->pluck('total')->map(fn($v) => (float) $v);
 
-        // Top colors
-        $topColorsQuery = DB::table('order_items')
+        // --- Colors & sizes ---
+        $colorQuery = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->whereIn('orders.status', $completedStatuses)
             ->whereNotNull('order_items.color');
-        if ($dateFrom) {
-            $topColorsQuery->where('orders.created_at', '>=', $dateFrom);
+        if ($dates) {
+            $colorQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
         }
-        $topColors = $topColorsQuery
+        $topColors = (clone $colorQuery)
             ->selectRaw('order_items.color, SUM(order_items.quantity) as quantity')
             ->groupBy('order_items.color')
             ->orderByDesc('quantity')
             ->limit(5)
             ->get();
 
-        // Top sizes
-        $topSizesQuery = DB::table('order_items')
+        $sizeQuery = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->whereIn('orders.status', $completedStatuses)
             ->whereNotNull('order_items.size');
-        if ($dateFrom) {
-            $topSizesQuery->where('orders.created_at', '>=', $dateFrom);
+        if ($dates) {
+            $sizeQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
         }
-        $topSizes = $topSizesQuery
+        $topSizes = (clone $sizeQuery)
             ->selectRaw('order_items.size, SUM(order_items.quantity) as quantity')
             ->groupBy('order_items.size')
             ->orderByDesc('quantity')
             ->limit(5)
             ->get();
 
-        // Abandoned carts
+        // --- Abandoned carts ---
         $abandonedQuery = AbandonedCart::where('status', 'abandoned');
-        if ($dateFrom) {
-            $abandonedQuery->where('first_abandoned_at', '>=', $dateFrom);
+        if ($dates) {
+            $abandonedQuery->whereBetween('first_abandoned_at', [$dates['from'], $dates['to']]);
         }
         $totalAbandoned = (clone $abandonedQuery)->count();
         $totalAbandonedValue = (clone $abandonedQuery)->sum('total');
 
-        // Recovered carts
         $recoveredQuery = AbandonedCart::where('status', 'recovered');
-        if ($dateFrom) {
-            $recoveredQuery->where('updated_at', '>=', $dateFrom);
+        if ($dates) {
+            $recoveredQuery->whereBetween('updated_at', [$dates['from'], $dates['to']]);
         }
         $recoveredCarts = (clone $recoveredQuery)->count();
 
-        $kpi = [
-            'total_sales' => $totalSales,
-            'net_profit' => $netProfit,
-            'completed_orders' => $completedOrders,
-            'conversion_rate' => $conversionRate,
-        ];
+        $kpi = compact(
+            'totalSales', 'netProfit', 'profitMargin',
+            'completedOrders', 'totalOrders', 'conversionRate',
+            'onlineOrders', 'offlineOrders', 'aov',
+            'totalProductRevenue', 'totalShippingCollected', 'totalCosts', 'totalManualExpenses',
+        );
 
         $abandoned = [
             'total' => $totalAbandoned,
@@ -161,15 +197,9 @@ class AnalyticsController extends Controller
         ];
 
         return view('admin.reports.index', compact(
-            'period',
-            'kpi',
-            'salesTrendLabels',
-            'salesTrendData',
-            'topProductLabels',
-            'topProductData',
-            'topColors',
-            'topSizes',
-            'topProducts',
+            'period', 'kpi',
+            'chartLabels', 'chartValues',
+            'topProducts', 'topColors', 'topSizes',
             'abandoned',
         ));
     }
@@ -177,14 +207,7 @@ class AnalyticsController extends Controller
     public function exportCsv(Request $request)
     {
         $period = $request->input('period', 'month');
-        $dateFrom = match ($period) {
-            'today' => now()->startOfDay(),
-            'week' => now()->startOfWeek(),
-            'month' => now()->startOfMonth(),
-            'year' => now()->startOfYear(),
-            'all' => null,
-            default => now()->startOfMonth(),
-        };
+        $dates = $this->parsePeriod($period, $request);
 
         $completedStatuses = [
             OrderStatus::Confirmed->value,
@@ -211,8 +234,8 @@ class AnalyticsController extends Controller
                 COALESCE(product_variants.cost_price, 0) as cost_price,
                 (order_items.unit_price - COALESCE(product_variants.cost_price, 0)) * order_items.quantity as profit
             ");
-        if ($dateFrom) {
-            $query->where('orders.created_at', '>=', $dateFrom);
+        if ($dates) {
+            $query->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
         }
         $rows = $query->orderBy('orders.created_at')->get();
 
@@ -250,6 +273,21 @@ class AnalyticsController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function parsePeriod(string $period, Request $request): ?array
+    {
+        return match ($period) {
+            'today' => ['from' => now()->startOfDay(), 'to' => now()->endOfDay()],
+            'week' => ['from' => now()->startOfWeek(), 'to' => now()->endOfDay()],
+            'month' => ['from' => now()->startOfMonth(), 'to' => now()->endOfMonth()],
+            'quarter' => ['from' => now()->subMonths(2)->startOfMonth(), 'to' => now()->endOfMonth()],
+            'year' => ['from' => now()->startOfYear(), 'to' => now()->endOfYear()],
+            'all' => null,
+            default => $request->filled(['from', 'to'])
+                ? ['from' => $request->date('from')->startOfDay(), 'to' => $request->date('to')->endOfDay()]
+                : ['from' => now()->startOfMonth(), 'to' => now()->endOfMonth()],
+        };
     }
 
     public function returnAnalytics()

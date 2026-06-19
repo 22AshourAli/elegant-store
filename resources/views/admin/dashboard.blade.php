@@ -3,10 +3,33 @@
 @section('title', __('global.admin_dashboard'))
 @section('page-title', __('global.admin_dashboard'))
 
+@php use App\Helpers\Numbers; @endphp
+
+<style>
+@media print {
+    @page { size: A4 landscape; margin: 12mm; }
+    body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    nav, .sidebar, .notification-bell, .no-print, .auto-refresh-btn,
+    footer, [x-cloak], .export-dropdown, .filter-bar { display: none !important; }
+    .print-block { display: block !important; }
+    .print-card { break-inside: avoid; box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+    .print-grid-4 { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important; gap: 12px !important; }
+    .print-grid-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+    canvas { max-width: 100% !important; max-height: 220px !important; }
+    table { font-size: 9pt !important; width: 100% !important; border-collapse: collapse !important; }
+    th, td { border: 1px solid #d1d5db !important; padding: 4px 6px !important; text-align: right !important; }
+    thead { background: #f3f4f6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .kpi-card { padding: 8px !important; }
+    .kpi-card h3 { font-size: 14pt !important; }
+    .kpi-card span.label { font-size: 7pt !important; }
+    .chart-container { page-break-inside: avoid; max-height: 220px !important; }
+}
+</style>
+
 @section('content')
 <div class="space-y-6 text-start" x-data="dashboardPage()">
-    <!-- Filter Bar -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+    {{-- Filter Bar --}}
+    <div class="filter-bar bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3">
                 <span class="text-sm font-semibold text-gray-600 dark:text-gray-400">{{ __('global.admin_period') }}:</span>
@@ -19,8 +42,7 @@
                 </a>
                 @endforeach
             </div>
-            <div class="flex items-center gap-2 ms-auto">
-                {{-- Reset Button --}}
+            <div class="flex items-center gap-2 ms-auto no-print">
                 @if(request('period'))
                 <a href="{{ url()->current() }}"
                    class="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-all">
@@ -28,11 +50,9 @@
                     {{ __('global.period_all') }}
                 </a>
                 @endif
-
-                {{-- Auto-Refresh Toggle --}}
                 <button @click="toggleAutoRefresh()"
                     :class="autoRefresh ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 hover:text-indigo-600'"
-                    class="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl transition-all duration-200">
+                    class="auto-refresh-btn flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-xl transition-all duration-200">
                     <svg class="w-3.5 h-3.5" :class="autoRefresh ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
@@ -42,25 +62,24 @@
         </div>
     </div>
 
-    <!-- Stat Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-
-        <!-- Net Profit -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between lg:col-span-2">
+    {{-- Stat Cards --}}
+    <div class="print-grid-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {{-- Net Profit --}}
+        <div class="kpi-card print-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between lg:col-span-2">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_net_profit') }}</span>
-                <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                    {{ number_format((int) round($netProfit)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
+                <span class="label text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_net_profit') }}</span>
+                <h3 class="text-2xl font-extrabold {{ $netProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                    {{ Numbers::formatInteger($netProfit) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span>
                 </h3>
                 <div class="flex items-center gap-4 text-xs text-gray-400 mt-1 flex-wrap">
-                    <span>{{ __('global.admin_revenue') }}: <strong class="text-gray-600 dark:text-gray-300">{{ number_format((int) round($totalProductRevenue)) }}</strong></span>
-                    <span>{{ __('global.admin_shipping') }}: <strong class="text-amber-600">{{ number_format((int) round($totalShippingCollected)) }}</strong></span>
-                    <span>{{ __('global.admin_cost') }}: <strong class="text-orange-600">{{ number_format((int) round($totalCosts)) }}</strong></span>
-                    <span>{{ __('global.admin_expenses') }}: <strong class="text-red-600">{{ number_format((int) round($totalManualExpenses)) }}</strong></span>
+                    <span>{{ __('global.admin_revenue') }}: <strong class="text-gray-600 dark:text-gray-300">{{ Numbers::formatInteger($totalProductRevenue) }}</strong></span>
+                    <span>{{ __('global.admin_shipping') }}: <strong class="text-amber-600">{{ Numbers::formatInteger($totalShippingCollected) }}</strong></span>
+                    <span>{{ __('global.admin_cost') }}: <strong class="text-orange-600">{{ Numbers::formatInteger($totalCosts) }}</strong></span>
+                    <span>{{ __('global.admin_expenses') }}: <strong class="text-red-600">{{ Numbers::formatInteger($totalManualExpenses) }}</strong></span>
                 </div>
                 <div class="flex items-center gap-3 text-xs mt-1">
-                    <span>{{ __('global.admin_profit_margin') }}: <strong class="{{ $profitMargin >= 0 ? 'text-green-600' : 'text-red-600' }}">{{ $profitMargin }}%</strong></span>
-                    <span>{{ __('global.admin_aov') }}: <strong class="text-indigo-600">{{ number_format((int) round($aov)) }} {{ __('global.currency') }}</strong></span>
+                    <span>{{ __('global.admin_profit_margin') }}: <strong class="{{ $profitMargin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">{{ Numbers::formatPercent($profitMargin) }}</strong></span>
+                    <span>{{ __('global.admin_aov') }}: <strong class="text-indigo-600 dark:text-indigo-400">{{ Numbers::formatCurrency($aov) }}</strong></span>
                 </div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
@@ -68,14 +87,14 @@
             </div>
         </div>
 
-        <!-- Orders -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+        {{-- Orders --}}
+        <div class="kpi-card print-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_orders_count') }}</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalOrders }}</h3>
+                <span class="label text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_orders_count') }}</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ Numbers::formatInteger($totalOrders) }}</h3>
                 <div class="flex gap-3 text-xs mt-1">
-                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">Online: {{ $onlineOrders }}</span>
-                    <span class="text-amber-600 dark:text-amber-400 font-bold">Offline: {{ $offlineOrders }}</span>
+                    <span class="text-emerald-600 dark:text-emerald-400 font-bold">Online: {{ Numbers::formatInteger($onlineOrders) }}</span>
+                    <span class="text-amber-600 dark:text-amber-400 font-bold">Offline: {{ Numbers::formatInteger($offlineOrders) }}</span>
                 </div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
@@ -83,11 +102,11 @@
             </div>
         </div>
 
-        <!-- Customers -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+        {{-- Customers --}}
+        <div class="kpi-card print-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_customers_count') }}</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $totalCustomers }}</h3>
+                <span class="label text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_customers_count') }}</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ Numbers::formatInteger($totalCustomers) }}</h3>
                 <div class="text-xs text-gray-400 mt-1">{{ __('global.admin_total_customers') }}</div>
             </div>
             <div class="p-3.5 bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 rounded-xl">
@@ -95,35 +114,35 @@
             </div>
         </div>
 
-        <!-- Returns -->
-        <a href="{{ route('admin.returns.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all duration-300">
+        {{-- Returns --}}
+        <a href="{{ route('admin.returns.index') }}" class="kpi-card print-card block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all duration-300">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_return_requests') }}</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $returnRequestCount }}</h3>
-                <div class="text-xs text-gray-400">{{ __('global.admin_pending') }} <span class="text-amber-600 font-bold">{{ $returnRequestPending }}</span></div>
+                <span class="label text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_return_requests') }}</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ Numbers::formatInteger($returnRequestCount) }}</h3>
+                <div class="text-xs text-gray-400">{{ __('global.admin_pending') }} <span class="text-amber-600 font-bold">{{ Numbers::formatInteger($returnRequestPending) }}</span></div>
             </div>
             <div class="p-3.5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             </div>
         </a>
 
-        <!-- Exchanges -->
-        <a href="{{ route('admin.exchanges.index') }}" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5 transition-all duration-300">
+        {{-- Exchanges --}}
+        <a href="{{ route('admin.exchanges.index') }}" class="kpi-card print-card block bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between hover:shadow-md hover:border-indigo-300 hover:-translate-y-0.5 transition-all duration-300">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_exchange_requests') }}</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $exchangeCount }}</h3>
-                <div class="text-xs text-gray-400">{{ __('global.admin_pending') }} <span class="text-indigo-600 font-bold">{{ $exchangePending }}</span></div>
+                <span class="label text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_exchange_requests') }}</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ Numbers::formatInteger($exchangeCount) }}</h3>
+                <div class="text-xs text-gray-400">{{ __('global.admin_pending') }} <span class="text-indigo-600 font-bold">{{ Numbers::formatInteger($exchangePending) }}</span></div>
             </div>
             <div class="p-3.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
             </div>
         </a>
 
-        <!-- Low Stock -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
+        {{-- Low Stock --}}
+        <div class="kpi-card print-card bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between">
             <div class="space-y-2">
-                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_low_stock') }}</span>
-                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ $lowStockCount }}</h3>
+                <span class="label text-sm font-semibold text-gray-500 dark:text-gray-400">{{ __('global.admin_low_stock') }}</span>
+                <h3 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ Numbers::formatInteger($lowStockCount) }}</h3>
                 <div class="text-xs text-gray-400 mt-1">{{ __('global.admin_less_than') }} {{ config('store.low_stock_threshold', 5) }} {{ __('global.admin_piece') }}</div>
             </div>
             <div class="p-3.5 {{ $lowStockCount > 0 ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400' : 'bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400' }} rounded-xl">
@@ -132,17 +151,17 @@
         </div>
     </div>
 
-    <!-- Financial Report Card -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    {{-- Financial Report Card --}}
+    <div class="print-card bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div class="print-block flex flex-wrap items-center justify-between gap-3 mb-6">
             <h4 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                 <span>{{ __('global.admin_financial_report') }}</span>
             </h4>
-            <div class="flex items-center gap-2">
+            <div class="no-print flex items-center gap-2">
                 <span class="text-xs text-gray-400">{{ __('global.admin_total') }}</span>
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 rounded">{{ number_format((int) round($totalProductRevenue + $totalShippingCollected)) }} {{ __('global.currency') }}</span>
-                <div class="relative" x-data="{ open: false }">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/20 px-2 py-0.5 rounded">{{ Numbers::formatInteger($totalProductRevenue + $totalShippingCollected) }} {{ __('global.currency') }}</span>
+                <div class="export-dropdown relative" x-data="{ open: false }">
                     <button @click="open = !open" @click.away="open = false"
                             class="px-2.5 py-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl transition flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -165,53 +184,53 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="print-grid-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-green-50 dark:bg-green-950/20 rounded-xl p-4 border border-green-100 dark:border-green-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">{{ __('global.admin_revenue') }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-green-700 dark:text-green-400">{{ number_format((int) round($totalProductRevenue)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-2xl font-extrabold text-green-700 dark:text-green-400">{{ Numbers::formatInteger($totalProductRevenue) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
                 <p class="text-xs text-green-600/70 dark:text-green-500/70 mt-1">{{ __('global.admin_product_sales') }}</p>
             </div>
             <div class="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-100 dark:border-amber-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">{{ __('global.admin_shipping_expenses') }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">{{ number_format((int) round($totalShippingCollected)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-2xl font-extrabold text-amber-700 dark:text-amber-400">{{ Numbers::formatInteger($totalShippingCollected) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
                 <p class="text-xs text-amber-600/70 dark:text-amber-500/70 mt-1">{{ __('global.admin_collected_from_customers') }}</p>
             </div>
             <div class="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-4 border border-orange-100 dark:border-orange-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-orange-700 dark:text-orange-400 uppercase tracking-wide">{{ __('global.admin_cost_of_goods') }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-orange-700 dark:text-orange-400">{{ number_format((int) round($totalCosts)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-2xl font-extrabold text-orange-700 dark:text-orange-400">{{ Numbers::formatInteger($totalCosts) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
                 <p class="text-xs text-orange-600/70 dark:text-orange-500/70 mt-1">{{ __('global.admin_cost_from_suppliers') }}</p>
             </div>
             <div class="bg-red-50 dark:bg-red-950/20 rounded-xl p-4 border border-red-100 dark:border-red-900/30">
                 <div class="flex items-center justify-between mb-1">
                     <span class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">{{ __('global.admin_other_expenses') }}</span>
                 </div>
-                <p class="text-2xl font-extrabold text-red-700 dark:text-red-400">{{ number_format((int) round($totalManualExpenses)) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
+                <p class="text-2xl font-extrabold text-red-700 dark:text-red-400">{{ Numbers::formatInteger($totalManualExpenses) }} <span class="text-xs font-normal">{{ __('global.currency') }}</span></p>
                 <p class="text-xs text-red-600/70 dark:text-red-500/70 mt-1">{{ __('global.admin_rent_salaries_bills') }}</p>
             </div>
         </div>
 
         <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
             <div class="text-sm text-gray-500 dark:text-gray-400">
-                <span>{{ __('global.admin_net_profit_eq') }} {{ number_format((int) round($totalProductRevenue)) }}
-                {{ __('global.admin_minus_cost') }} {{ number_format((int) round($totalCosts)) }}
-                {{ __('global.admin_minus_shipping') }} {{ number_format((int) round($totalShippingCollected)) }}
-                {{ __('global.admin_minus_expenses') }} {{ number_format((int) round($totalManualExpenses)) }}</span>
+                <span>{{ __('global.admin_net_profit_eq') }} {{ Numbers::formatInteger($totalProductRevenue) }}
+                {{ __('global.admin_minus_cost') }} {{ Numbers::formatInteger($totalCosts) }}
+                {{ __('global.admin_minus_shipping') }} {{ Numbers::formatInteger($totalShippingCollected) }}
+                {{ __('global.admin_minus_expenses') }} {{ Numbers::formatInteger($totalManualExpenses) }}</span>
             </div>
-            <div class="text-lg font-extrabold {{ $netProfit >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                = {{ number_format((int) round($netProfit)) }} {{ __('global.currency') }}
+            <div class="text-lg font-extrabold {{ $netProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                = {{ Numbers::formatInteger($netProfit) }} {{ __('global.currency') }}
             </div>
         </div>
     </div>
 
-    <!-- Charts Area -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+    {{-- Charts --}}
+    <div class="print-grid-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="print-card chart-container bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.admin_revenue_and_orders') }}</h4>
                 <div class="flex gap-2 text-xs">
@@ -223,7 +242,7 @@
                 <canvas id="revenueChart"></canvas>
             </div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+        <div class="print-card chart-container bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.admin_order_distribution') }}</h4>
             </div>
@@ -233,8 +252,8 @@
         </div>
     </div>
 
-    <!-- Low Stock Alert Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+    {{-- Low Stock Table --}}
+    <div class="print-card bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
         <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h4 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -242,7 +261,6 @@
             </h4>
             <span class="text-xs text-gray-500 dark:text-gray-400">{{ __('global.admin_minimum_threshold') }} {{ config('store.low_stock_threshold', 5) }} {{ __('global.admin_piece') }}</span>
         </div>
-
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/50 dark:text-gray-400">
@@ -268,7 +286,7 @@
                         <td class="px-6 py-4">{{ $item->size ?: '-' }}</td>
                         <td class="px-6 py-4 text-indigo-600 dark:text-indigo-400">{{ $item->branch_name }}</td>
                         <td class="px-6 py-4 font-bold {{ $item->stock <= 1 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400' }}">
-                            {{ $item->stock }} {{ __('global.admin_piece') }}
+                            {{ Numbers::formatInteger($item->stock) }} {{ __('global.admin_piece') }}
                         </td>
                         <td class="px-6 py-4">
                             @if($item->stock <= 1)
@@ -290,9 +308,9 @@
         </div>
     </div>
 
-    <!-- Recent Expenses -->
+    {{-- Recent Expenses --}}
     @if($recentExpenses && $recentExpenses->count() > 0)
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+    <div class="print-card bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
         <div class="flex justify-between items-center mb-4">
             <h4 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.admin_recent_expenses') }}</h4>
             <a href="{{ route('admin.expenses.index') }}" class="text-xs text-indigo-600 hover:underline font-semibold">{{ __('global.admin_view_all') }}</a>
@@ -307,7 +325,7 @@
                     <tr>
                         <td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700">{{ $expense->category }}</span></td>
                         <td class="px-6 py-4 max-w-xs truncate">{{ $expense->description }}</td>
-                        <td class="px-6 py-4 font-bold text-red-600">{{ number_format((int) round($expense->amount)) }} {{ __('global.currency') }}</td>
+                        <td class="px-6 py-4 font-bold text-red-600">{{ Numbers::formatCurrency($expense->amount) }}</td>
                         <td class="px-6 py-4 text-xs">{{ $expense->expense_date->format('Y-m-d') }}</td>
                     </tr>
                     @endforeach
@@ -329,7 +347,6 @@ function dashboardPage() {
         _interval: null,
 
         init() {
-            // Restore state from localStorage
             const saved = localStorage.getItem('dashboard_auto_refresh');
             if (saved === 'true') {
                 this.autoRefresh = true;
@@ -378,7 +395,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const revenue = raw.map(r => r.revenue || 0);
     const counts = raw.map(r => r.count || 0);
 
-    // Revenue + Orders line chart
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+
     const ctxRev = document.getElementById('revenueChart').getContext('2d');
     new Chart(ctxRev, {
         type: 'line',
@@ -423,7 +443,7 @@ document.addEventListener('DOMContentLoaded', function () {
             plugins: {
                 legend: {
                     position: 'top',
-                    labels: { font: { family: 'Cairo', size: 11 }, boxWidth: 14, padding: 12 }
+                    labels: { font: { family: 'Cairo', size: 11 }, boxWidth: 14, padding: 12, color: textColor }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
@@ -436,29 +456,28 @@ document.addEventListener('DOMContentLoaded', function () {
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { font: { family: 'Cairo', size: 10 } }
+                    ticks: { font: { family: 'Cairo', size: 10 }, color: textColor }
                 },
                 y: {
                     type: 'linear',
                     display: true,
                     position: 'right',
-                    title: { display: true, text: '{{ __("global.currency") }}', font: { family: 'Cairo' } },
-                    grid: { color: 'rgba(156, 163, 175, 0.1)' },
-                    ticks: { font: { family: 'Cairo', size: 10 } }
+                    title: { display: true, text: '{{ __("global.currency") }}', font: { family: 'Cairo' }, color: textColor },
+                    grid: { color: gridColor },
+                    ticks: { font: { family: 'Cairo', size: 10 }, color: textColor }
                 },
                 y1: {
                     type: 'linear',
                     display: true,
                     position: 'left',
-                    title: { display: true, text: '{{ __("global.admin_order_count") }}', font: { family: 'Cairo' } },
+                    title: { display: true, text: '{{ __("global.admin_order_count") }}', font: { family: 'Cairo' }, color: textColor },
                     grid: { drawOnChartArea: false },
-                    ticks: { stepSize: 1, font: { family: 'Cairo', size: 10 } }
+                    ticks: { stepSize: 1, font: { family: 'Cairo', size: 10 }, color: textColor }
                 }
             }
         }
     });
 
-    // Orders pie chart
     const ctxPie = document.getElementById('ordersPieChart').getContext('2d');
     new Chart(ctxPie, {
         type: 'doughnut',
@@ -478,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function () {
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { font: { family: 'Cairo', size: 12 }, padding: 16 }
+                    labels: { font: { family: 'Cairo', size: 12 }, padding: 16, color: textColor }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
