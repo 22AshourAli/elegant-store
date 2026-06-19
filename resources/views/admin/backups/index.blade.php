@@ -48,7 +48,7 @@
                         <td class="p-3 text-right">
                             <span class="text-xs text-slate-600 dark:text-slate-400">{{ $file['size_formatted'] }}</span>
                         </td>
-                        <td class="p-3 text-right">
+                        <td class="p-3 text-right whitespace-nowrap">
                             <span class="text-xs text-slate-600 dark:text-slate-400">{{ date('Y-m-d H:i', $file['date']) }}</span>
                         </td>
                         <td class="p-3 text-center">

@@ -1183,6 +1183,7 @@ return [
     'activity_ip' => 'IP',
     'activity_date' => 'التاريخ',
     'activity_no_logs' => 'لا توجد سجلات نشاط بعد',
+    'activity_no_logs_hint' => 'ستظهر السجلات عندما يقوم المشرفون بإجراءات على النظام.',
     'activity_module_product' => 'منتج',
     'activity_module_coupon' => 'كوبون',
     'activity_module_review' => 'تقييم',
@@ -1204,5 +1205,6 @@ return [
     'activity_review_rejected' => 'تم رفض التقييم #:id',
     'activity_order_status_changed' => 'تغيير حالة الطلب #:id من :old إلى :new',
     'activity_order_created' => 'تم إنشاء الطلب #:id',
+    'all' => 'الكل',
     'system' => 'النظام',
 ];

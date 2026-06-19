@@ -1184,6 +1184,7 @@ return [
     'activity_ip' => 'IP',
     'activity_date' => 'Date',
     'activity_no_logs' => 'No activity logs yet',
+    'activity_no_logs_hint' => 'Logs will appear when admins perform actions on the system.',
     'activity_module_product' => 'Product',
     'activity_module_coupon' => 'Coupon',
     'activity_module_review' => 'Review',
@@ -1205,5 +1206,6 @@ return [
     'activity_review_rejected' => 'Review #:id rejected',
     'activity_order_status_changed' => 'Order #:id status changed from :old to :new',
     'activity_order_created' => 'Order #:id created',
+    'all' => 'All',
     'system' => 'System',
 ];

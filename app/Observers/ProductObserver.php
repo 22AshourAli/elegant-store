@@ -31,17 +31,24 @@ class ProductObserver
     public function updated(Product $product): void
     {
         $old = $product->getOriginal();
-        $new = $product->getChanges();
+        $changes = $product->getChanges();
+        unset($changes['updated_at']);
 
-        if (isset($old['current_price']) && isset($new['current_price'])) {
+        if (empty($changes)) {
+            return;
+        }
+
+        if (isset($old['current_price'], $changes['current_price'])) {
             $this->log($product, 'updated', __('global.activity_product_price_updated', [
                 'id' => $product->id,
                 'name' => $product->name,
                 'old' => $old['current_price'],
-                'new' => $new['current_price'],
-            ]), ['current_price' => $old['current_price']], ['current_price' => $new['current_price']]);
+                'new' => $changes['current_price'],
+            ]), ['current_price' => $old['current_price']], ['current_price' => $changes['current_price']]);
         } else {
-            $this->log($product, 'updated', __('global.activity_product_updated', ['id' => $product->id, 'name' => $product->name]));
+            $changedKeys = array_keys($changes);
+            $desc = __('global.activity_product_updated', ['id' => $product->id, 'name' => $product->name]) . ' (' . implode(', ', $changedKeys) . ')';
+            $this->log($product, 'updated', $desc, $old, $changes);
         }
     }
 

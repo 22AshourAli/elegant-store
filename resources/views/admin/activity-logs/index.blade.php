@@ -71,8 +71,14 @@
                                 {{ __("global.activity_action_{$log->action}") }}
                             </span>
                         </td>
-                        <td class="p-3 text-right max-w-[250px]">
-                            <span class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{{ $log->description ?: '—' }}</span>
+                        <td class="p-3 text-right max-w-[220px] sm:max-w-[280px]">
+                            <span class="text-xs text-slate-600 dark:text-slate-400 break-words">{{ $log->description ?: '—' }}</span>
+                            @if($log->old_values || $log->new_values)
+                            <div class="mt-1 text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate" dir="ltr">
+                                @if($log->old_values)<span class="text-red-400">- {{ json_encode($log->old_values) }}</span>@endif
+                                @if($log->new_values)<span class="text-emerald-400">+ {{ json_encode($log->new_values) }}</span>@endif
+                            </div>
+                            @endif
                         </td>
                         <td class="p-3 text-right">
                             <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500" dir="ltr">{{ $log->ip_address ?: '—' }}</span>
@@ -87,6 +93,7 @@
                             <div class="flex flex-col items-center gap-2">
                                 <svg class="w-8 h-8 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 <p class="text-sm text-slate-400 dark:text-slate-500">{{ __('global.activity_no_logs') }}</p>
+                                <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('global.activity_no_logs_hint') }}</p>
                             </div>
                         </td>
                     </tr>

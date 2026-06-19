@@ -1,27 +1,22 @@
 <?php
 
+use Spatie\Backup\Notifications\Notifiable;
+use Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification;
+use Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification;
+use Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification;
+use Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification;
+use Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification;
+use Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification;
+use Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy;
+use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
+use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
+
 return [
 
-    /*
-     * The backup destination. Disks configured in filesystems.php.
-     */
     'backup' => [
-        'destination' => [
-            'disks' => [
-                // 's3',           // Production: AWS S3
-                // 'gcs',          // Google Cloud Storage
-                'local',        // Dev/staging fallback
-            ],
-        ],
 
-        /*
-         * The name for the backup files. Timestamp will be appended.
-         */
         'name' => env('APP_NAME', 'elegant-store') . '-backup',
 
-        /*
-         * Source files/directories to exclude from the backup.
-         */
         'source' => [
             'files' => [
                 'include' => [
@@ -32,73 +27,112 @@ return [
                     base_path('node_modules'),
                     base_path('.git'),
                     storage_path('debugbar'),
+                    storage_path('framework'),
                 ],
-
-                /*
-                 * If symlinks should be followed.
-                 */
                 'follow_links' => false,
+                'ignore_unreadable_directories' => false,
+                'relative_path' => null,
             ],
 
-            /*
-             * Databases to include in the backup.
-             */
             'databases' => [
                 'pgsql',
             ],
         ],
 
-        /*
-         * Cleanup: keep only the latest N backups.
-         */
-        'cleanup' => [
-            'strategy' => \Spatie\Backup\Tasks\Cleanup\Strategies\DefaultStrategy::class,
-            'default_strategy' => [
-                'keep_all_backups_for_days' => 7,
-                'keep_daily_backups_for_days' => 30,
-                'keep_weekly_backups_for_weeks' => 8,
-                'keep_monthly_backups_for_months' => 4,
-                'keep_yearly_backups_for_years' => 2,
-                'delete_oldest_backups_when_using_more_megabytes_than' => 5000,
+        'database_dump_compressor' => null,
+        'database_dump_file_timestamp_format' => null,
+        'database_dump_filename_base' => 'database',
+        'database_dump_file_extension' => '',
+
+        'destination' => [
+            'compression_method' => ZipArchive::CM_DEFAULT,
+            'compression_level' => 9,
+            'filename_prefix' => '',
+            'disks' => [
+                'local',
             ],
+            'continue_on_failure' => false,
         ],
 
-        /*
-         * Notifications for backup failures/successes.
-         */
+        'temporary_directory' => storage_path('app/backup-temp'),
+
+        'password' => env('BACKUP_ARCHIVE_PASSWORD'),
+
+        'encryption' => 'default',
+
+        'verify_backup' => false,
+
+        'tries' => 1,
+
+        'retry_delay' => 0,
+    ],
+
+    'notifications' => [
         'notifications' => [
-            'notifications' => [
-                \Spatie\Backup\Notifications\Notifications\BackupHasFailed::class => ['mail'],
-                \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFound::class => ['mail'],
-                \Spatie\Backup\Notifications\Notifications\CleanupHasFailed::class => ['mail'],
-                \Spatie\Backup\Notifications\Notifications\BackupWasSuccessful::class => [],
-                \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFound::class => [],
-            ],
+            BackupHasFailedNotification::class => ['mail'],
+            UnhealthyBackupWasFoundNotification::class => ['mail'],
+            CleanupHasFailedNotification::class => ['mail'],
+            BackupWasSuccessfulNotification::class => ['mail'],
+            HealthyBackupWasFoundNotification::class => ['mail'],
+            CleanupWasSuccessfulNotification::class => ['mail'],
+        ],
 
-            'mail' => [
-                'to' => env('BACKUP_MAIL_TO', 'admin@elegantstore.test'),
+        'notifiable' => Notifiable::class,
+
+        'mail' => [
+            'to' => env('BACKUP_MAIL_TO', 'admin@elegantstore.test'),
+
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+                'name' => env('MAIL_FROM_NAME', 'Example'),
             ],
         ],
 
-        /*
-         * Custom health checks for the backup.
-         */
-        'monitor_backups' => [
-            [
-                'name' => env('APP_NAME', 'elegant-store') . '-backup',
-                'disks' => ['local'],
-                'health_checks' => [
-                    \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
-                    \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,
-                ],
-            ],
+        'slack' => [
+            'webhook_url' => '',
+            'channel' => null,
+            'username' => null,
+            'icon' => null,
         ],
 
-        /*
-         * Signals to stop the backup when a specific event happens.
-         */
-        'signals' => [
-            'timeout' => 300, // 5 minutes
+        'discord' => [
+            'webhook_url' => '',
+            'username' => '',
+            'avatar_url' => '',
+        ],
+
+        'webhook' => [
+            'url' => '',
         ],
     ],
+
+    'log_channel' => null,
+
+    'monitor_backups' => [
+        [
+            'name' => env('APP_NAME', 'elegant-store') . '-backup',
+            'disks' => ['local'],
+            'health_checks' => [
+                MaximumAgeInDays::class => 1,
+                MaximumStorageInMegabytes::class => 5000,
+            ],
+        ],
+    ],
+
+    'cleanup' => [
+        'strategy' => DefaultStrategy::class,
+
+        'default_strategy' => [
+            'keep_all_backups_for_days' => 7,
+            'keep_daily_backups_for_days' => 30,
+            'keep_weekly_backups_for_weeks' => 8,
+            'keep_monthly_backups_for_months' => 4,
+            'keep_yearly_backups_for_years' => 2,
+            'delete_oldest_backups_when_using_more_megabytes_than' => 5000,
+        ],
+
+        'tries' => 1,
+        'retry_delay' => 0,
+    ],
+
 ];
