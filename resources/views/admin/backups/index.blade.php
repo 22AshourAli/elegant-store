@@ -25,7 +25,46 @@
         <div class="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm font-bold text-red-700 dark:text-red-400">{{ session('error') }}</div>
     @endif
 
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
+    @forelse($files as $file)
+    {{-- Mobile Card --}}
+    <div class="block md:hidden bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-4 mb-3">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2 min-w-0">
+                <svg class="w-4 h-4 flex-shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0014.586 3H7a2 2 0 00-2 2v2m0 0a2 2 0 012-2h4.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0118 11.414V15a2 2 0 01-2 2h-2m-7-4a2 2 0 00-2 2v4a2 2 0 002 2h10a2 2 0 002-2v-4a2 2 0 00-2-2H9z"/></svg>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 truncate" dir="ltr">{{ $file['name'] }}</span>
+            </div>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap flex-shrink-0">{{ $file['size_formatted'] }}</span>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] text-slate-400 dark:text-slate-500">{{ date('Y-m-d H:i', $file['date']) }}</span>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('admin.backups.download', $file['name']) }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-100 dark:hover:bg-indigo-950/40 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    {{ __('global.backup_download') }}
+                </a>
+                <form action="{{ route('admin.backups.destroy', $file['name']) }}" method="POST" onsubmit="return confirm('{{ __('global.backup_delete_confirm') }}')">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/40 transition cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        {{ __('global.backup_delete') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    @empty
+    <div class="block md:hidden bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-8 text-center mb-3">
+        <div class="flex flex-col items-center gap-2">
+            <svg class="w-8 h-8 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <p class="text-sm text-slate-400 dark:text-slate-500">{{ __('global.backup_no_files') }}</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('global.backup_create_first') }}</p>
+        </div>
+    </div>
+    @endforelse
+
+    {{-- Desktop Table --}}
+    <div class="hidden md:block bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>

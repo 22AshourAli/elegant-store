@@ -23,7 +23,73 @@
         @endforeach
     </div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
+    @forelse($logs as $log)
+    {{-- Mobile Card --}}
+    <div class="block md:hidden bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-4 mb-3">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950/40 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $log->user?->name ?? __('global.system') }}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-gray-700 dark:text-slate-300">
+                    {{ __("global.activity_module_{$log->module}") }}
+                </span>
+            </div>
+            <span class="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">{{ $log->created_at->format('Y-m-d H:i') }}</span>
+        </div>
+
+        <div class="flex items-center gap-2 mb-2">
+            <span class="inline-flex items-center gap-1 text-xs font-bold
+                @if($log->action === 'created') text-emerald-600 dark:text-emerald-400
+                @elseif($log->action === 'deleted') text-red-600 dark:text-red-400
+                @elseif(in_array($log->action, ['approved', 'rejected'])) text-amber-600 dark:text-amber-400
+                @else text-indigo-600 dark:text-indigo-400
+                @endif">
+                @if($log->action === 'created')
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                @elseif($log->action === 'deleted')
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                @elseif($log->action === 'approved')
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                @elseif($log->action === 'rejected')
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                @endif
+                {{ __("global.activity_action_{$log->action}") }}
+            </span>
+        </div>
+
+        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-2">{{ $log->description ?: '—' }}</p>
+
+        @if($log->old_values || $log->new_values)
+        <div class="bg-slate-50 dark:bg-gray-900/50 rounded-lg p-3 mb-2 w-full">
+            @if($log->old_values)
+            <div class="text-[11px] font-mono text-red-500 dark:text-red-400 mb-1 break-all" dir="ltr">
+                <span class="font-bold">−</span> {{ json_encode($log->old_values, JSON_UNESCAPED_UNICODE) }}
+            </div>
+            @endif
+            @if($log->new_values)
+            <div class="text-[11px] font-mono text-emerald-500 dark:text-emerald-400 break-all" dir="ltr">
+                <span class="font-bold">+</span> {{ json_encode($log->new_values, JSON_UNESCAPED_UNICODE) }}
+            </div>
+            @endif
+        </div>
+        @endif
+
+        <div class="text-[10px] font-mono text-slate-400 dark:text-slate-500" dir="ltr">{{ $log->ip_address ?: '—' }}</div>
+    </div>
+    @empty
+    <div class="block md:hidden bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-8 text-center">
+        <div class="flex flex-col items-center gap-2">
+            <svg class="w-8 h-8 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <p class="text-sm text-slate-400 dark:text-slate-500">{{ __('global.activity_no_logs') }}</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('global.activity_no_logs_hint') }}</p>
+        </div>
+    </div>
+    @endforelse
+
+    {{-- Desktop Table --}}
+    <div class="hidden md:block bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
@@ -71,7 +137,7 @@
                                 {{ __("global.activity_action_{$log->action}") }}
                             </span>
                         </td>
-                        <td class="p-3 text-right max-w-[220px] sm:max-w-[280px]">
+                        <td class="p-3 text-right max-w-[280px]">
                             <span class="text-xs text-slate-600 dark:text-slate-400 break-words">{{ $log->description ?: '—' }}</span>
                             @if($log->old_values || $log->new_values)
                             <div class="mt-1 text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate" dir="ltr">
