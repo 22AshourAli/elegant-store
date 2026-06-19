@@ -23,9 +23,9 @@
                 </thead>
                 <tbody>
                     @forelse($reviews as $review)
-                    <tr class="border-b border-slate-100 dark:border-gray-700/50 hover:bg-slate-50/50 dark:hover:bg-gray-700/20">
+                    <tr class="border-b border-slate-100 dark:border-gray-700/50 hover:bg-slate-50/50 dark:hover:bg-gray-700/20 cursor-pointer" onclick="window.location='{{ route('admin.reviews.show', $review) }}'">
                         <td class="p-3 text-right">
-                            <a href="{{ route('shop.product', $review->product->slug) }}" target="_blank" class="text-indigo-600 hover:underline font-bold text-xs">{{ $review->product->name }}</a>
+                            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">{{ $review->product->name }}</span>
                         </td>
                         <td class="p-3 text-right">
                             <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $review->user->name }}</span>
@@ -49,16 +49,16 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">{{ __('global.rejected') }}</span>
                             @endif
                         </td>
-                        <td class="p-3 text-center">
+                        <td class="p-3 text-center" onclick="event.stopPropagation()">
                             @if($review->status === 'pending')
                             <div class="flex items-center justify-center gap-1">
                                 <form action="{{ route('admin.reviews.approve', $review) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition">{{ __('global.approve') }}</button>
+                                    <button type="submit" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 px-2 py-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition cursor-pointer">{{ __('global.approve') }}</button>
                                 </form>
                                 <form action="{{ route('admin.reviews.reject', $review) }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="text-[10px] font-bold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20 transition">{{ __('global.reject') }}</button>
+                                    <button type="submit" class="text-[10px] font-bold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer">{{ __('global.reject') }}</button>
                                 </form>
                             </div>
                             @else

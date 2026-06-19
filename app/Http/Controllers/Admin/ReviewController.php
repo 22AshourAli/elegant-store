@@ -18,6 +18,13 @@ class ReviewController extends Controller
         return view('admin.reviews.index', compact('reviews'));
     }
 
+    public function show(Review $review)
+    {
+        $review->load('product', 'user', 'order');
+
+        return view('admin.reviews.show', compact('review'));
+    }
+
     public function approve(Review $review)
     {
         $review->update(['status' => 'approved']);

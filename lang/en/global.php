@@ -1154,4 +1154,8 @@ return [
     'rejected' => 'Rejected',
     'approve' => 'Approve',
     'reject' => 'Reject',
+    'save_price' => 'Save',
+    'submission_date' => 'Submission date',
+    'registered' => 'Registered',
+    'review' => 'Review',
 ];

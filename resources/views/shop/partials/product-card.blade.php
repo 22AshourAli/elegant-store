@@ -8,6 +8,8 @@
     $allSizes = $product->variants->pluck('size')->unique()->filter()->values();
     $hasColorVar = $allColors->isNotEmpty();
     $hasSizeVar = $allSizes->isNotEmpty();
+    $locale = app()->getLocale();
+    $fmtNum = fn($n) => $locale === 'ar' ? str_replace(['0','1','2','3','4','5','6','7','8','9'], ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'], (string)(int)round($n)) : (int)round($n);
 @endphp
 <article class="group product-card relative overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:glow-indigo"
      x-data="{ inWishlist: {{ $inWish ? 'true' : 'false' }}, inCart: {{ $inCart ? 'true' : 'false' }}, removed: false, addingToCart: false }"
@@ -54,17 +56,15 @@
     
     <div class="p-3 pt-2 text-start bg-white dark:bg-surface-dark">
         @if($hasColorVar || $hasSizeVar)
-        <div class="flex items-center gap-2.5 mb-1.5" dir="auto">
+        <div class="flex items-center gap-2.5 mb-1.5 flex-wrap" dir="auto">
             @if($hasColorVar)
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500" title="{{ $allColors->implode(' · ') }}">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
-                <span>{{ $allColors->count() }}</span>
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400" title="{{ $allColors->implode(' · ') }}">
+                {{ $locale === 'ar' ? 'ألوان' : 'Colors' }}: {{ $fmtNum($allColors->count()) }}
             </span>
             @endif
             @if($hasSizeVar)
-            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-                <span>{{ $allSizes->count() }}</span>
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                {{ $locale === 'ar' ? 'مقاسات' : 'Sizes' }}: {{ $fmtNum($allSizes->count()) }}
             </span>
             @endif
         </div>
@@ -84,10 +84,6 @@
         </div>
 
         <div class="mt-2">
-            @php
-                $locale = app()->getLocale();
-                $fmtNum = fn($n) => $locale === 'ar' ? str_replace(['0','1','2','3','4','5','6','7','8','9'], ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'], (string)(int)round($n)) : (int)round($n);
-            @endphp
             <div class="flex items-baseline gap-1.5 sm:gap-2">
                 @if($product->isOnSale)
                     <span class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{{ $fmtNum($product->current_price) }} {{ __('global.currency') }}</span>

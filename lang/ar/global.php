@@ -1153,4 +1153,8 @@ return [
     'rejected' => 'مرفوض',
     'approve' => 'موافقة',
     'reject' => 'رفض',
+    'save_price' => 'وفر',
+    'submission_date' => 'تاريخ التقديم',
+    'registered' => 'مسجل منذ',
+    'review' => 'التقييم',
 ];
