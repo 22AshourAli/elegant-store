@@ -73,6 +73,9 @@ class NotificationController extends Controller
         if ($type === 'return') {
             return 'return';
         }
+        if (isset($data['review_id'])) {
+            return 'review';
+        }
         if (isset($data['order_id'])) {
             return 'order';
         }
@@ -89,6 +92,9 @@ class NotificationController extends Controller
                     : null),
             'return' => isset($data['return_request_id'])
                 ? route('admin.returns.show', $data['return_request_id'])
+                : null,
+            'review' => isset($data['review_id'])
+                ? route('admin.reviews.show', $data['review_id'])
                 : null,
             'order' => isset($data['order_id'])
                 ? route('admin.orders.show', $data['order_id'])

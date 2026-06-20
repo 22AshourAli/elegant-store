@@ -9,6 +9,7 @@ use App\Models\Review;
 use App\Enums\OrderStatus;
 use App\Notifications\NewReviewAdminNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class ReviewController extends Controller
 {
@@ -58,6 +59,8 @@ class ReviewController extends Controller
         try {
             $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
             foreach ($admins as $admin) {
+                $adminLocale = $admin->locale ?? config('app.fallback_locale', 'ar');
+                App::setLocale($adminLocale);
                 $admin->notify(new NewReviewAdminNotification($review));
             }
         } catch (\Throwable $e) {
