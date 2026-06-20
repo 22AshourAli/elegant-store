@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\CartService;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
@@ -71,6 +72,9 @@ class SocialLoginController extends Controller
         }
 
         Auth::login($user, true);
+
+        // Merge any DB-stored cart into the session (cross-device sync)
+        app(CartService::class)->syncFromDb();
 
         // Redirect to intended URL (like Checkout) or dashboard
         return redirect()->intended(route('dashboard'));

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Coupon;
 use App\Models\ProductVariant;
+use App\Models\UserCart;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 
@@ -41,6 +42,7 @@ class CartService
             ];
         }
         Session::put('cart', $cart);
+        $this->persistToDb();
         return $this->getEnrichedCart();
     }
 
@@ -49,6 +51,7 @@ class CartService
         $cart = $this->getCart();
         unset($cart[$variantId]);
         Session::put('cart', $cart);
+        $this->persistToDb();
     }
 
     public function updateQuantity(int $variantId, int $quantity): void
@@ -61,6 +64,7 @@ class CartService
         if (isset($cart[$variantId])) {
             $cart[$variantId]['quantity'] = $quantity;
             Session::put('cart', $cart);
+            $this->persistToDb();
         }
     }
 
@@ -174,6 +178,7 @@ class CartService
         $coupon->increment('times_used');
         Session::put('coupon', ['id' => $coupon->id, 'code' => $coupon->code]);
         $this->resolvedCoupon = $coupon;
+        $this->persistToDb();
         return $coupon;
     }
 
@@ -181,6 +186,7 @@ class CartService
     {
         Session::forget('coupon');
         $this->resolvedCoupon = null;
+        $this->persistToDb();
     }
 
     public function clear(): void
@@ -188,6 +194,7 @@ class CartService
         Session::forget('cart');
         Session::forget('coupon');
         $this->resolvedCoupon = null;
+        $this->persistToDb();
     }
 
     /**
@@ -217,6 +224,68 @@ class CartService
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------
+    // Cross-device cart sync
+    // -------------------------------------------------------------------------
+
+    private function userId(): ?int
+    {
+        return auth()->check() ? auth()->id() : null;
+    }
+
+    /**
+     * Merge a DB-stored cart into the current session cart (guest wins on conflict).
+     */
+    public function syncFromDb(?int $userId = null): void
+    {
+        $userId ??= $this->userId();
+        if (!$userId) return;
+
+        $saved = UserCart::forUser($userId);
+        if (!$saved) return;
+
+        $sessionCart = $this->getCart();
+        $dbCart = $saved->items ?? [];
+
+        // Merge: session items keep their quantity, DB items fill in gaps
+        foreach ($dbCart as $variantId => $item) {
+            if (!isset($sessionCart[$variantId])) {
+                $sessionCart[$variantId] = $item;
+            }
+        }
+
+        Session::put('cart', $sessionCart);
+
+        if ($saved->coupon_code && !Session::has('coupon')) {
+            $coupon = Coupon::where('code', $saved->coupon_code)
+                ->where('is_active', true)->first();
+            if ($coupon) {
+                Session::put('coupon', ['id' => $coupon->id, 'code' => $coupon->code]);
+                $this->resolvedCoupon = $coupon;
+            }
+        }
+    }
+
+    /**
+     * Persist the current session cart + coupon to the database for cross-device sync.
+     */
+    public function persistToDb(?int $userId = null): void
+    {
+        $userId ??= $this->userId();
+        if (!$userId) return;
+
+        $items = $this->getCart();
+        $coupon = Session::get('coupon');
+
+        UserCart::updateOrCreate(
+            ['user_id' => $userId],
+            [
+                'items'       => empty($items) ? [] : $items,
+                'coupon_code' => $coupon['code'] ?? null,
+            ]
+        );
+    }
 
     private function calculateDiscount(float $base, Coupon $coupon): float
     {
