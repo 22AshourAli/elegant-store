@@ -122,10 +122,10 @@ class DashboardController extends Controller
         $onlineOrders = (clone $orderQuery)->where('order_type', OrderType::Online->value)->count();
         $offlineOrders = (clone $orderQuery)->where('order_type', OrderType::Offline->value)->count();
 
-        // --- Financial aggregates ---
-        $totalSales = (float) (clone $activeQuery)->sum('total');
-        $totalProductRevenue = (float) (clone $activeQuery)->sum('subtotal');
-        $totalShippingCollected = (float) (clone $activeQuery)->sum('shipping_cost');
+        // --- Financial aggregates (completed orders only, matching AnalyticsController) ---
+        $totalSales = (float) (clone $completedQuery)->sum('total');
+        $totalProductRevenue = (float) (clone $completedQuery)->sum('subtotal');
+        $totalShippingCollected = (float) (clone $completedQuery)->sum('shipping_cost');
         $returnedAmount = (float) (clone $returnedQuery)->sum('total');
         $returnedCount = (clone $returnedQuery)->count();
 
@@ -151,11 +151,11 @@ class DashboardController extends Controller
         $exchangeCount = (clone $exchangeQuery)->count();
         $exchangePending = (clone $exchangeQuery)->where('status', ExchangeStatus::Pending->value)->count();
 
-        // --- COGS ---
+        // --- COGS (completed orders only, matching AnalyticsController) ---
         $cogsQuery = DB::table('order_items')
             ->join('product_variants', 'order_items.product_variant_id', '=', 'product_variants.id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereNotIn('orders.status', $excludedStatuses)
+            ->whereIn('orders.status', $completedStatuses)
             ->whereNotNull('product_variants.cost_price');
         if ($branchId) $cogsQuery->where('orders.branch_id', $branchId);
         if ($dates) $cogsQuery->whereBetween('orders.created_at', [$dates['from'], $dates['to']]);
@@ -188,7 +188,7 @@ class DashboardController extends Controller
                 DB::raw('SUM(total) as revenue'),
                 DB::raw('COUNT(DISTINCT id) as count')
             )->where('created_at', '>=', now()->subDays($chartDays)->startOfDay())
-                ->whereNotIn('status', $excludedStatuses);
+                ->whereIn('status', $completedStatuses);
             if ($branchId) $dailyQuery->where('branch_id', $branchId);
             $dailySales = (clone $dailyQuery)->groupBy(DB::raw('DATE(created_at)'))->orderBy('date')->get();
 
@@ -220,7 +220,7 @@ class DashboardController extends Controller
                 DB::raw('SUM(total) as revenue'),
                 DB::raw('COUNT(DISTINCT id) as count')
             )->where('created_at', '>=', now()->subMonths(max($chartMonths, 1))->startOfMonth())
-                ->whereNotIn('status', $excludedStatuses);
+                ->whereIn('status', $completedStatuses);
             if ($branchId) $monthlyQuery->where('branch_id', $branchId);
             $monthlySales = (clone $monthlyQuery)->groupBy('month')->orderBy('month')->get();
 

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Shop;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Review;
 use App\Enums\OrderStatus;
+use App\Notifications\NewReviewAdminNotification;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -52,6 +54,15 @@ class ReviewController extends Controller
             'comment' => $request->comment,
             'status' => 'pending',
         ]);
+
+        try {
+            $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new NewReviewAdminNotification($review));
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Review notification failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => app()->getLocale() === 'ar'

@@ -10,6 +10,7 @@ use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\ShippingService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class CheckoutController extends Controller
@@ -104,29 +105,52 @@ class CheckoutController extends Controller
         }
 
         try {
-            $data = $request->all();
-            $data['branch_id'] = 1;
+            $order = DB::transaction(function () use ($request, $cart, $checkout, $cartItems) {
+                $data = $request->all();
+                $data['branch_id'] = 1;
+                $data['subtotal'] = $cart->baseTotal();
+                $data['discount'] = $cart->getDiscount();
 
-            $data['subtotal'] = $cart->baseTotal();
-            $data['discount'] = $cart->getDiscount();
-            // shipping_cost will be calculated by CheckoutService
-
-            $order = $checkout->createOrder(auth()->user(), $cartItems, $data);
+                return $checkout->createOrder(auth()->user(), $cartItems, $data);
+            });
 
             if ($request->payment_method === 'cash') {
-                return $this->processCashPayment($order);
+                session()->forget('cart');
+                return redirect()->route('orders.show', $order)
+                    ->with('success', __('global.order_placed_success', ['id' => $order->id]));
             }
 
-            return $this->processCardPayment($order, $request->payment_method, $request->phone);
+            try {
+                $response = $this->processCardPayment($order, $request->payment_method, $request->phone);
+                session()->forget('cart');
+                return $response;
+            } catch (\Exception $e) {
+                DB::transaction(function () use ($order) {
+                    $order->update([
+                        'status' => OrderStatus::Cancelled->value,
+                        'payment_status' => PaymentStatus::Failed->value,
+                    ]);
+                    $order->payment()->update([
+                        'status' => PaymentStatus::Failed->value,
+                        'response' => ['error' => $e->getMessage()],
+                    ]);
+                });
+                throw $e;
+            }
 
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'حدثت مشكلة أثناء إتمام الطلب: ' . $e->getMessage());
+            $message = app()->getLocale() === 'ar'
+                ? 'عذراً، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.'
+                : 'Sorry, an error occurred while processing your order. Please try again.';
+            return redirect()->route('checkout')
+                ->withInput()
+                ->with('error', $message);
         }
     }
 
     private function processCashPayment($order)
     {
-        return redirect()->route('orders.show', $order)->with('success', 'تم تسجيل طلبك بنجاح! رقم الطلب: ' . $order->id);
+        return redirect()->route('orders.show', $order);
     }
 
     private function processCardPayment($order, $paymentMethod, $phone)

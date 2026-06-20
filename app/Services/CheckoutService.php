@@ -38,8 +38,6 @@ class CheckoutService
 
             $this->createPaymentRecord($order, $total, $data['payment_method']);
 
-            session()->forget('cart');
-
             $this->notifyCustomer($order, $user);
             $this->notifyAdmins($order);
 
