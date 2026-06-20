@@ -19,7 +19,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         if ($order->user_id !== auth()->id()) {
-            abort(403, 'غير مصرح لك بمشاهدة هذا الطلب.');
+            abort(403, __('global.order_not_authorized_view'));
         }
 
         $order->load('items.variant.product', 'payment');
@@ -29,11 +29,11 @@ class OrderController extends Controller
     public function cancel(Order $order)
     {
         if ($order->user_id !== auth()->id()) {
-            abort(403, 'غير مصرح لك بإلغاء هذا الطلب.');
+            abort(403, __('global.order_not_authorized_cancel'));
         }
 
         if (!in_array($order->status, [OrderStatus::Pending->value, OrderStatus::Confirmed->value])) {
-            return redirect()->route('orders.show', $order)->with('error', __('لا يمكن إلغاء طلب في هذه الحالة.'));
+            return redirect()->route('orders.show', $order)->with('error', __('global.order_cannot_cancel_status'));
         }
 
         try {
@@ -61,7 +61,7 @@ class OrderController extends Controller
                 }
             }
 
-            return redirect()->route('orders.show', $order)->with('success', __('تم إلغاء الطلب بنجاح.'));
+            return redirect()->route('orders.show', $order)->with('success', __('global.order_cancelled_success'));
         } catch (\Throwable $e) {
             \Log::error($e->getMessage(), ['file' => $e->getFile(), 'line' => $e->getLine()]);
             flash()->error(__('global.server_error'));

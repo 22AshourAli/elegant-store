@@ -201,7 +201,14 @@ class CartService
         Session::forget('cart');
         Session::forget('coupon');
         $this->resolvedCoupon = null;
-        $this->persistToDb();
+        // Directly clear DB record — bypass merge loop in persistToDb()
+        $userId = $this->userId();
+        if ($userId) {
+            UserCart::updateOrCreate(
+                ['user_id' => $userId],
+                ['items' => [], 'coupon_code' => null]
+            );
+        }
     }
 
     /**

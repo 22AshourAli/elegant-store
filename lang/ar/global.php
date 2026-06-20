@@ -1251,6 +1251,51 @@ return [
 
     // Checkout & Mock Payment
     'checkout_processing_error' => 'عذراً، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.',
+    'checkout_cart_empty_now' => 'السلة فارغة حالياً.',
+    'checkout_cart_empty' => 'السلة فارغة.',
+    'checkout_email_registered' => 'البريد الإلكتروني مسجل بالفعل لدينا. يرجى إدخال كلمة المرور للمتابعة وإتمام الشراء.',
+    'checkout_new_account' => 'حساب جديد! يرجى إكمال إدخال الاسم وكلمة المرور للمتابعة والتسجيل لإتمام الشراء.',
+    'checkout_products_unavailable' => 'بعض المنتجات في سلتك لم تعد متاحة. تم تحديث السلة تلقائياً.',
+    'checkout_paymob_auth_failed' => 'فشل الحصول على رمز مصادقة Paymob',
+    'checkout_paymob_order_failed' => 'فشل تسجيل الطلب في Paymob',
+    'checkout_paymob_payment_key_failed' => 'فشل الحصول على مفتاح دفع Paymob',
+    'checkout_paymob_wallet_failed' => 'فشل توليد رابط الدفع للمحفظة الإلكترونية.',
+    'checkout_payment_gateway_error' => 'حدث خطأ في بوابة الدفع الإلكتروني: ',
     'mock_payment_success' => 'تم محاكاة عملية الدفع بنجاح! شكراً لتعاملك معنا.',
     'mock_payment_cancelled' => 'تم إلغاء عملية الدفع (محاكاة). يمكنك تجربة الدفع مرة أخرى.',
+
+    // Orders
+    'order_not_authorized_view' => 'غير مصرح لك بمشاهدة هذا الطلب.',
+    'order_not_authorized_cancel' => 'غير مصرح لك بإلغاء هذا الطلب.',
+    'order_cannot_cancel_status' => 'لا يمكن إلغاء طلب في هذه الحالة.',
+    'order_cancelled_success' => 'تم إلغاء الطلب بنجاح.',
+
+    // Reviews
+    'review_already_reviewed' => 'لقد قمت بتقييم هذا المنتج مسبقاً.',
+    'review_only_purchased' => 'التقييم متاح فقط لأصحاب الطلبات المستلمة للمنتج لضمان المصداقية.',
+    'review_submitted_success' => 'تم إرسال تقييمك بنجاح وسيتم نشره بعد مراجعة الإدارة.',
+
+    // Product Card
+    'save_label' => 'وفر',
+    'available_label' => 'متوفر',
+    'colors_count' => 'ألوان',
+    'and_separator' => 'و',
+    'sizes_count' => 'مقاسات',
+
+    // Product
+    'product_very_limited_qty' => 'متبقي كمية محدودة جداً!',
+    'review_write_placeholder' => 'اكتب مراجعتك...',
+
+    // Checkout
+    'checkout_fix_errors' => 'تأكد من البيانات التالية:',
+
+    // Notifications
+    'notifications_page_title' => 'الإشعارات',
+    'notifications_empty_title' => 'لا توجد إشعارات',
+    'notifications_empty_desc' => 'صندوق الإشعارات الخاص بك فارغ حالياً.',
+    'view_exchange' => 'عرض الاستبدال',
+    'view_return' => 'عرض الإرجاع',
+
+    // Exchange Request
+    'exchange_invalid_order_item' => 'العنصر المحدد غير صالح في الطلب.',
 ];

@@ -190,7 +190,7 @@
                         <template x-if="availableQty <= 5">
                             <div class="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold flex items-center gap-1 animate-pulse mt-0.5">
                                 <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                <span>{{ app()->getLocale() === 'ar' ? 'متبقي كمية محدودة جداً!' : 'Very limited quantity left!' }}</span>
+                                <span>{{ __('global.product_very_limited_qty') }}</span>
                             </div>
                         </template>
                     </div>
@@ -309,11 +309,11 @@
                 <button @click="
                     if (isGuest) { promptLogin(); return; }
                     if (userCanReview === 'already_reviewed') {
-                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ app()->getLocale() === 'ar' ? 'لقد قمت بتقييم هذا المنتج مسبقاً.' : 'You have already reviewed this product.' }}', type: 'info' } }));
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __('global.review_already_reviewed') }}', type: 'info' } }));
                         return;
                     }
                     if (userCanReview === false) {
-                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ app()->getLocale() === 'ar' ? 'التقييم متاح فقط لأصحاب الطلبات المستلمة للمنتج لضمان المصداقية.' : 'Reviews are only available for customers who have purchased and received this product.' }}', type: 'info' } }));
+                        window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __('global.review_only_purchased') }}', type: 'info' } }));
                         return;
                     }
                     showForm = !showForm;
@@ -337,7 +337,7 @@
                     {{-- Comment --}}
                     <textarea x-model="comment" rows="3"
                               class="w-full border-2 border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 focus:border-brand-primary dark:focus:border-accent focus:ring-0 transition resize-none"
-                              :placeholder="'{{ app()->getLocale() === 'ar' ? 'اكتب مراجعتك...' : 'Write your review...' }}'"></textarea>
+                              :placeholder="'{{ __('global.review_write_placeholder') }}'"></textarea>
                     {{-- Submit --}}
                     <div class="flex justify-end mt-2">
                         <button @click="submitReview" :disabled="rating === 0 || submitting"

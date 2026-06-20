@@ -23,7 +23,7 @@ class CheckoutController extends Controller
 
         $cartItems = $cart->getEnrichedCart();
         if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'السلة فارغة حالياً.');
+            return redirect()->route('cart.index')->with('error', __('global.checkout_cart_empty_now'));
         }
 
         $baseTotal = $cart->baseTotal();
@@ -81,11 +81,11 @@ class CheckoutController extends Controller
 
         if ($userExists) {
             return redirect()->route('login', ['email' => $email])
-                ->with('success', 'البريد الإلكتروني مسجل بالفعل لدينا. يرجى إدخال كلمة المرور للمتابعة وإتمام الشراء.');
+                ->with('success', __('global.checkout_email_registered'));
         }
 
         return redirect()->route('register', ['email' => $email])
-            ->with('success', 'حساب جديد! يرجى إكمال إدخال الاسم وكلمة المرور للمتابعة والتسجيل لإتمام الشراء.');
+            ->with('success', __('global.checkout_new_account'));
     }
 
     public function store(Request $request, CartService $cart, CheckoutService $checkout)
@@ -101,7 +101,7 @@ class CheckoutController extends Controller
 
         $cartItems = $cart->getEnrichedCart();
         if (empty($cartItems)) {
-            return redirect()->route('cart.index')->with('error', 'السلة فارغة.');
+            return redirect()->route('cart.index')->with('error', __('global.checkout_cart_empty'));
         }
 
         // Pre-order integrity check: verify no product/variant was soft-deleted or deactivated
@@ -116,7 +116,7 @@ class CheckoutController extends Controller
             $variant = $validVariants->get($item['variant_id']);
             if (!$variant || $variant->trashed() || !$variant->product || $variant->product->deleted_at !== null) {
                 return redirect()->route('cart.index')
-                    ->with('error', 'بعض المنتجات في سلتك لم تعد متاحة. تم تحديث السلة تلقائياً.');
+                    ->with('error', __('global.checkout_products_unavailable'));
             }
         }
 
@@ -185,7 +185,7 @@ class CheckoutController extends Controller
             ])->json();
 
             if (!isset($authResponse['token'])) {
-                throw new \Exception('فشل الحصول على رمز مصادقة Paymob');
+                throw new \Exception(__('global.checkout_paymob_auth_failed'));
             }
             $authToken = $authResponse['token'];
 
@@ -199,7 +199,7 @@ class CheckoutController extends Controller
             ])->json();
 
             if (!isset($orderResponse['id'])) {
-                throw new \Exception('فشل تسجيل الطلب في Paymob');
+                throw new \Exception(__('global.checkout_paymob_order_failed'));
             }
             $paymobOrderId = $orderResponse['id'];
 
@@ -234,7 +234,7 @@ class CheckoutController extends Controller
             ])->json();
 
             if (!isset($paymentKeyResponse['token'])) {
-                throw new \Exception('فشل الحصول على مفتاح دفع Paymob');
+                throw new \Exception(__('global.checkout_paymob_payment_key_failed'));
             }
             $paymentToken = $paymentKeyResponse['token'];
 
@@ -255,13 +255,13 @@ class CheckoutController extends Controller
                 if (isset($walletResponse['redirect_url'])) {
                     return redirect($walletResponse['redirect_url']);
                 }
-                throw new \Exception('فشل توليد رابط الدفع للمحفظة الإلكترونية.');
+                throw new \Exception(__('global.checkout_paymob_wallet_failed'));
             }
 
         } catch (\Exception $e) {
             $order->update(['status' => OrderStatus::Cancelled->value, 'payment_status' => PaymentStatus::Failed->value]);
             $order->payment()->update(['status' => PaymentStatus::Failed->value, 'response' => ['error' => $e->getMessage()]]);
-            return redirect()->route('cart.index')->with('error', 'حدث خطأ في بوابة الدفع الإلكتروني: ' . $e->getMessage());
+            return redirect()->route('cart.index')->with('error', __('global.checkout_payment_gateway_error') . $e->getMessage());
         }
     }
 

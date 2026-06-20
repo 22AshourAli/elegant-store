@@ -51,7 +51,7 @@ var CHECKOUT_DATA = {
             <div class="flex items-start gap-3">
                 <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-red-700 dark:text-red-400 mb-1.5">تأكد من البيانات التالية:</p>
+                    <p class="text-sm font-bold text-red-700 dark:text-red-400 mb-1.5">{{ __('global.checkout_fix_errors') }}</p>
                     <ul class="text-sm text-red-600 dark:text-red-300 space-y-1">
                         @foreach($errors->all() as $error)
                         <li class="flex items-start gap-2">

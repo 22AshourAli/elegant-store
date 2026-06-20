@@ -28,9 +28,7 @@ class ReviewController extends Controller
 
         if ($existing) {
             return response()->json([
-                'message' => app()->getLocale() === 'ar'
-                    ? 'لقد قمت بتقييم هذا المنتج مسبقاً.'
-                    : 'You have already reviewed this product.',
+                'message' => __('global.review_already_reviewed'),
             ], 422);
         }
 
@@ -41,9 +39,7 @@ class ReviewController extends Controller
 
         if (!$purchasedOrderItem) {
             return response()->json([
-                'message' => app()->getLocale() === 'ar'
-                    ? 'التقييم متاح فقط لأصحاب الطلبات المستلمة للمنتج لضمان المصداقية.'
-                    : 'Reviews are only available for customers who have purchased and received this product.',
+                'message' => __('global.review_only_purchased'),
             ], 403);
         }
 
@@ -70,9 +66,7 @@ class ReviewController extends Controller
         App::setLocale($originalLocale);
 
         return response()->json([
-            'message' => app()->getLocale() === 'ar'
-                ? 'تم إرسال تقييمك بنجاح وسيتم نشره بعد مراجعة الإدارة.'
-                : 'Your review has been submitted successfully and will be published after admin approval.',
+            'message' => __('global.review_submitted_success'),
             'review' => $review,
         ]);
     }

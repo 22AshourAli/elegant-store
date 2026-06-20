@@ -1252,6 +1252,51 @@ return [
 
     // Checkout & Mock Payment
     'checkout_processing_error' => 'Sorry, an error occurred while processing your order. Please try again.',
+    'checkout_cart_empty_now' => 'Cart is empty right now.',
+    'checkout_cart_empty' => 'Cart is empty.',
+    'checkout_email_registered' => 'Email is already registered. Please enter your password to continue.',
+    'checkout_new_account' => 'New account! Please complete your name and password to register and continue.',
+    'checkout_products_unavailable' => 'Some products in your cart are no longer available. Your cart has been updated automatically.',
+    'checkout_paymob_auth_failed' => 'Failed to obtain Paymob authentication token.',
+    'checkout_paymob_order_failed' => 'Failed to register order with Paymob.',
+    'checkout_paymob_payment_key_failed' => 'Failed to obtain Paymob payment key.',
+    'checkout_paymob_wallet_failed' => 'Failed to generate wallet payment link.',
+    'checkout_payment_gateway_error' => 'Payment gateway error: ',
     'mock_payment_success' => 'Mock payment was successful! Thank you for your purchase.',
     'mock_payment_cancelled' => 'Mock payment was cancelled. You can try again.',
+
+    // Orders
+    'order_not_authorized_view' => 'You are not authorized to view this order.',
+    'order_not_authorized_cancel' => 'You are not authorized to cancel this order.',
+    'order_cannot_cancel_status' => 'Order cannot be cancelled in its current status.',
+    'order_cancelled_success' => 'Order has been cancelled successfully.',
+
+    // Reviews
+    'review_already_reviewed' => 'You have already reviewed this product.',
+    'review_only_purchased' => 'Reviews are only available for customers who have purchased and received this product.',
+    'review_submitted_success' => 'Your review has been submitted successfully and will be published after admin approval.',
+
+    // Product Card
+    'save_label' => 'Save',
+    'available_label' => 'Available',
+    'colors_count' => 'colors',
+    'and_separator' => '&',
+    'sizes_count' => 'sizes',
+
+    // Product
+    'product_very_limited_qty' => 'Very limited quantity left!',
+    'review_write_placeholder' => 'Write your review...',
+
+    // Checkout
+    'checkout_fix_errors' => 'Please check the following data:',
+
+    // Notifications
+    'notifications_page_title' => 'Notifications',
+    'notifications_empty_title' => 'No notifications',
+    'notifications_empty_desc' => 'Your notification inbox is currently empty.',
+    'view_exchange' => 'View Exchange',
+    'view_return' => 'View Return',
+
+    // Exchange Request
+    'exchange_invalid_order_item' => 'Invalid order item selected.',
 ];

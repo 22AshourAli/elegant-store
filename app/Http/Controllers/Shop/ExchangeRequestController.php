@@ -64,7 +64,7 @@ class ExchangeRequestController extends Controller
         $orderItemIds = $order->items->pluck('id')->toArray();
         foreach ($validated['items'] as $item) {
             if (!in_array($item['order_item_id'], $orderItemIds)) {
-                return back()->with('error', 'Invalid order item selected.');
+                return back()->with('error', __('global.exchange_invalid_order_item'));
             }
         }
 

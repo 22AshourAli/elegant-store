@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-12 max-w-2xl">
-    <h1 class="text-3xl font-extrabold mb-8 text-gray-900 dark:text-white">الإشعارات</h1>
+    <h1 class="text-3xl font-extrabold mb-8 text-gray-900 dark:text-white">{{ __('global.notifications_page_title') }}</h1>
 
     <div class="space-y-4">
         @if($notifications->isEmpty())
@@ -10,8 +10,8 @@
                 <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
                 </div>
-                <h3 class="text-lg font-bold mb-1">لا توجد إشعارات</h3>
-                <p class="text-gray-500">صندوق الإشعارات الخاص بك فارغ حالياً.</p>
+                <h3 class="text-lg font-bold mb-1">{{ __('global.notifications_empty_title') }}</h3>
+                <p class="text-gray-500">{{ __('global.notifications_empty_desc') }}</p>
             </div>
         @else
             @foreach($notifications as $notification)
@@ -58,11 +58,11 @@
                     @if($notifUrl)
                         <a href="{{ $notifUrl }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 whitespace-nowrap">
                             @if(in_array($notifType, ['exchange', 'exchange_approved', 'exchange_submitted']))
-                                عرض الاستبدال &larr;
+                                {{ __('global.view_exchange') }} &larr;
                             @elseif($notifType === 'return')
-                                عرض الإرجاع &larr;
+                                {{ __('global.view_return') }} &larr;
                             @else
-                                عرض الطلب &larr;
+                                {{ __('global.view_order') }} &larr;
                             @endif
                         </a>
                     @endif
