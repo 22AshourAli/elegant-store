@@ -10,97 +10,101 @@
             font-family: 'DejaVu Sans', 'Segoe UI', Tahoma, sans-serif;
             background: #fff;
             color: #1f2937;
-            font-size: 13px;
-            line-height: 1.6;
-            padding: 30px;
+            font-size: 11pt;
+            line-height: 1.4;
+            padding: 0;
         }
-        .no-print { text-align: center; margin-bottom: 20px; }
+        .no-print { text-align: center; margin-bottom: 15px; }
         .no-print button {
             background: #4f46e5; color: #fff; border: none;
-            padding: 10px 28px; border-radius: 8px; font-size: 14px;
+            padding: 8px 24px; border-radius: 8px; font-size: 14px;
             font-weight: 600; cursor: pointer;
         }
         .no-print button:hover { background: #4338ca; }
         .invoice {
             max-width: 800px; margin: 0 auto;
             background: #fff; border: 1px solid #e5e7eb;
-            border-radius: 12px; padding: 40px;
+            border-radius: 12px; padding: 20px;
         }
         .header {
             display: flex; justify-content: space-between; align-items: flex-start;
-            padding-bottom: 24px; border-bottom: 2px solid #4f46e5;
-            margin-bottom: 24px;
+            padding-bottom: 16px; border-bottom: 2px solid #4f46e5;
+            margin-bottom: 20px;
         }
         .header .logo { display: flex; align-items: center; gap: 10px; }
         .header .logo svg { width: 40px; height: 40px; }
         .header .logo-text { display: flex; flex-direction: column; align-items: flex-start; }
-        .header .logo-text .brand { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; color: #111827; }
-        .header .logo-text .sub { font-size: 9px; font-weight: 700; letter-spacing: 3px; color: #4f46e5; }
-        .header .title-area { text-align: right; }
-        .header .title-area h1 { font-size: 20px; font-weight: 800; color: #4f46e5; }
-        .header .title-area p { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .header .logo-text .brand { font-size: 16pt; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; color: #111827; }
+        .header .logo-text .sub { font-size: 8pt; font-weight: 700; letter-spacing: 3px; color: #4f46e5; }
+        .header .title-area { text-align: left; }
+        .header .title-area h1 { font-size: 14pt; font-weight: 800; color: #4f46e5; }
+        .header .title-area p { font-size: 11pt; color: #6b7280; margin-top: 2px; }
         .info-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
-            margin-bottom: 24px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+            margin-bottom: 20px;
         }
         .info-box {
-            background: #f9fafb; border-radius: 10px; padding: 16px;
+            background: #f9fafb; border-radius: 10px; padding: 12px;
             border: 1px solid #f3f4f6;
         }
         .info-box h3 {
-            font-size: 13px; font-weight: 700; color: #4f46e5;
-            margin-bottom: 10px; padding-bottom: 6px;
+            font-size: 14pt; font-weight: 700; color: #4f46e5;
+            margin-bottom: 8px; padding-bottom: 4px;
             border-bottom: 1px solid #e5e7eb;
         }
-        .info-box p { font-size: 13px; margin-bottom: 3px; color: #374151; }
-        .info-box .label { color: #9ca3af; font-size: 11px; }
+        .info-box p { font-size: 11pt; margin-bottom: 3px; color: #374151; }
+        .info-box .label { color: #9ca3af; font-size: 11pt; }
         .info-box .value { font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         thead th {
-            background: #4f46e5; color: #fff; font-size: 12px;
+            background: #4f46e5; color: #fff; font-size: 11pt;
             font-weight: 700; text-align: right;
-            padding: 10px 12px; white-space: nowrap;
+            padding: 8px 10px; white-space: nowrap;
         }
         thead th:first-child { border-radius: 0 8px 8px 0; }
         thead th:last-child { border-radius: 8px 0 0 8px; }
         tr { page-break-inside: avoid; }
         .footer { page-break-before: auto; page-break-after: avoid; }
         tbody td {
-            padding: 10px 12px; border-bottom: 1px solid #f3f4f6;
-            font-size: 13px; vertical-align: middle;
+            padding: 8px 10px; border-bottom: 1px solid #e5e7eb;
+            font-size: 11pt; vertical-align: middle;
         }
         tbody tr:last-child td { border-bottom: none; }
         tbody tr:hover { background: #f9fafb; }
         .text-left { text-align: left; }
         .text-center { text-align: center; }
         .summary {
-            margin-bottom: 24px; padding: 16px 20px;
+            margin-bottom: 20px; padding: 12px 16px;
             background: #f9fafb; border-radius: 10px;
             border: 1px solid #f3f4f6;
         }
         .summary .row {
-            display: flex; justify-content: space-between; padding: 5px 0;
-            font-size: 13px;
+            display: flex; justify-content: space-between; padding: 4px 0;
+            font-size: 11pt;
         }
         .summary .row.total {
-            border-top: 2px solid #4f46e5; margin-top: 6px; padding-top: 10px;
-            font-size: 16px; font-weight: 800; color: #4f46e5;
+            border-top: 2px solid #4f46e5; margin-top: 4px; padding-top: 8px;
+            font-size: 14pt; font-weight: 800; color: #4f46e5;
         }
         .footer {
-            text-align: center; padding-top: 20px;
-            border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px;
+            text-align: center; padding-top: 16px;
+            border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 11pt;
         }
-        .footer .thanks { font-size: 15px; font-weight: 700; color: #4f46e5; margin-bottom: 6px; }
-        .footer .contact { margin-top: 6px; }
+        .footer .thanks { font-size: 14pt; font-weight: 700; color: #4f46e5; margin-bottom: 4px; }
+        .footer .contact { margin-top: 4px; }
         .footer .contact span { display: inline-block; margin: 0 10px; }
         @media print {
             body { padding: 0; background: #fff; }
             .no-print { display: none !important; }
-            .invoice { border: none; border-radius: 0; padding: 30px; box-shadow: none; }
+            .invoice { border: none; border-radius: 0; padding: 0; box-shadow: none; }
             thead th { background: #4f46e5 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .info-box { background: #f9fafb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .summary { background: #f9fafb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            @page { margin: 15mm; }
+            
+            @page { size: A4; margin: 15mm; margin-top: 10mm; margin-bottom: 10mm; }
+            @page :left { @top-left { content: none; } @bottom-left { content: none; } }
+            @page :right { @top-right { content: none; } @bottom-right { content: none; } }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -112,11 +116,6 @@
     <div class="invoice">
         <!-- الهيدر: اللوجو + عنوان الفاتورة -->
         <div class="header">
-            <div class="title-area">
-                <h1>{{ __('global.admin_tax_invoice') }}</h1>
-                <p>{{ __('global.admin_invoice_no_label') }} {{ $order->id }}</p>
-                <p>{{ __('global.admin_invoice_date_label') }} {{ $order->created_at->format('Y/m/d') }}</p>
-            </div>
             <div class="logo">
                 <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16 2L30 16L16 30L2 16L16 2Z" fill="#4f46e5"/>
@@ -127,6 +126,11 @@
                     <span class="brand">ELEGANT</span>
                     <span class="sub">STORE</span>
                 </div>
+            </div>
+            <div class="title-area">
+                <h1>{{ __('global.admin_tax_invoice') }}</h1>
+                <p>{{ __('global.admin_invoice_no_label') }} {{ $order->id }}</p>
+                <p>{{ __('global.admin_invoice_date_label') }} {{ $order->created_at->format('Y/m/d') }}</p>
             </div>
         </div>
 
@@ -165,7 +169,7 @@
         </div>
 
         <!-- جدول المنتجات -->
-        <h3 style="font-size:14px;font-weight:700;color:#4f46e5;margin-bottom:10px">{{ __('global.admin_products_ordered') }}</h3>
+        <h3 style="font-size:14pt;font-weight:700;color:#4f46e5;margin-bottom:10px">{{ __('global.admin_products_ordered') }}</h3>
         <table>
             <thead>
                 <tr>

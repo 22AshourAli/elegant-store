@@ -6,7 +6,33 @@
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 .receipt-enter { animation: fadeIn 0.25s ease-out; }
-@media print { body * { visibility: hidden; } #receipt-area, #receipt-area * { visibility: visible; } #receipt-area { position: fixed; top: 0; left: 0; width: 80mm; padding: 10px; font-size: 12px; } }
+@media print {
+    @page { size: 80mm auto; margin: 0; margin-top: 10mm; margin-bottom: 10mm; }
+    @page :left { @top-left { content: none; } @bottom-left { content: none; } }
+    @page :right { @top-right { content: none; } @bottom-right { content: none; } }
+    body { width: 80mm; padding: 4mm; font-size: 11px; line-height: 1.4; color: #000; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body * { visibility: hidden; }
+    #receipt-area, #receipt-area * { visibility: visible; }
+    #receipt-area {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 80mm;
+        padding: 4mm;
+        font-size: 11px;
+        line-height: 1.4;
+        color: #000 !important;
+        background: #fff !important;
+        box-sizing: border-box;
+    }
+    #receipt-area * {
+        color: #000 !important;
+        background: transparent !important;
+        border-color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+}
 </style>
 @section('content')
 <div x-data="posApp()">
@@ -346,57 +372,78 @@
 {{-- Receipt Modal --}}
 <div x-show="showReceipt" x-cloak @keydown.escape.window="showReceipt = false" @click="showReceipt = false" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" style="animation: fadeIn 0.2s ease-out;">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto receipt-enter" @click.stop>
-        <div id="receipt-area" class="text-center">
+        <div id="receipt-area" class="text-center" dir="rtl" style="font-family: 'DejaVu Sans', 'Segoe UI', Tahoma, sans-serif;">
             {{-- Store Header --}}
-            <div class="border-b-2 border-dashed border-slate-200 dark:border-slate-700 pb-3 mb-3">
-                <h2 class="font-black text-lg">{{ config('app.name') }}</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400" x-text="receipt.store_address"></p>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tel: <span x-text="receipt.store_phone"></span></p>
+            <div class="flex flex-col items-center justify-center mb-3 pb-3 border-b border-dashed border-slate-200 dark:border-slate-700">
+                <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400 mb-1" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2L30 16L16 30L2 16L16 2Z" fill="currentColor"/>
+                    <path d="M16 8L24 16L16 24L8 16L16 8Z" fill="#fff"/>
+                    <path d="M16 13L19 16L16 19L13 16L16 13Z" fill="currentColor"/>
+                </svg>
+                <h2 class="font-black text-sm tracking-wider uppercase text-slate-800 dark:text-white">ELEGANT STORE</h2>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400" x-text="receipt.store_address"></p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Tel: <span x-text="receipt.store_phone"></span></p>
             </div>
 
             {{-- Receipt Info --}}
-            <div class="text-left text-xs space-y-0.5 mb-3">
-                <p class="flex justify-between"><span class="text-slate-500">{{ __('global.invoice_no') }}</span> <span class="font-bold" x-text="'#' + receipt.order_id"></span></p>
-                <p class="flex justify-between"><span class="text-slate-500">{{ __('global.invoice_date') }}</span> <span class="font-bold" x-text="receipt.date"></span></p>
-                <p class="flex justify-between"><span class="text-slate-500">Cashier</span> <span class="font-bold" x-text="receipt.cashier"></span></p>
-                <p class="flex justify-between" x-show="receipt.customer"><span class="text-slate-500">{{ __('global.invoice_customer_info') }}</span> <span class="font-bold" x-text="receipt.customer"></span></p>
+            <div class="text-xs space-y-1 mb-3 border-b border-dashed border-slate-200 dark:border-slate-700 pb-3" style="text-align: initial;">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">{{ __('global.invoice_no') }}:</span>
+                    <span class="font-bold text-slate-800 dark:text-white" x-text="'#' + receipt.order_id"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">{{ __('global.pos_return_cashier') }}:</span>
+                    <span class="font-bold text-slate-800 dark:text-white" x-text="receipt.cashier"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">{{ __('global.invoice_date') }}:</span>
+                    <span class="font-bold text-slate-800 dark:text-white" x-text="receipt.date"></span>
+                </div>
+                <template x-if="receipt.customer">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">{{ __('global.invoice_customer_info') }}:</span>
+                        <span class="font-bold text-slate-800 dark:text-white" x-text="receipt.customer"></span>
+                    </div>
+                </template>
             </div>
 
             {{-- Items --}}
-            <table class="w-full text-xs mb-3">
+            <table class="w-full text-xs mb-3 border-collapse">
                 <thead>
                     <tr class="border-t border-b border-slate-200 dark:border-slate-700">
-                        <th class="text-left py-1 font-bold text-slate-500">{{ __('global.invoice_products') }}</th>
-                        <th class="text-center py-1 font-bold text-slate-500">{{ __('global.invoice_qty') }}</th>
-                        <th class="text-right py-1 font-bold text-slate-500">{{ __('global.invoice_total') }}</th>
+                        <th class="text-right py-1 font-bold text-slate-500 w-[55%]">{{ __('global.invoice_products') }}</th>
+                        <th class="text-center py-1 font-bold text-slate-500 w-[15%]">{{ __('global.invoice_qty') }}</th>
+                        <th class="text-left py-1 font-bold text-slate-500 w-[30%]">{{ __('global.invoice_total') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="item in receipt.items" :key="item.variant_id">
-                        <tr>
-                            <td class="py-1 text-left">
-                                <span x-text="item.product_name"></span>
-                                <span x-show="item.color || item.size" class="text-slate-400" x-text="' (' + (item.color||'') + (item.color && item.size ? ' / ' : '') + (item.size||'') + ')'"></span>
+                        <tr class="border-b border-slate-100 dark:border-slate-800 last:border-0">
+                            <td class="py-1 text-right text-slate-800 dark:text-slate-200">
+                                <span class="font-bold" x-text="item.product_name"></span>
+                                <span x-show="item.color || item.size" class="text-slate-400 block text-[10px]" x-text="(item.color||'') + (item.color && item.size ? ' / ' : '') + (item.size||'')"></span>
                             </td>
-                            <td class="py-1 text-center" x-text="item.quantity"></td>
-                            <td class="py-1 text-right font-bold" x-text="formatPrice(item.price * item.quantity)"></td>
+                            <td class="py-1 text-center text-slate-800 dark:text-slate-200" x-text="item.quantity"></td>
+                            <td class="py-1 text-left font-bold text-slate-800 dark:text-slate-200" x-text="formatPrice(item.price * item.quantity)"></td>
                         </tr>
                     </template>
                 </tbody>
                 <tfoot>
                     <tr class="border-t border-slate-200 dark:border-slate-700">
-                        <td colspan="2" class="py-1 text-left font-bold">{{ __('global.pos_total') }}</td>
-                        <td class="py-1 text-right font-black text-lg" x-text="formatPrice(receipt.total)"></td>
+                        <td colspan="2" class="py-1.5 text-right font-bold text-slate-800 dark:text-slate-200">{{ __('global.pos_total') }}</td>
+                        <td class="py-1.5 text-left font-black text-base text-indigo-600 dark:text-indigo-400">
+                            <span x-text="Math.round(receipt.total)"></span> {{ __('global.currency') }}
+                        </td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="text-left text-slate-500">{{ __('global.pos_payment') }}: <span class="font-bold text-slate-700 dark:text-slate-200" x-text="receipt.payment_method"></span></td>
-                        <td class="text-right text-slate-500 text-[10px]" x-text="receipt.paid_at"></td>
+                        <td colspan="2" class="text-right text-slate-500 text-[10px]">{{ __('global.pos_payment') }}: <span class="font-bold text-slate-700 dark:text-slate-300" x-text="receipt.payment_method"></span></td>
+                        <td class="text-left text-slate-500 text-[10px]" x-text="receipt.paid_at"></td>
                     </tr>
                 </tfoot>
             </table>
 
             {{-- Thank You --}}
-            <div class="border-t-2 border-dashed border-slate-200 dark:border-slate-700 pt-3">
+            <div class="border-t border-dashed border-slate-200 dark:border-slate-700 pt-3">
                 <p class="text-xs font-bold text-slate-600 dark:text-slate-400">{{ __('global.invoice_thanks') }}</p>
             </div>
         </div>
