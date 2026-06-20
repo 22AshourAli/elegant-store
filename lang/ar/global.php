@@ -1247,4 +1247,9 @@ return [
     'analytics_export_csv' => 'تصدير CSV',
     'analytics_no_data' => 'لا توجد بيانات كافية لعرضها',
     'analytics_more_reports' => 'تقارير متقدمة',
+
+    // Checkout & Mock Payment
+    'checkout_processing_error' => 'عذراً، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.',
+    'mock_payment_success' => 'تم محاكاة عملية الدفع بنجاح! شكراً لتعاملك معنا.',
+    'mock_payment_cancelled' => 'تم إلغاء عملية الدفع (محاكاة). يمكنك تجربة الدفع مرة أخرى.',
 ];

@@ -131,14 +131,14 @@ class CheckoutController extends Controller
             });
 
             if ($request->payment_method === 'cash') {
-                session()->forget('cart');
+                $cart->clear();
                 return redirect()->route('orders.show', $order)
                     ->with('success', __('global.order_placed_success', ['id' => $order->id]));
             }
 
             try {
                 $response = $this->processCardPayment($order, $request->payment_method, $request->phone);
-                session()->forget('cart');
+                $cart->clear();
                 return $response;
             } catch (\Exception $e) {
                 DB::transaction(function () use ($order) {
@@ -155,12 +155,9 @@ class CheckoutController extends Controller
             }
 
         } catch (\Exception $e) {
-            $message = app()->getLocale() === 'ar'
-                ? 'عذراً، حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.'
-                : 'Sorry, an error occurred while processing your order. Please try again.';
             return redirect()->route('checkout')
                 ->withInput()
-                ->with('error', $message);
+                ->with('error', __('global.checkout_processing_error'));
         }
     }
 
@@ -278,7 +275,7 @@ class CheckoutController extends Controller
         return view('shop.payment_mock', compact('order', 'method'));
     }
 
-    public function processMockPayment(\App\Models\Order $order, Request $request)
+    public function processMockPayment(\App\Models\Order $order, Request $request, CartService $cart)
     {
         $request->validate([
             'status' => 'required|in:success,failed',
@@ -298,9 +295,9 @@ class CheckoutController extends Controller
             ]);
 
             // Clear the cart on successful payment
-            session()->forget('cart');
+            $cart->clear();
 
-            return redirect()->route('orders.show', $order)->with('success', 'تم محاكاة عملية الدفع بنجاح! شكراً لتعاملك معنا.');
+            return redirect()->route('orders.show', $order)->with('success', __('global.mock_payment_success'));
         } else {
             $order->update([
                 'status' => OrderStatus::Cancelled->value,
@@ -311,7 +308,7 @@ class CheckoutController extends Controller
                 'response' => ['status' => 'mocked_failed']
             ]);
 
-            return redirect()->route('cart.index')->with('error', 'تم إلغاء عملية الدفع (محاكاة). يمكنك تجربة الدفع مرة أخرى.');
+            return redirect()->route('cart.index')->with('error', __('global.mock_payment_cancelled'));
         }
     }
 }

@@ -1248,4 +1248,9 @@ return [
     'analytics_export_csv' => 'Export CSV',
     'analytics_no_data' => 'No data available',
     'analytics_more_reports' => 'Advanced Reports',
+
+    // Checkout & Mock Payment
+    'checkout_processing_error' => 'Sorry, an error occurred while processing your order. Please try again.',
+    'mock_payment_success' => 'Mock payment was successful! Thank you for your purchase.',
+    'mock_payment_cancelled' => 'Mock payment was cancelled. You can try again.',
 ];
