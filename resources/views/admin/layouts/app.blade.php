@@ -446,7 +446,6 @@
                 items: [],
                 latestId: null,
                 _pollTimer: null,
-                _retrySec: 3,
                 _bc: null,
                 _baseTitle: '',
                 toastItem: null,
@@ -457,6 +456,7 @@
                     this._baseTitle = document.title.replace(/^\(\d+\) /, '');
                     await this.syncAll();
                     this.scheduleNext();
+                    this.listenEcho();
                     try {
                         this._bc = new BroadcastChannel('notifications');
                         this._bc.onmessage = (e) => {
@@ -480,16 +480,32 @@
                 scheduleNext() {
                     if (this._pollTimer) clearTimeout(this._pollTimer);
                     const poll = async () => {
-                        const ok = await this.fetchUnread();
-                        if (ok) {
-                            this._retrySec = 3;
-                        } else {
-                            this._retrySec = Math.min(this._retrySec * 2, 30);
-                        }
+                        await this.fetchUnread();
                         if (this.unread > 0) this.fetchItems();
                         this.scheduleNext();
                     };
-                    this._pollTimer = setTimeout(poll, this._retrySec * 1000);
+                    this._pollTimer = setTimeout(poll, 3000);
+                },
+
+                listenEcho() {
+                    if (typeof window.Echo === 'undefined') return;
+                    try {
+                        window.Echo.private('admin.notifications')
+                            .listen('.NewAdminNotification', (e) => {
+                                if (!e || !e.data) return;
+                                const d = e.data;
+                                this.unread = d.count || 0;
+                                this.latestId = d.latest_id || this.latestId;
+                                this._updateTitle();
+                                if (d.notification) {
+                                    this.items.unshift(d.notification);
+                                    if (!d.notification.read_at) this.showToast(d.notification);
+                                }
+                                try {
+                                    this._bc?.postMessage({ type: 'new_notification', count: d.count, latestId: d.latest_id });
+                                } catch(e) {}
+                            });
+                    } catch(e) {}
                 },
 
                 async fetchUnread() {
@@ -567,6 +583,7 @@
                     if (this._pollTimer) clearTimeout(this._pollTimer);
                     if (this.toastTimer) clearTimeout(this.toastTimer);
                     try { this._bc?.close(); } catch(e) {}
+                    try { window.Echo?.leave('admin.notifications'); } catch(e) {}
                 }
             }));
         });
