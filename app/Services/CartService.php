@@ -10,26 +10,13 @@ use Illuminate\Support\Facades\Session;
 
 class CartService
 {
-    /**
-     * Memoized coupon instance for the current request lifecycle.
-     * Prevents duplicate DB queries when total(), getDiscount(), etc.
-     * are all called on the same request.
-     */
     private ?Coupon $resolvedCoupon = null;
 
-    /**
-     * Return the raw session cart (variant_id => quantity).
-     * Prices are NOT stored in the session; they are always read live.
-     */
     public function getCart(): array
     {
         return Session::get('cart', []);
     }
 
-    /**
-     * Add a variant to the cart. Only variant_id and quantity are persisted.
-     * All other display fields are hydrated from the DB on the fly.
-     */
     public function add(int $variantId, int $quantity = 1): array
     {
         $cart = $this->getCart();
@@ -68,10 +55,6 @@ class CartService
         }
     }
 
-    /**
-     * Return a fully enriched cart array, fetching live prices & metadata
-     * from the database. This eliminates stale-price bugs.
-     */
     public function getEnrichedCart(): array
     {
         $raw = $this->getCart();
@@ -88,13 +71,11 @@ class CartService
         $enriched = [];
         foreach ($raw as $variantId => $item) {
             if (!isset($variants[$variantId])) {
-                // Variant was hard-deleted; remove it silently.
                 $this->remove($variantId);
                 continue;
             }
             $variant = $variants[$variantId];
 
-            // If the parent product was soft-deleted, purge this item from the cart silently.
             if ($variant->product === null || $variant->trashed() || ($variant->product->deleted_at !== null)) {
                 $this->remove($variantId);
                 continue;
@@ -120,9 +101,6 @@ class CartService
         return $enriched;
     }
 
-    /**
-     * Cart subtotal (before coupon), computed from live DB prices.
-     */
     public function baseTotal(): float
     {
         return array_sum(
@@ -130,9 +108,6 @@ class CartService
         );
     }
 
-    /**
-     * Final total after any applied coupon discount.
-     */
     public function total(): float
     {
         $base   = $this->baseTotal();
@@ -146,9 +121,6 @@ class CartService
         return max(0, $base - $this->calculateDiscount($base, $coupon));
     }
 
-    /**
-     * The monetary discount amount.
-     */
     public function getDiscount(): float
     {
         $base   = $this->baseTotal();
@@ -201,19 +173,9 @@ class CartService
         Session::forget('cart');
         Session::forget('coupon');
         $this->resolvedCoupon = null;
-        // Directly clear DB record — bypass merge loop in persistToDb()
-        $userId = $this->userId();
-        if ($userId) {
-            UserCart::updateOrCreate(
-                ['user_id' => $userId],
-                ['items' => [], 'coupon_code' => null]
-            );
-        }
+        $this->persistToDb();
     }
 
-    /**
-     * Memoized coupon lookup — only one DB query per request lifecycle.
-     */
     public function getAppliedCoupon(): ?Coupon
     {
         if ($this->resolvedCoupon !== null) {
@@ -227,49 +189,60 @@ class CartService
         return $this->resolvedCoupon;
     }
 
-    /**
-     * Number of individual items (sum of quantities) in the cart.
-     */
     public function count(): int
     {
         return (int) array_sum(array_column($this->getCart(), 'quantity'));
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
-    // -------------------------------------------------------------------------
-    // Cross-device cart sync
-    // -------------------------------------------------------------------------
-
-    private function userId(): ?int
+    /**
+     * Overwrite the DB cart with the current session data.
+     * No merge — the session is always the latest state.
+     */
+    public function persistToDb(): void
     {
-        return auth()->check() ? auth()->id() : null;
+        $userId = auth()->id();
+        if (!$userId) return;
+
+        $sessionItems = $this->getCart();
+        $coupon = Session::get('coupon');
+
+        UserCart::updateOrCreate(
+            ['user_id' => $userId],
+            [
+                'items'       => $sessionItems,
+                'coupon_code' => $coupon['code'] ?? null,
+            ]
+        );
     }
 
     /**
-     * Merge a DB-stored cart into the current session cart (guest wins on conflict).
+     * Load the DB cart into the session (DB is source of truth).
+     *
+     * - If DB is empty AND session has items → stale session from another device
+     *   that already purchased → clear the session.
+     * - If DB has items → overwrite the session with DB data.
      */
-    public function syncFromDb(?int $userId = null): void
+    public function syncFromDb(): void
     {
-        $userId ??= $this->userId();
+        $userId = auth()->id();
         if (!$userId) return;
 
         $saved = UserCart::forUser($userId);
-        if (!$saved) return;
 
         $sessionCart = $this->getCart();
-        $dbCart = $saved->items ?? [];
 
-        // Merge: session items keep their quantity, DB items fill in gaps
-        foreach ($dbCart as $variantId => $item) {
-            if (!isset($sessionCart[$variantId])) {
-                $sessionCart[$variantId] = $item;
+        // Case 1: DB is empty but session still has items → stale session
+        if (!$saved || empty($saved->items)) {
+            if (!empty($sessionCart)) {
+                Session::forget('cart');
+                Session::forget('coupon');
+                $this->resolvedCoupon = null;
             }
+            return;
         }
 
-        Session::put('cart', $sessionCart);
+        // Case 2: DB has items → DB is source of truth, overwrite session
+        Session::put('cart', $saved->items);
 
         if ($saved->coupon_code && !Session::has('coupon')) {
             $coupon = Coupon::where('code', $saved->coupon_code)
@@ -279,40 +252,6 @@ class CartService
                 $this->resolvedCoupon = $coupon;
             }
         }
-    }
-
-    /**
-     * Persist the current session cart + coupon to the database for cross-device sync.
-     * Merges with existing DB items (DB items fill gaps not in the current session)
-     * so simultaneous saves from multiple devices don't lose items.
-     */
-    public function persistToDb(?int $userId = null): void
-    {
-        $userId ??= $this->userId();
-        if (!$userId) return;
-
-        $saved = UserCart::forUser($userId);
-        $existingItems = $saved ? ($saved->items ?? []) : [];
-
-        $sessionItems = $this->getCart();
-
-        // Merge: DB items fill gaps that the current session doesn't have.
-        // This prevents data loss when two devices persist at nearly the same time.
-        foreach ($existingItems as $variantId => $item) {
-            if (!isset($sessionItems[$variantId])) {
-                $sessionItems[$variantId] = $item;
-            }
-        }
-
-        $coupon = Session::get('coupon');
-
-        UserCart::updateOrCreate(
-            ['user_id' => $userId],
-            [
-                'items'       => empty($sessionItems) ? [] : $sessionItems,
-                'coupon_code' => $coupon['code'] ?? null,
-            ]
-        );
     }
 
     private function calculateDiscount(float $base, Coupon $coupon): float

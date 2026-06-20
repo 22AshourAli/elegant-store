@@ -73,7 +73,6 @@ class SocialLoginController extends Controller
 
         Auth::login($user, true);
 
-        // Merge any DB-stored cart into the session (cross-device sync)
         app(CartService::class)->syncFromDb();
 
         // Redirect to intended URL (like Checkout) or dashboard
