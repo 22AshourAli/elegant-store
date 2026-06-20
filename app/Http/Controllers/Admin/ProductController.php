@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -65,12 +66,14 @@ class ProductController extends Controller
 
         $allBranches = Branch::all()->keyBy('id');
 
-        $product = Product::create($validated);
+        DB::transaction(function () use ($request, $validated, $allBranches) {
+            $product = Product::create($validated);
+            $this->handleUploadedProductImages($request, $product);
+            $this->createProductVariants($product, $request, $validated, $allBranches);
+            $this->attachColorImageUrls($request, $product);
+        });
 
         $this->clearHomepageCache();
-        $this->handleUploadedProductImages($request, $product);
-        $this->createProductVariants($product, $request, $validated, $allBranches);
-        $this->attachColorImageUrls($request, $product);
 
         return redirect()->route('admin.products.index')->with('success', 'تم إضافة المنتج بنجاح');
     }
@@ -112,17 +115,19 @@ class ProductController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
         $validated['image_urls'] = $this->parseImageUrls($request->input('image_urls'));
 
-        $product->update($validated);
+        DB::transaction(function () use ($request, $validated, $product) {
+            $product->update($validated);
+
+            $allBranches = Branch::all()->keyBy('id');
+            $product->load('variants');
+
+            $this->handleDeletedProductImages($request, $product);
+            $this->handleUploadedProductImages($request, $product);
+            $this->updateExistingVariants($request, $product);
+            $this->addNewVariants($request, $product, $allBranches);
+        });
 
         $this->clearHomepageCache();
-
-        $allBranches = Branch::all()->keyBy('id');
-        $product->load('variants');
-
-        $this->handleDeletedProductImages($request, $product);
-        $this->handleUploadedProductImages($request, $product);
-        $this->updateExistingVariants($request, $product);
-        $this->addNewVariants($request, $product, $allBranches);
 
         return redirect()->route('admin.products.index')->with('success', 'تم تحديث المنتج بنجاح');
     }

@@ -254,7 +254,7 @@
                             <span class="text-sm font-bold text-slate-900 dark:text-white">{{ __('global.notifications') }}</span>
                             <button x-show="unread > 0" @click="markAllRead" class="text-xs text-brand-primary dark:text-accent font-bold hover:underline flex-shrink-0 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">{{ __('global.admin_mark_all_read') }}</button>
                         </div>
-                        <div class="overflow-y-auto max-h-72">
+                        <div class="overflow-y-auto max-h-72" @scroll="handleScroll($event)">
                             <div x-show="items.length === 0" class="p-8 text-center text-slate-400 text-sm" style="display:none">{{ __('global.admin_no_notifications') }}</div>
                             <template x-for="n in items" :key="n.id">
                                 <a :href="n.url || '#'" @click="n.read_at ? null : markRead(n.id)" class="block px-4.5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-900/50 transition border-b border-slate-50 dark:border-slate-900/30 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none" :class="{'bg-indigo-50/30 dark:bg-indigo-950/10': !n.read_at}">
@@ -280,6 +280,9 @@
                                     </div>
                                 </a>
                             </template>
+                            <div x-show="loadingMore" class="p-3.5 text-center text-slate-400 text-[10px] font-bold" style="display:none">
+                                جاري التحميل...
+                            </div>
                         </div>
                         <a href="{{ route('notifications.index') }}" class="block p-3.5 text-center text-xs font-bold text-brand-primary dark:text-accent hover:bg-slate-50 dark:hover:bg-slate-900/40 transition border-t border-slate-100 dark:border-slate-900 focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none">
                             @lang('global.admin_notifications_all')
@@ -663,6 +666,27 @@
 
     <script> if ('serviceWorker' in navigator) { navigator.serviceWorker.register(@json(asset('sw.js'))); } </script>
 
+    {{-- Global Double-Submission Prevention --}}
+    <script>
+        (function() {
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                // Skip forms that explicitly opt-out or are Alpine-managed fetch forms
+                if (form.dataset.noSubmitGuard !== undefined) return;
+                const btn = form.querySelector('[type="submit"]');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>';
+                // Restore after 8 seconds in case the page returns (validation error redirect)
+                setTimeout(function() {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }, 8000);
+            }, true);
+        })();
+    </script>
+
     @stack('cart-scripts')
 
     @push('scripts')
@@ -690,6 +714,10 @@
                 _retrySec: 3,
                 _bc: null,
                 _baseTitle: '',
+                _nextPageUrl: null,
+                _currentPage: 1,
+                _lastPage: 1,
+                loadingMore: false,
 
                 _online: true,
 
@@ -697,6 +725,7 @@
                     this._baseTitle = document.title.replace(/^\(\d+\) /, '');
                     await this.syncAll();
                     this.scheduleNext();
+                    this._initEchoListener();
                     try {
                         this._bc = new BroadcastChannel('notifications');
                         this._bc.onmessage = (e) => {
@@ -710,6 +739,42 @@
                     } catch(e) {}
                     window.addEventListener('online', () => { this._online = true; this.syncAll(); this.scheduleNext(); });
                     window.addEventListener('offline', () => { this._online = false; });
+                },
+
+                _initEchoListener() {
+                    if (typeof window.Echo === 'undefined') return;
+                    @auth
+                    try {
+                        window.Echo.private('App.Models.User.{{ auth()->id() }}')
+                            .notification((notification) => {
+                                const notifId = notification.id || notification.data?.id;
+                                // Deduplicate across tabs using localStorage
+                                if (notifId) {
+                                    const key = `processed_notif_${notifId}`;
+                                    if (localStorage.getItem(key)) return;
+                                    localStorage.setItem(key, '1');
+                                    // Clean up old keys after 60 seconds
+                                    setTimeout(() => localStorage.removeItem(key), 60000);
+                                }
+                                this.unread += 1;
+                                this._updateTitle();
+                                this.fetchItems();
+                                playNotifSound();
+                                const item = {
+                                    id: notifId,
+                                    title: notification.title || notification.message || '',
+                                    time: '{{ __('global.notification_new') }}',
+                                    read_at: null,
+                                    type: notification.type || 'info',
+                                    url: notification.url || null,
+                                };
+                                this.showToast(item);
+                                try {
+                                    this._bc?.postMessage({ type: 'new_notification', count: this.unread, latestId: notifId });
+                                } catch(e) {}
+                            });
+                    } catch(e) {}
+                    @endauth
                 },
 
                 async syncAll() {
@@ -754,12 +819,30 @@
                     } catch(e) { return false; }
                 },
 
-                async fetchItems() {
+                async fetchItems(append = false) {
                     try {
-                        const res = await fetch("{{ route('notifications.index') }}?json=1");
+                        const page = append ? (this._currentPage + 1) : 1;
+                        const res = await fetch(`{{ route('notifications.index') }}?json=1&page=${page}`);
                         const data = await res.json();
-                        this.items = data.notifications || [];
+                        if (append) {
+                            this.items = [...this.items, ...(data.notifications || [])];
+                        } else {
+                            this.items = data.notifications || [];
+                        }
+                        this._nextPageUrl = data.next_page_url || null;
+                        this._currentPage = data.current_page || 1;
+                        this._lastPage = data.last_page || 1;
                     } catch(e) {}
+                },
+
+                handleScroll(event) {
+                    if (this.loadingMore || !this._nextPageUrl) return;
+                    const el = event.target;
+                    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 40;
+                    if (atBottom) {
+                        this.loadingMore = true;
+                        this.fetchItems(true).finally(() => { this.loadingMore = false; });
+                    }
                 },
 
                 togglePanel() {

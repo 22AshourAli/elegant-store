@@ -104,6 +104,22 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'السلة فارغة.');
         }
 
+        // Pre-order integrity check: verify no product/variant was soft-deleted or deactivated
+        // between the time the user loaded the cart and when they submit the order.
+        $variantIds = array_column($cartItems, 'variant_id');
+        $validVariants = \App\Models\ProductVariant::with('product')
+            ->whereIn('id', $variantIds)
+            ->get()
+            ->keyBy('id');
+
+        foreach ($cartItems as $item) {
+            $variant = $validVariants->get($item['variant_id']);
+            if (!$variant || $variant->trashed() || !$variant->product || $variant->product->deleted_at !== null) {
+                return redirect()->route('cart.index')
+                    ->with('error', 'بعض المنتجات في سلتك لم تعد متاحة. تم تحديث السلة تلقائياً.');
+            }
+        }
+
         try {
             $order = DB::transaction(function () use ($request, $cart, $checkout, $cartItems) {
                 $data = $request->all();

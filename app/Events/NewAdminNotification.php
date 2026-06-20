@@ -11,6 +11,12 @@ class NewAdminNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets;
 
+    /** @var int Number of times to attempt the broadcast job before failing. */
+    public int $tries = 3;
+
+    /** @var int Seconds to wait before retrying a failed broadcast. */
+    public int $backoff = 5;
+
     public function __construct(
         public array $data
     ) {}

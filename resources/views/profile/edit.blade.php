@@ -93,6 +93,7 @@
                     <form method="post" action="{{ route('profile.update') }}" class="space-y-5">
                         @csrf
                         @method('patch')
+                        <input type="hidden" name="last_updated_at" value="{{ $user->updated_at->timestamp }}">
 
                         <div>
                             <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{{ __('global.name') }}</label>
@@ -330,8 +331,16 @@
         if (cropper) { cropper.destroy(); cropper = null; }
     }
 
+    let avatarUploadController = null;
+
     function confirmCrop() {
         if (!cropper) return;
+
+        if (avatarUploadController) {
+            avatarUploadController.abort();
+        }
+        avatarUploadController = new AbortController();
+        const signal = avatarUploadController.signal;
 
         const canvas = cropper.getCroppedCanvas({
             width: 400,
@@ -347,15 +356,19 @@
             formData.append('email', document.querySelector('input[name="email"]').value);
             formData.append('phone', document.querySelector('input[name="phone"]').value);
             formData.append('avatar', blob, 'avatar.jpg');
+            formData.append('last_updated_at', '{{ $user->updated_at->timestamp }}');
 
             fetch('{{ route("profile.update") }}', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
+                signal: signal
             }).then(function () {
                 window.location.reload();
-            }).catch(function () {
-                window.location.reload();
+            }).catch(function (error) {
+                if (error.name !== 'AbortError') {
+                    window.location.reload();
+                }
             });
         }, 'image/jpeg', 0.9);
     }

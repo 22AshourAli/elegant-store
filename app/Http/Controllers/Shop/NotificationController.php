@@ -10,21 +10,26 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         if ($request->query('json')) {
-            $notifications = auth()->user()->notifications()->latest()->take(10)->get()->map(function ($n) {
+            $paginator = auth()->user()->notifications()->latest()->paginate(15);
+
+            $notifications = $paginator->getCollection()->map(function ($n) {
                 $data = $n->data;
                 $type = $this->resolveType($data);
                 return [
-                    'id' => $n->id,
-                    'title' => $data['title'] ?? $data['message'] ?? '',
-                    'time' => $n->created_at->diffForHumans(),
+                    'id'      => $n->id,
+                    'title'   => $data['title'] ?? $data['message'] ?? '',
+                    'time'    => $n->created_at->diffForHumans(),
                     'read_at' => $n->read_at,
-                    'type' => $type,
-                    'url' => $this->resolveUrl($data, $type),
+                    'type'    => $type,
+                    'url'     => $this->resolveUrl($data, $type),
                 ];
             });
 
             return response()->json([
-                'notifications' => $notifications,
+                'notifications'   => $notifications,
+                'next_page_url'   => $paginator->nextPageUrl(),
+                'current_page'    => $paginator->currentPage(),
+                'last_page'       => $paginator->lastPage(),
             ]);
         }
 

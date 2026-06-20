@@ -16,8 +16,13 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $userId = $request->user()->id;
+        $user = \Cache::remember("user_profile_{$userId}", 3600, function() use ($request) {
+            return $request->user();
+        });
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
@@ -27,6 +32,12 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
+
+        // Optimistic Locking Check
+        if ($request->has('last_updated_at') && $user->updated_at->timestamp > (int) $request->input('last_updated_at')) {
+            return Redirect::route('profile.edit')->withErrors(['name' => 'تم تحديث هذه البيانات بالفعل من جهاز آخر، يرجى تحديث الصفحة والمحاولة مجدداً.']);
+        }
+
         $user->fill($request->safe()->except('avatar'));
 
         if ($user->isDirty('email')) {
@@ -42,6 +53,9 @@ class ProfileController extends Controller
         }
 
         $user->save();
+
+        // Invalidate Cache
+        \Cache::forget("user_profile_{$user->id}");
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -59,7 +73,11 @@ class ProfileController extends Controller
 
         Auth::logout();
 
+        $userId = $user->id;
         $user->delete();
+
+        // Invalidate Cache
+        \Cache::forget("user_profile_{$userId}");
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

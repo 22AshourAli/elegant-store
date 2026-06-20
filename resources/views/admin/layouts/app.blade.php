@@ -590,5 +590,24 @@
     </script>
     @endpush
     @stack('scripts')
+
+    {{-- Global Double-Submission Prevention --}}
+    <script>
+        (function() {
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form.dataset.noSubmitGuard !== undefined) return;
+                const btn = form.querySelector('[type="submit"]');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>';
+                setTimeout(function() {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }, 8000);
+            }, true);
+        })();
+    </script>
 </body>
 </html>

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Lang;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -10,7 +12,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
 {
-    use InteractsWithMedia;
+    use InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'description', 'base_price',
@@ -32,6 +34,37 @@ class Product extends Model implements HasMedia
         'current_price',
         'is_on_sale',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleted(function ($product) {
+            // Soft delete variants on product soft delete
+            $product->variants()->delete();
+
+            // Cache Invalidation
+            Cache::forget('homepage_default');
+            Cache::forget('categories_all');
+            Cache::increment('cache_version');
+
+            // Purge deleted product's variants from active database-stored carts
+            $variantIds = $product->variants()->withTrashed()->pluck('id')->toArray();
+            if (!empty($variantIds)) {
+                UserCart::all()->each(function ($cart) use ($variantIds) {
+                    $items = $cart->items;
+                    $changed = false;
+                    foreach ($variantIds as $vId) {
+                        if (isset($items[$vId])) {
+                            unset($items[$vId]);
+                            $changed = true;
+                        }
+                    }
+                    if ($changed) {
+                        $cart->update(['items' => $items]);
+                    }
+                });
+            }
+        });
+    }
 
     public function category()
     {

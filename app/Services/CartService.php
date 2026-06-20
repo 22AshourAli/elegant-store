@@ -88,11 +88,18 @@ class CartService
         $enriched = [];
         foreach ($raw as $variantId => $item) {
             if (!isset($variants[$variantId])) {
-                // Variant was deleted; remove it silently.
+                // Variant was hard-deleted; remove it silently.
                 $this->remove($variantId);
                 continue;
             }
-            $variant              = $variants[$variantId];
+            $variant = $variants[$variantId];
+
+            // If the parent product was soft-deleted, purge this item from the cart silently.
+            if ($variant->product === null || $variant->trashed() || ($variant->product->deleted_at !== null)) {
+                $this->remove($variantId);
+                continue;
+            }
+
             $image = $variant->imageUrl();
             if (!$image && $variant->color) {
                 $sibling = $variant->product->variants
