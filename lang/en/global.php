@@ -564,6 +564,7 @@ return [
     'pos_no_orders' => 'No recent orders',
     'pos_remove' => 'Remove',
     'pos_customer_name' => 'Customer name',
+    'pos_cashier' => 'Cashier',
     'pos_processing' => 'Processing',
     'pos_payment' => 'Payment',
     'pos_search_error' => 'Search failed',

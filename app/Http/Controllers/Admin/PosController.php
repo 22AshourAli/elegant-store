@@ -26,8 +26,9 @@ class PosController extends Controller
     {
         $cart = session('pos_cart', []);
         $cartItems = $this->getEnrichedCart($cart);
+        $customerName = auth()->user()->name;
 
-        return view('admin.pos.index');
+        return view('admin.pos.index', compact('customerName'));
     }
 
     public function categories()

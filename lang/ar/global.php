@@ -571,6 +571,7 @@ return [
     'pos_no_orders' => 'لا توجد طلبات حديثة',
     'pos_remove' => 'حذف',
     'pos_customer_name' => 'اسم العميل',
+    'pos_cashier' => 'الكاشير',
     'pos_processing' => 'جاري المعالجة',
     'pos_payment' => 'طريقة الدفع',
     'pos_search_error' => 'فشل البحث',

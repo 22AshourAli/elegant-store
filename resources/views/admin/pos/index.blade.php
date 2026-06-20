@@ -36,6 +36,9 @@
 </style>
 @section('content')
 <div x-data="posApp()">
+<div class="flex items-center justify-between px-1 pb-2 text-xs text-slate-400">
+    <span>{{ __('global.pos_cashier') }}: <strong class="text-slate-600 dark:text-slate-300">{{ $customerName ?? auth()->user()->name ?? 'مستخدم' }}</strong></span>
+</div>
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
     {{-- Products Panel --}}
     <div class="lg:col-span-2 flex flex-col gap-3 min-h-0">
