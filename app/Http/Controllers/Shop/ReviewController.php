@@ -56,16 +56,18 @@ class ReviewController extends Controller
             'status' => 'pending',
         ]);
 
-        try {
-            $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
-            foreach ($admins as $admin) {
+        $originalLocale = app()->getLocale();
+        $admins = \App\Models\User::whereIn('role', array_map(fn($r) => $r->value, UserRole::adminRoles()))->get();
+        foreach ($admins as $admin) {
+            try {
                 $adminLocale = $admin->locale ?? config('app.fallback_locale', 'ar');
                 App::setLocale($adminLocale);
                 $admin->notify(new NewReviewAdminNotification($review));
+            } catch (\Throwable $e) {
+                \Log::error('Review notification failed for admin ' . $admin->id . ': ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            \Log::error('Review notification failed: ' . $e->getMessage());
         }
+        App::setLocale($originalLocale);
 
         return response()->json([
             'message' => app()->getLocale() === 'ar'
