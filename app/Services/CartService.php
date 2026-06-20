@@ -269,19 +269,33 @@ class CartService
 
     /**
      * Persist the current session cart + coupon to the database for cross-device sync.
+     * Merges with existing DB items (DB items fill gaps not in the current session)
+     * so simultaneous saves from multiple devices don't lose items.
      */
     public function persistToDb(?int $userId = null): void
     {
         $userId ??= $this->userId();
         if (!$userId) return;
 
-        $items = $this->getCart();
+        $saved = UserCart::forUser($userId);
+        $existingItems = $saved ? ($saved->items ?? []) : [];
+
+        $sessionItems = $this->getCart();
+
+        // Merge: DB items fill gaps that the current session doesn't have.
+        // This prevents data loss when two devices persist at nearly the same time.
+        foreach ($existingItems as $variantId => $item) {
+            if (!isset($sessionItems[$variantId])) {
+                $sessionItems[$variantId] = $item;
+            }
+        }
+
         $coupon = Session::get('coupon');
 
         UserCart::updateOrCreate(
             ['user_id' => $userId],
             [
-                'items'       => empty($items) ? [] : $items,
+                'items'       => empty($sessionItems) ? [] : $sessionItems,
                 'coupon_code' => $coupon['code'] ?? null,
             ]
         );
