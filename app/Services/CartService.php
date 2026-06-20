@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Coupon;
 use App\Models\ProductVariant;
 use App\Models\UserCart;
+use App\Services\AbandonedCartService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 
@@ -212,6 +213,27 @@ class CartService
                 'items'       => $sessionItems,
                 'coupon_code' => $coupon['code'] ?? null,
             ]
+        );
+
+        $this->trackAbandonedCart();
+    }
+
+    private function trackAbandonedCart(): void
+    {
+        $userId = auth()->id();
+        if (!$userId) return;
+
+        $items = $this->getCart();
+        if (empty($items)) return;
+
+        $coupon = Session::get('coupon');
+
+        app(AbandonedCartService::class)->trackCart(
+            $userId,
+            Session::getId(),
+            $items,
+            $this->baseTotal(),
+            $coupon['code'] ?? null
         );
     }
 

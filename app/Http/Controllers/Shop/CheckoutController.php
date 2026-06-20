@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Governorate;
+use App\Services\AbandonedCartService;
 use App\Services\CartService;
 use App\Services\CheckoutService;
 use App\Services\ShippingService;
@@ -20,6 +21,8 @@ class CheckoutController extends Controller
         if (!auth()->check()) {
             return redirect()->route('checkout.auth');
         }
+
+        app(AbandonedCartService::class)->updateCheckoutStep(auth()->id(), 'checkout_viewed');
 
         $cartItems = $cart->getEnrichedCart();
         if (empty($cartItems)) {
@@ -131,6 +134,7 @@ class CheckoutController extends Controller
             });
 
             if ($request->payment_method === 'cash') {
+                app(AbandonedCartService::class)->markConverted(auth()->id());
                 $cart->clear();
                 return redirect()->route('orders.show', $order)
                     ->with('success', __('global.order_placed_success', ['id' => $order->id]));
@@ -138,6 +142,7 @@ class CheckoutController extends Controller
 
             try {
                 $response = $this->processCardPayment($order, $request->payment_method, $request->phone);
+                app(AbandonedCartService::class)->markConverted(auth()->id());
                 $cart->clear();
                 return $response;
             } catch (\Exception $e) {
@@ -295,6 +300,7 @@ class CheckoutController extends Controller
             ]);
 
             // Clear the cart on successful payment
+            app(AbandonedCartService::class)->markConverted(auth()->id());
             $cart->clear();
 
             return redirect()->route('orders.show', $order)->with('success', __('global.mock_payment_success'));
