@@ -66,7 +66,7 @@ var CHECKOUT_DATA = {
         </div>
         @endif
 
-        <form action="{{ route('checkout.store') }}" method="POST" class="checkout-form" @submit.prevent="submitOrder">
+        <form action="{{ route('checkout.store') }}" method="POST" class="checkout-form">
             @csrf
             <div class="grid lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
 
@@ -293,16 +293,12 @@ var CHECKOUT_DATA = {
                         </div>
 
                         <div class="p-4 sm:p-6">
-                            <button type="submit" x-ref="submitBtn"
-                                class="w-full relative overflow-hidden bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-extrabold py-3.5 sm:py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100">
-                                <span x-show="!submitting" style="display:flex" class="flex items-center gap-2 transition-opacity duration-200">
-                                    <span>{{ __('global.confirm_order') }}</span>
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                                </span>
-                                <span x-show="submitting" style="display:none" class="flex items-center gap-2.5 transition-opacity duration-200">
-                                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-                                    <span>{{ __('global.processing') }}...</span>
-                                </span>
+                            <button type="submit"
+                                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 text-white font-extrabold py-3.5 sm:py-4 rounded-xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100">
+                                <span class="btn-text">{{ __('global.confirm_order') }}</span>
+                                <svg class="btn-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                <span class="btn-processing" style="display:none">{{ __('global.processing') }}...</span>
+                                <svg class="btn-spinner" style="display:none" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
                             </button>
                             <p class="text-xs text-center text-slate-400 dark:text-slate-500 mt-3">{{ __('global.checkout_secure_notice') }}</p>
                         </div>
@@ -310,38 +306,6 @@ var CHECKOUT_DATA = {
                 </div>
             </div>
         </form>
-    </div>
-</div>
-
-<!-- Processing Overlay -->
-<div x-show="submitting" x-cloak
-    class="fixed inset-0 z-[200] flex items-center justify-center bg-gray-900/60 dark:bg-gray-950/80 backdrop-blur-md transition-all duration-300"
-    x-transition:enter="transition ease-out duration-300"
-    x-transition:enter-start="opacity-0"
-    x-transition:enter-end="opacity-100"
-    x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0">
-    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-indigo-200/50 dark:border-indigo-700/30 p-8 sm:p-10 max-w-sm mx-4 text-center"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-        x-transition:leave-end="opacity-0 scale-95 translate-y-4">
-        <div class="relative mx-auto w-16 h-16 mb-5">
-            <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 animate-ping opacity-20"></div>
-            <div class="relative w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <svg class="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
-            </div>
-        </div>
-        <h3 class="text-lg font-extrabold text-gray-900 dark:text-white mb-1">{{ __('global.processing_order_title') }}</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">{{ __('global.processing_order_body') }}</p>
-        <div class="flex justify-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style="animation-delay:0s"></span>
-            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style="animation-delay:0.15s"></span>
-            <span class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style="animation-delay:0.3s"></span>
-        </div>
     </div>
 </div>
 
@@ -480,6 +444,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    var form = document.querySelector('.checkout-form');
+    if (form) {
+        form.addEventListener('submit', function () {
+            var btn = this.querySelector('button[type="submit"]');
+            if (!btn) return;
+            var txt = btn.querySelector('.btn-text');
+            var ico = btn.querySelector('.btn-icon');
+            var pro = btn.querySelector('.btn-processing');
+            var spi = btn.querySelector('.btn-spinner');
+            if (txt) txt.style.display = 'none';
+            if (ico) ico.style.display = 'none';
+            if (pro) pro.style.display = 'inline';
+            if (spi) spi.style.display = 'inline';
+            btn.disabled = true;
+        });
+    }
 
 });
 
@@ -492,14 +472,6 @@ document.addEventListener('alpine:init', () => {
         couponCode: '',
         couponError: '',
         couponLoading: false,
-        submitting: false,
-        submitTimeout: null,
-
-        init() {
-            this.submitting = false;
-            this.submitTimeout = null;
-        },
-
         governorates: initial.governorates || [],
         addressAutoFilled: false,
         governorateId: '{{ old('governorate_id') }}',
@@ -597,20 +569,6 @@ document.addEventListener('alpine:init', () => {
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
             }.bind(this)).catch(function() { this.couponLoading = false; }.bind(this));
         },
-
-        submitOrder(e) {
-            if (this.submitting) return;
-            this.submitting = true;
-            this.submitTimeout = setTimeout(() => {
-                if (this.submitting) {
-                    this.submitting = false;
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: { message: '{{ __('global.checkout_timeout') }}', type: 'error' }
-                    }));
-                }
-            }, 45000);
-            e.target.submit();
-        }
     }));
 });
 </script>
