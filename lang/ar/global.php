@@ -582,6 +582,7 @@ return [
     'pos_cart_cleared' => 'تم تفريغ السلة',
     'pos_return' => 'إرجاع / استبدال',
     'pos_return_title' => 'إرجاع واستبدال',
+    'pos_whatsapp_message' => 'شكراً لزيارتك لفرع Elegant Store! تم إتمام طلبك رقم :id بنجاح. نتمنى لك يوماً سعيداً!',
     'pos_return_search_placeholder' => 'ابحث برقم الطلب أو رقم هاتف العميل...',
     'pos_return_search_btn' => 'بحث',
     'pos_return_order_found' => 'طلب/طلبات تم العثور عليها',

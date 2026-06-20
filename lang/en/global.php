@@ -575,6 +575,7 @@ return [
     'pos_cart_cleared' => 'Cart cleared',
     'pos_return' => 'Return / Exchange',
     'pos_return_title' => 'Return & Exchange',
+    'pos_whatsapp_message' => 'Thank you for visiting Elegant Store! Your order #:id has been completed. Have a great day!',
     'pos_return_search_placeholder' => 'Search by order number or customer phone...',
     'pos_return_search_btn' => 'Search',
     'pos_return_order_found' => 'orders found',

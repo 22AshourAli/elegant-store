@@ -15,7 +15,9 @@ use App\Models\ProductVariant;
 use App\Models\Order;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class PosController extends Controller
@@ -177,7 +179,7 @@ class PosController extends Controller
         ]);
     }
 
-    public function checkout(Request $request)
+    public function checkout(Request $request, WhatsAppService $whatsApp)
     {
         $validated = $request->validate([
             'payment_method' => 'required|in:cash,card,wallet',
@@ -196,12 +198,11 @@ class PosController extends Controller
         $cartItems = $this->getEnrichedCart($cart);
         $total = $this->cartTotal($cart);
         $branchId = auth()->user()->branch_id ?? 1;
+        $customerPhone = $validated['phone'] ?? null;
+        $customerName = $validated['name'] ?? null;
 
         try {
-            $order = DB::transaction(function () use ($cartItems, $total, $validated, $branchId) {
-                $customerPhone = $validated['phone'] ?? null;
-                $customerName = $validated['name'] ?? null;
-
+            $order = DB::transaction(function () use ($cartItems, $total, $validated, $branchId, $customerPhone, $customerName) {
                 $userId = $this->resolvePosCustomer($customerPhone, $customerName);
 
                 $order = Order::create([
@@ -209,7 +210,7 @@ class PosController extends Controller
                     'cashier_id' => auth()->id(),
                     'branch_id' => $branchId,
                     'order_type' => OrderType::Offline->value,
-                    'status' => OrderStatus::Confirmed->value,
+                    'status' => OrderStatus::Delivered->value,
                     'payment_method' => $validated['payment_method'],
                     'payment_status' => PaymentStatus::Paid->value,
                     'subtotal' => $total,
@@ -227,6 +228,8 @@ class PosController extends Controller
 
             session()->forget('pos_cart');
 
+            $paymentMethodLabel = __('global.' . $validated['payment_method']);
+
             $receipt = [
                 'order_id' => $order->id,
                 'date' => $order->created_at->format('Y-m-d H:i'),
@@ -234,18 +237,37 @@ class PosController extends Controller
                 'customer' => $customerName ?: ($customerPhone ?: null),
                 'items' => $cartItems,
                 'total' => $total,
-                'payment_method' => __('global.' . $paymentMethod),
+                'payment_method' => $paymentMethodLabel,
                 'paid_at' => now()->format('H:i'),
                 'store_name' => config('app.name'),
                 'store_address' => '',
                 'store_phone' => '',
             ];
 
+            // Send WhatsApp notification for POS (branch visit thank-you, no shipping text)
+            if ($customerPhone && $order->user) {
+                try {
+                    $locale = $order->user->locale ?? app()->getLocale();
+                    App::setLocale($locale);
+                    $msg = __('global.pos_whatsapp_message', [
+                        'name' => $customerName ?: $customerPhone,
+                        'id'  => $order->id,
+                    ]);
+                    $normalised = $whatsApp->normalisePhone($customerPhone);
+                    if ($normalised) {
+                        $link = $whatsApp->waLink($normalised, $msg);
+                    }
+                } catch (\Throwable $e) {
+                    \Log::error('POS WhatsApp link failed: ' . $e->getMessage());
+                }
+            }
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => __('global.pos_checkout_success'),
                     'receipt' => $receipt,
                     'order_id' => $order->id,
+                    'wa_link' => $link ?? null,
                 ]);
             }
 
@@ -255,9 +277,9 @@ class PosController extends Controller
 
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage()], 422);
+                return response()->json(['error' => __('global.pos_checkout_error')], 422);
             }
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', __('global.pos_checkout_error'));
         }
     }
 
