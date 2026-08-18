@@ -8,6 +8,7 @@ use App\Models\UserCart;
 use App\Services\AbandonedCartService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class CartService
 {
@@ -198,43 +199,62 @@ class CartService
     /**
      * Overwrite the DB cart with the current session data.
      * No merge — the session is always the latest state.
+     * Gracefully handles DB unavailability.
      */
     public function persistToDb(): void
     {
-        $userId = auth()->id();
-        if (!$userId) return;
+        try {
+            $userId = auth()->id();
+            if (!$userId) return;
 
-        $sessionItems = $this->getCart();
-        $coupon = Session::get('coupon');
+            // Check if database is available before attempting to write
+            if (!$this->isDatabaseAvailable()) {
+                Log::warning('Database unavailable, cart persistence skipped', ['user_id' => $userId]);
+                return;
+            }
 
-        UserCart::updateOrCreate(
-            ['user_id' => $userId],
-            [
-                'items'       => $sessionItems,
-                'coupon_code' => $coupon['code'] ?? null,
-            ]
-        );
+            $sessionItems = $this->getCart();
+            $coupon = Session::get('coupon');
 
-        $this->trackAbandonedCart();
+            UserCart::updateOrCreate(
+                ['user_id' => $userId],
+                [
+                    'items'       => $sessionItems,
+                    'coupon_code' => $coupon['code'] ?? null,
+                ]
+            );
+
+            $this->trackAbandonedCart();
+        } catch (\Exception $e) {
+            Log::error('Failed to persist cart to database: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+            ]);
+            // Don't rethrow—allow the request to continue with session-only cart
+        }
     }
 
     private function trackAbandonedCart(): void
     {
-        $userId = auth()->id();
-        if (!$userId) return;
+        try {
+            $userId = auth()->id();
+            if (!$userId) return;
 
-        $items = $this->getCart();
-        if (empty($items)) return;
+            $items = $this->getCart();
+            if (empty($items)) return;
 
-        $coupon = Session::get('coupon');
+            $coupon = Session::get('coupon');
 
-        app(AbandonedCartService::class)->trackCart(
-            $userId,
-            Session::getId(),
-            $items,
-            $this->baseTotal(),
-            $coupon['code'] ?? null
-        );
+            app(AbandonedCartService::class)->trackCart(
+                $userId,
+                Session::getId(),
+                $items,
+                $this->baseTotal(),
+                $coupon['code'] ?? null
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to track abandoned cart: ' . $e->getMessage());
+            // Don't rethrow—allow request to continue
+        }
     }
 
     /**
@@ -246,33 +266,56 @@ class CartService
      */
     public function syncFromDb(): void
     {
-        $userId = auth()->id();
-        if (!$userId) return;
+        try {
+            $userId = auth()->id();
+            if (!$userId) return;
 
-        $saved = UserCart::forUser($userId);
-
-        $sessionCart = $this->getCart();
-
-        // Case 1: DB is empty but session still has items → stale session
-        if (!$saved || empty($saved->items)) {
-            if (!empty($sessionCart)) {
-                Session::forget('cart');
-                Session::forget('coupon');
-                $this->resolvedCoupon = null;
+            if (!$this->isDatabaseAvailable()) {
+                Log::warning('Database unavailable, sync skipped', ['user_id' => $userId]);
+                return;
             }
-            return;
+
+            $saved = UserCart::forUser($userId);
+
+            $sessionCart = $this->getCart();
+
+            // Case 1: DB is empty but session still has items → stale session
+            if (!$saved || empty($saved->items)) {
+                if (!empty($sessionCart)) {
+                    Session::forget('cart');
+                    Session::forget('coupon');
+                    $this->resolvedCoupon = null;
+                }
+                return;
+            }
+
+            // Case 2: DB has items → DB is source of truth, overwrite session
+            Session::put('cart', $saved->items);
+
+            if ($saved->coupon_code && !Session::has('coupon')) {
+                $coupon = Coupon::where('code', $saved->coupon_code)
+                    ->where('is_active', true)->first();
+                if ($coupon) {
+                    Session::put('coupon', ['id' => $coupon->id, 'code' => $coupon->code]);
+                    $this->resolvedCoupon = $coupon;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to sync cart from database: ' . $e->getMessage());
+            // Don't rethrow—allow request to continue with current session cart
         }
+    }
 
-        // Case 2: DB has items → DB is source of truth, overwrite session
-        Session::put('cart', $saved->items);
-
-        if ($saved->coupon_code && !Session::has('coupon')) {
-            $coupon = Coupon::where('code', $saved->coupon_code)
-                ->where('is_active', true)->first();
-            if ($coupon) {
-                Session::put('coupon', ['id' => $coupon->id, 'code' => $coupon->code]);
-                $this->resolvedCoupon = $coupon;
-            }
+    /**
+     * Check if database connection is available.
+     */
+    private function isDatabaseAvailable(): bool
+    {
+        try {
+            \DB::connection()->getPdo();
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
     }
 
@@ -284,3 +327,4 @@ class CartService
         return (float) $coupon->value;
     }
 }
+
