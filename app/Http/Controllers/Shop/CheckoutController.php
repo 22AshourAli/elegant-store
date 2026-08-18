@@ -13,6 +13,7 @@ use App\Services\ShippingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -22,7 +23,11 @@ class CheckoutController extends Controller
             return redirect()->route('checkout.auth');
         }
 
-        app(AbandonedCartService::class)->updateCheckoutStep(auth()->id(), 'checkout_viewed');
+        try {
+            app(AbandonedCartService::class)->updateCheckoutStep(auth()->id(), 'checkout_viewed');
+        } catch (\Exception $e) {
+            Log::warning('Failed to update checkout step: ' . $e->getMessage());
+        }
 
         $cartItems = $cart->getEnrichedCart();
         if (empty($cartItems)) {
@@ -134,7 +139,12 @@ class CheckoutController extends Controller
             });
 
             if ($request->payment_method === 'cash') {
-                app(AbandonedCartService::class)->markConverted(auth()->id());
+                try {
+                    app(AbandonedCartService::class)->markConverted(auth()->id());
+                } catch (\Exception $e) {
+                    Log::error('Failed to mark cart as converted: ' . $e->getMessage());
+                    // Continue—order is placed, conversion tracking is optional
+                }
                 $cart->clear();
                 return redirect()->route('orders.show', $order)
                     ->with('success', __('global.order_placed_success', ['id' => $order->id]));
@@ -142,7 +152,12 @@ class CheckoutController extends Controller
 
             try {
                 $response = $this->processCardPayment($order, $request->payment_method, $request->phone);
-                app(AbandonedCartService::class)->markConverted(auth()->id());
+                try {
+                    app(AbandonedCartService::class)->markConverted(auth()->id());
+                } catch (\Exception $e) {
+                    Log::error('Failed to mark cart as converted after card payment: ' . $e->getMessage());
+                    // Continue—payment is processed, conversion tracking is optional
+                }
                 $cart->clear();
                 return $response;
             } catch (\Exception $e) {
@@ -160,6 +175,7 @@ class CheckoutController extends Controller
             }
 
         } catch (\Exception $e) {
+            Log::error('Checkout processing failed: ' . $e->getMessage(), ['exception' => get_class($e)]);
             return redirect()->route('checkout')
                 ->withInput()
                 ->with('error', __('global.checkout_processing_error'));
@@ -300,7 +316,12 @@ class CheckoutController extends Controller
             ]);
 
             // Clear the cart on successful payment
-            app(AbandonedCartService::class)->markConverted(auth()->id());
+            try {
+                app(AbandonedCartService::class)->markConverted(auth()->id());
+            } catch (\Exception $e) {
+                Log::error('Failed to mark cart as converted after mock payment: ' . $e->getMessage());
+                // Continue—payment is mocked, conversion tracking is optional
+            }
             $cart->clear();
 
             return redirect()->route('orders.show', $order)->with('success', __('global.mock_payment_success'));
@@ -318,3 +339,4 @@ class CheckoutController extends Controller
         }
     }
 }
+
