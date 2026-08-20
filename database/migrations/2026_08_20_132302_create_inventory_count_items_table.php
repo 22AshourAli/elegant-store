@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['inventory_count_id', 'product_variant_id']);
+            $table->unique(['inventory_count_id', 'product_variant_id'], 'inv_count_variant_unique');
         });
     }
 
@@ -27,3 +27,4 @@ return new class extends Migration
         Schema::dropIfExists('inventory_count_items');
     }
 };
+
