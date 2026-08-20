@@ -6,8 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Create inventory_count_items table.
+     * Idempotent: handles the case where table partially exists from failed previous run.
+     */
     public function up(): void
     {
+        // Skip if table already exists (from partial previous deployment)
+        if (Schema::hasTable('inventory_count_items')) {
+            return;
+        }
+
         Schema::create('inventory_count_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('inventory_count_id')->constrained()->cascadeOnDelete();
@@ -18,7 +27,8 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['inventory_count_id', 'product_variant_id']);
+            // Use short constraint name to stay under MySQL's 64-char identifier limit
+            $table->unique(['inventory_count_id', 'product_variant_id'], 'inv_count_variant_unique');
         });
     }
 
@@ -27,3 +37,4 @@ return new class extends Migration
         Schema::dropIfExists('inventory_count_items');
     }
 };
+
