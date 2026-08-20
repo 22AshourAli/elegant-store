@@ -6,25 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * This migration is superseded by 2026_08_20_135000_fix_inventory_count_items_table.php
+     * which handles both new table creation and fixing existing partial tables.
+     * This migration is kept for migration history but does nothing.
+     */
     public function up(): void
     {
-        Schema::create('inventory_count_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('inventory_count_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_variant_id')->constrained()->cascadeOnDelete();
-            $table->integer('system_stock')->default(0);
-            $table->integer('counted_stock')->nullable();
-            $table->integer('difference')->nullable();
-            $table->text('notes')->nullable();
-            $table->timestamps();
-
-            $table->unique(['inventory_count_id', 'product_variant_id'], 'inv_count_variant_unique');
-        });
+        // Migration moved to 2026_08_20_135000_fix_inventory_count_items_table.php
+        // This prevents duplicate table creation errors
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('inventory_count_items');
+        // No action on rollback
     }
 };
 
