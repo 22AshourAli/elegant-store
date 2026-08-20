@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\LoyaltyController;
 use App\Http\Controllers\Api\PaymentReconciliationController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ShippingController;
@@ -26,11 +25,6 @@ Route::post('/shipping/calculate', [ShippingController::class, 'calculate'])->na
 
 // === Abandoned Cart Recovery ===
 Route::get('/cart/recover/{token}', [CartController::class, 'recover'])->name('api.cart.recover');
-
-// === Loyalty ===
-Route::get('/loyalty/balance/{user}', [LoyaltyController::class, 'balance'])->name('api.loyalty.balance');
-Route::post('/loyalty/redeem', [LoyaltyController::class, 'redeem'])->name('api.loyalty.redeem');
-Route::get('/loyalty/history/{user}', [LoyaltyController::class, 'history'])->name('api.loyalty.history');
 
 /*
 |--------------------------------------------------------------------------

@@ -51,6 +51,7 @@
                                 <th class="p-2">{{ __('global.admin_type') }}</th>
                                 <th class="p-2">{{ __('global.admin_variant_image') }}</th>
                                 <th class="p-2">{{ __('global.admin_sku') }}</th>
+                                <th class="p-2">باركود</th>
                                 <th class="p-2">{{ __('global.admin_custom_price') }} ({{ __('global.currency') }})</th>
                                 <th class="p-2">تكلفة الشراء ({{ __('global.currency') }})</th>
                                 <th class="p-2">{{ __('global.admin_stock_branches') }}</th>
@@ -79,6 +80,16 @@
                                 </td>
                                 <td class="p-2">
                                     <input type="text" name="variants[{{ $variant->id }}][sku]" value="{{ old('variants.'.$variant->id.'.sku', $variant->sku) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs">
+                                </td>
+                                <td class="p-2">
+                                    @if($variant->barcode)
+                                        <div class="flex items-center gap-1">
+                                            <span class="font-mono text-[10px] text-gray-600">{{ $variant->barcode }}</span>
+                                            <a href="{{ route('admin.barcode.show', $variant) }}" class="text-indigo-600 hover:text-indigo-700 text-[10px]" target="_blank">↗</a>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400 text-[10px]">-</span>
+                                    @endif
                                 </td>
                                 <td class="p-2">
                                     <input type="number" step="0.01" name="variants[{{ $variant->id }}][price_override]" value="{{ old('variants.'.$variant->id.'.price_override', $variant->price_override) }}" class="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded px-2 py-1 text-xs" placeholder="{{ __('global.admin_default') }}">

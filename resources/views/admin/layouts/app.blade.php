@@ -203,6 +203,12 @@
                         </svg>
                         {{ __('global.admin_whatsapp') }}
                     </a>
+                    <a href="{{ route('admin.inventory.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.inventory.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        {{ __('global.admin_inventory_count') }}
+                    </a>
                     <div class="pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
                         <p class="px-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">{{ __('global.admin_settings') }}</p>
                         <a href="{{ route('admin.backups.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition duration-200 {{ request()->routeIs('admin.backups.*') ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white' }}">
@@ -299,6 +305,14 @@
                 </div>
 
                 <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                    <!-- Barcode Search -->
+                    <form action="{{ route('admin.barcode.search') }}" method="GET" class="hidden sm:flex items-center gap-1">
+                        <input type="text" name="q" placeholder="بحث باركود..." class="w-32 lg:w-44 px-3 py-1.5 text-xs border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none" required minlength="3">
+                        <button type="submit" class="p-1.5 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </button>
+                    </form>
+
                     <!-- Notifications -->
                     <div x-data="notifications()" x-init="init()">
                         <div class="relative cursor-pointer">

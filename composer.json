@@ -23,6 +23,7 @@
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "3.0",
         "maatwebsite/excel": "*",
+        "picqer/php-barcode-generator": "*",
         "resend/resend-php": "*",
         "spatie/laravel-backup": "*",
         "spatie/laravel-medialibrary": "^11.22",

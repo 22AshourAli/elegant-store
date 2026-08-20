@@ -13,7 +13,7 @@ class ProductVariant extends Model implements HasMedia
     use InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
-        'product_id', 'sku', 'color', 'size', 'price_override',
+        'product_id', 'sku', 'barcode', 'color', 'size', 'price_override',
         'cost_price',
         'is_active', 'is_default', 'image_url'
     ];

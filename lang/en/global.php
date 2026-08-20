@@ -33,6 +33,7 @@ return [
     'admin_exchanges'=> 'Exchanges',
     'admin_expenses'=> 'Expenses',
     'admin_whatsapp'=> 'WhatsApp',
+    'admin_inventory_count' => 'Inventory Count',
     'admin_users' => 'Users',
     'admin_manage_users' => 'Manage Users',
     'admin_user_created' => 'User created successfully',

@@ -32,6 +32,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SyncUserCart::class,
+            \App\Http\Middleware\ProcessAbandonedCarts::class,
         ],
 
         'api' => [

@@ -72,22 +72,19 @@ class OrderController extends Controller
             return back()->with('error', 'حالة الطلب لم تتغير.');
         }
 
-        DB::transaction(function () use ($order, $newStatus, $oldStatus) {
-            $updateData = ['status' => $newStatus];
+        $stateMachine = app(\App\Services\OrderStateMachine::class);
 
-            if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
-                $updateData['delivered_at'] = now();
-            }
+        if (!$stateMachine->canTransition($order, $newStatus)) {
+            return back()->withErrors(['status' => 'لا يمكن تغيير الحالة من ' . \App\Services\OrderStateMachine::statusLabel($oldStatus, 'ar') . ' إلى ' . \App\Services\OrderStateMachine::statusLabel($newStatus, 'ar')]);
+        }
 
-            $order->update($updateData);
+        $stateMachine->transition($order, $newStatus);
 
-            if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
-                event(new OrderDelivered($order));
-            }
+        if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
+            event(new OrderDelivered($order));
+        }
 
-            $this->restoreStockForCancelledReturn($order, $newStatus, $oldStatus);
-        });
-
+        $this->restoreStockForCancelledReturn($order, $newStatus, $oldStatus);
         $this->sendStatusNotification($order, $newStatus);
 
         if ($request->ajax() || $request->wantsJson()) {

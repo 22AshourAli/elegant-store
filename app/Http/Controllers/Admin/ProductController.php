@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Branch;
+use App\Services\BarcodeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +73,11 @@ class ProductController extends Controller
             $this->createProductVariants($product, $request, $validated, $allBranches);
             $this->attachColorImageUrls($request, $product);
         });
+
+        $barcodeService = app(BarcodeService::class);
+        foreach ($product->variants as $variant) {
+            $barcodeService->assignBarcode($variant);
+        }
 
         $this->clearHomepageCache();
 
@@ -333,6 +339,8 @@ class ProductController extends Controller
                 ]);
 
                 $variant->branches()->attach($allBranches->mapWithKeys(fn($b) => [$b->id => ['stock' => 0]])->all());
+
+                app(BarcodeService::class)->assignBarcode($variant);
             }
         }
     }

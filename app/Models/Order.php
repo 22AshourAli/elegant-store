@@ -35,6 +35,8 @@ class Order extends Model
         'tracking_url',
         'shipping_status',
         'delivered_at',
+        'delivery_person_id',
+        'delivery_notes',
     ];
 
     protected $casts = [
@@ -53,6 +55,11 @@ class Order extends Model
     public function cashier()
     {
         return $this->belongsTo(User::class, 'cashier_id');
+    }
+
+    public function deliveryPerson()
+    {
+        return $this->belongsTo(User::class, 'delivery_person_id');
     }
 
     public function branch()

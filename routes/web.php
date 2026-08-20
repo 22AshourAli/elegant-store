@@ -227,5 +227,39 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/payment-reconciliation', [\App\Http\Controllers\Admin\AnalyticsController::class, 'paymentReconciliation'])->name('payment-reconciliation');
         Route::get('/export-csv', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('export-csv');
     });
+
+    // Inventory Counting
+    Route::prefix('inventory')->name('inventory.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\InventoryCountController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\InventoryCountController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\InventoryCountController::class, 'store'])->name('store');
+        Route::get('/{inventory}', [\App\Http\Controllers\Admin\InventoryCountController::class, 'show'])->name('show');
+        Route::patch('/{inventory}/{item}/update', [\App\Http\Controllers\Admin\InventoryCountController::class, 'updateItem'])->name('update-item');
+        Route::patch('/{inventory}/complete', [\App\Http\Controllers\Admin\InventoryCountController::class, 'complete'])->name('complete');
+        Route::delete('/{inventory}', [\App\Http\Controllers\Admin\InventoryCountController::class, 'destroy'])->name('destroy');
+    });
+
+    // Barcodes
+    Route::prefix('barcodes')->name('barcode.')->group(function () {
+        Route::get('/search', [\App\Http\Controllers\Admin\BarcodeController::class, 'search'])->name('search');
+        Route::get('/print', [\App\Http\Controllers\Admin\BarcodeController::class, 'batchPrint'])->name('batch-print');
+        Route::get('/{variant}', [\App\Http\Controllers\Admin\BarcodeController::class, 'show'])->name('show');
+        Route::get('/{variant}/print', [\App\Http\Controllers\Admin\BarcodeController::class, 'print'])->name('print');
+        Route::get('/{variant}/download', [\App\Http\Controllers\Admin\BarcodeController::class, 'download'])->name('download');
+    });
 });
+
+// === Delivery Portal ===
+Route::prefix('delivery')->name('delivery.')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Delivery\DeliveryController::class, 'loginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Delivery\DeliveryController::class, 'login'])->name('login.post');
+    Route::post('/logout', [\App\Http\Controllers\Delivery\DeliveryController::class, 'logout'])->name('logout');
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Delivery\DeliveryController::class, 'orders'])->name('orders');
+        Route::get('/{order}', [\App\Http\Controllers\Delivery\DeliveryController::class, 'show'])->name('order.show');
+        Route::patch('/{order}/status', [\App\Http\Controllers\Delivery\DeliveryController::class, 'updateStatus'])->name('order.update');
+    });
+});
+
 require __DIR__.'/auth.php';

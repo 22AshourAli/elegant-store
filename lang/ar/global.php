@@ -34,6 +34,7 @@ return [
     'admin_exchanges'=> 'الاستبدال',
     'admin_expenses'=> 'المصاريف',
     'admin_whatsapp'=> 'تسويق',
+    'admin_inventory_count' => 'جرد المخزون',
     'admin_users' => 'المستخدمين',
     'admin_manage_users' => 'إدارة المستخدمين',
     'admin_user_created' => 'تم إنشاء المستخدم بنجاح',

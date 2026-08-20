@@ -68,9 +68,6 @@ return new class extends Migration
         $this->createIndexIfNotExists('exchanges', 'status');
         $this->createIndexIfNotExists('exchanges', 'created_at');
 
-        // ---- customer_wallets (zero indexes before this) ----
-        $this->createIndexIfNotExists('customer_wallets', 'user_id');
-
         // ---- expenses (zero indexes before this) ----
         $this->createIndexIfNotExists('expenses', 'branch_id');
         $this->createIndexIfNotExists('expenses', 'created_by');
