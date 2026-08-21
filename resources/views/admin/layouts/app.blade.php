@@ -484,7 +484,7 @@
                         if (this.unread > 0) this.fetchItems();
                         this.scheduleNext();
                     };
-                    this._pollTimer = setTimeout(poll, 3000);
+                    this._pollTimer = setTimeout(poll, 30000);
                 },
 
                 listenEcho() {

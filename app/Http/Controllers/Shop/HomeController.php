@@ -105,7 +105,7 @@ class HomeController extends Controller
         \OpenGraph::setTitle(__('global.hero_title') . ' - ' . config('app.name'));
         \OpenGraph::setDescription(__('global.hero_desc'));
 
-        $totalProducts = Product::count();
+        $totalProducts = Cache::remember('total_active_products', 3600, fn() => Product::where('is_active', true)->count());
 
         return view('shop.home', compact('products', 'categories', 'slides', 'wishlistIds', 'cartProductIds', 'totalProducts'));
     }

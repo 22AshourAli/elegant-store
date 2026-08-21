@@ -31,7 +31,8 @@ class ExpenseController extends Controller
     public function create()
     {
         $categories = Expense::CATEGORIES;
-        return view('admin.expenses.create', compact('categories'));
+        $branches = \Cache::remember('admin_branches', 3600, fn() => \App\Models\Branch::all());
+        return view('admin.expenses.create', compact('categories', 'branches'));
     }
 
     public function store(Request $request)
@@ -54,7 +55,8 @@ class ExpenseController extends Controller
     public function edit(Expense $expense)
     {
         $categories = Expense::CATEGORIES;
-        return view('admin.expenses.edit', compact('expense', 'categories'));
+        $branches = \Cache::remember('admin_branches', 3600, fn() => \App\Models\Branch::all());
+        return view('admin.expenses.edit', compact('expense', 'categories', 'branches'));
     }
 
     public function update(Request $request, Expense $expense)

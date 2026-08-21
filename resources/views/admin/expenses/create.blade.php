@@ -29,7 +29,7 @@
                 <label class="block text-sm font-medium mb-1">{{ __('global.branch') }}</label>
                 <select name="branch_id" class="w-full border rounded px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600">
                     <option value="">—</option>
-                    @foreach(\App\Models\Branch::all() as $branch)
+                    @foreach($branches as $branch)
                         <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                     @endforeach
                 </select>

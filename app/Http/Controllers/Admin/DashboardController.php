@@ -89,6 +89,16 @@ class DashboardController extends Controller
         $period = $request->get('period', 'month');
         $dates = $this->parsePeriod($period, $request);
 
+        $cacheKey = 'dashboard_' . ($branchId ?? 'all') . '_' . $period . '_' . md5(serialize($dates));
+        $data = \Cache::remember($cacheKey, 60, function () use ($branchId, $dates) {
+            return $this->computeReportData($branchId, $dates);
+        });
+        $data['period'] = $period;
+        return $data;
+    }
+
+    private function computeReportData(?int $branchId, ?array $dates): array
+    {
         $completedStatuses = [
             OrderStatus::Confirmed->value,
             OrderStatus::Delivered->value,
@@ -264,7 +274,6 @@ class DashboardController extends Controller
         }
 
         return compact(
-            'period',
             'totalOrders', 'onlineOrders', 'offlineOrders',
             'totalSales', 'totalProductRevenue', 'totalShippingCollected',
             'totalCustomers', 'lowStockCount',
