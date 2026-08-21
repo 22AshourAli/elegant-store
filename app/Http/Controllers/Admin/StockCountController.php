@@ -46,7 +46,7 @@ class StockCountController extends Controller
         ]);
 
         $branch = Branch::findOrFail($data['branch_id']);
-        $variants = $branch->productVariants()->get();
+        $variants = $branch->productVariants()->withTrashed()->get();
 
         if ($variants->isEmpty()) {
             return back()->with('error', __('global.sc_no_products_in_branch'));
@@ -80,13 +80,28 @@ class StockCountController extends Controller
 
     public function show(StockCount $stockCount)
     {
-        $stockCount->load('branch', 'creator', 'items.variant.product');
+        $stockCount->load('branch', 'creator');
 
-        $totalSystem = $stockCount->items->sum('system_stock');
-        $totalCounted = $stockCount->items->whereNotNull('counted_stock')->sum('counted_stock');
-        $totalDiff = $stockCount->items->whereNotNull('difference')->sum('difference');
-        $countedItems = $stockCount->items->whereNotNull('counted_stock')->count();
-        $totalItems = $stockCount->items->count();
+        $items = $stockCount->items()->with('variant')->get();
+        $variantIds = $items->pluck('product_variant_id')->unique()->values();
+
+        $variants = \App\Models\ProductVariant::withTrashed()
+            ->whereIn('id', $variantIds)
+            ->with(['product' => fn($q) => $q->withTrashed()])
+            ->get()
+            ->keyBy('id');
+
+        foreach ($items as $item) {
+            $item->setRelation('variant', $variants->get($item->product_variant_id));
+        }
+
+        $stockCount->setRelation('items', $items);
+
+        $totalSystem = $items->sum('system_stock');
+        $totalCounted = $items->whereNotNull('counted_stock')->sum('counted_stock');
+        $totalDiff = $items->whereNotNull('difference')->sum('difference');
+        $countedItems = $items->whereNotNull('counted_stock')->count();
+        $totalItems = $items->count();
 
         return view('admin.stock_counts.show', compact('stockCount', 'totalSystem', 'totalCounted', 'totalDiff', 'countedItems', 'totalItems'));
     }

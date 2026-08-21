@@ -42,6 +42,9 @@ class ProductVariant extends Model implements HasMedia
 
     public function getCurrentPriceAttribute()
     {
+        if (!$this->product) {
+            return $this->price_override ?? 0;
+        }
         $base = $this->price_override ?? $this->product->base_price;
         if ($this->product->isOnSale) {
             return $this->product->current_price;
@@ -59,7 +62,7 @@ class ProductVariant extends Model implements HasMedia
     public function getTotalStockAttribute()
     {
         if ($this->relationLoaded('branches')) {
-            return $this->branches->sum(fn($branch) => $branch->pivot->stock);
+            return $this->branches->sum(fn($branch) => $branch->pivot->stock ?? 0);
         }
         return $this->branches()->sum('branch_product_variant.stock');
     }
@@ -89,7 +92,7 @@ class ProductVariant extends Model implements HasMedia
 
     public function getNameAttribute()
     {
-        $name = $this->product->name;
+        $name = $this->product?->name ?? __('global.admin_not_specified');
         $parts = array_filter([$this->color, $this->size]);
         if (!empty($parts)) {
             $name .= ' (' . implode(', ', $parts) . ')';
