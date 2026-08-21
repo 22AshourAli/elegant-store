@@ -12,7 +12,7 @@ class Branch extends Model
     protected function casts(): array
     {
         return [
-            'is_active' => \App\Casts\PostgresBoolean::class,
+            'is_active' => 'boolean',
         ];
     }
 

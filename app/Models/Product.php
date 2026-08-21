@@ -24,9 +24,9 @@ class Product extends Model implements HasMedia
     protected $casts = [
         'discount_start' => 'datetime',
         'discount_end' => 'datetime',
-        'has_variants' => \App\Casts\PostgresBoolean::class,
-        'is_active' => \App\Casts\PostgresBoolean::class,
-        'featured' => \App\Casts\PostgresBoolean::class,
+        'has_variants' => 'boolean',
+        'is_active' => 'boolean',
+        'featured' => 'boolean',
         'image_urls' => 'array',
     ];
 
@@ -49,17 +49,19 @@ class Product extends Model implements HasMedia
             // Purge deleted product's variants from active database-stored carts
             $variantIds = $product->variants()->withTrashed()->pluck('id')->toArray();
             if (!empty($variantIds)) {
-                UserCart::all()->each(function ($cart) use ($variantIds) {
-                    $items = $cart->items;
-                    $changed = false;
-                    foreach ($variantIds as $vId) {
-                        if (isset($items[$vId])) {
-                            unset($items[$vId]);
-                            $changed = true;
+                UserCart::whereNotNull('items')->chunk(100, function ($carts) use ($variantIds) {
+                    foreach ($carts as $cart) {
+                        $items = $cart->items;
+                        $changed = false;
+                        foreach ($variantIds as $vId) {
+                            if (isset($items[$vId])) {
+                                unset($items[$vId]);
+                                $changed = true;
+                            }
                         }
-                    }
-                    if ($changed) {
-                        $cart->update(['items' => $items]);
+                        if ($changed) {
+                            $cart->update(['items' => $items]);
+                        }
                     }
                 });
             }

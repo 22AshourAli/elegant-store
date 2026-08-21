@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\ReturnRequest;
 use App\Models\StockMovement;
 use App\Notifications\OrderStatusChanged;
+use App\Services\OrderStateMachine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -61,33 +62,29 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        $fsm = app(OrderStateMachine::class);
+
         $request->validate([
-            'status' => 'required|in:pending,confirmed,processing,shipped,out_for_delivery,delivered,returned,collected,cancelled'
+            'status' => 'required|in:' . implode(',', $fsm->availableTransitions($order)),
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
-        if ($oldStatus === $newStatus) {
-            return back()->with('error', 'حالة الطلب لم تتغير.');
+        try {
+            $fsm->transition($order, $newStatus, $request->input('note'));
+        } catch (\InvalidArgumentException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+            return back()->with('error', $e->getMessage());
         }
 
-        DB::transaction(function () use ($order, $newStatus, $oldStatus) {
-            $updateData = ['status' => $newStatus];
+        if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
+            event(new OrderDelivered($order));
+        }
 
-            if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
-                $updateData['delivered_at'] = now();
-            }
-
-            $order->update($updateData);
-
-            if ($newStatus === OrderStatus::Delivered->value && $oldStatus !== OrderStatus::Delivered->value) {
-                event(new OrderDelivered($order));
-            }
-
-            $this->restoreStockForCancelledReturn($order, $newStatus, $oldStatus);
-        });
-
+        $this->restoreStockForCancelledReturn($order, $newStatus, $oldStatus);
         $this->sendStatusNotification($order, $newStatus);
 
         if ($request->ajax() || $request->wantsJson()) {

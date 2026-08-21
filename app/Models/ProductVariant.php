@@ -19,8 +19,8 @@ class ProductVariant extends Model implements HasMedia
     ];
 
     protected $casts = [
-        'is_active' => \App\Casts\PostgresBoolean::class,
-        'is_default' => \App\Casts\PostgresBoolean::class,
+        'is_active' => 'boolean',
+        'is_default' => 'boolean',
     ];
 
     protected $appends = [

@@ -47,14 +47,18 @@ class OrderStateMachine
 
             $order->save();
 
-            activity()
-                ->performedOn($order)
-                ->withProperties([
-                    'old_status' => $oldStatus,
-                    'new_status' => $newStatus,
-                    'note' => $note,
-                ])
-                ->log("Order status changed from {$oldStatus} to {$newStatus}");
+            DB::table('activity_logs')->insert([
+                'user_id'      => auth()->id(),
+                'action'       => 'status_changed',
+                'module'       => 'orders',
+                'subject_id'   => $order->id,
+                'subject_type' => Order::class,
+                'old_values'   => json_encode(['status' => $oldStatus]),
+                'new_values'   => json_encode(['status' => $newStatus, 'note' => $note]),
+                'ip_address'   => request()->ip(),
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ]);
 
             return $order;
         });

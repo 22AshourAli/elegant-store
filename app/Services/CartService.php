@@ -278,7 +278,7 @@ class CartService
 
     private function calculateDiscount(float $base, Coupon $coupon): float
     {
-        if ($coupon->type === 'percent') {
+        if ($coupon->type === 'percentage') {
             return ($coupon->value / 100) * $base;
         }
         return (float) $coupon->value;

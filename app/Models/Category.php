@@ -14,7 +14,7 @@ class Category extends Model
     protected $fillable = ['name', 'slug', 'parent_id', 'image', 'is_active'];
 
     protected $casts = [
-        'is_active' => \App\Casts\PostgresBoolean::class,
+        'is_active' => 'boolean',
     ];
 
     /**
