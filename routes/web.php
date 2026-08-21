@@ -228,4 +228,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/export-csv', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('export-csv');
     });
 });
+
+Route::prefix('delivery')->name('delivery.')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Delivery\DeliveryController::class, 'loginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Delivery\DeliveryController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [\App\Http\Controllers\Delivery\DeliveryController::class, 'logout'])->name('logout')->middleware('auth');
+});
+
+Route::prefix('delivery')->name('delivery.')->middleware(['auth', 'delivery'])->group(function () {
+    Route::get('/orders', [\App\Http\Controllers\Delivery\DeliveryController::class, 'orders'])->name('orders');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Delivery\DeliveryController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order}/status', [\App\Http\Controllers\Delivery\DeliveryController::class, 'updateStatus'])->name('orders.update-status');
+});
+
 require __DIR__.'/auth.php';
