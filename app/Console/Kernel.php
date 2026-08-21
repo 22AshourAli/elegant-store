@@ -21,14 +21,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Process abandoned carts every hour
+        // Process abandoned carts every hour (idle threshold: 120 minutes, batch: 50)
         $schedule->command('carts:process-abandoned --idle=120 --batch=50')
             ->hourly()
-            ->withoutOverlapping();
-
-        // Notify about expiring loyalty points daily
-        $schedule->command('loyalty:notify-expiry --days=30 --batch=100')
-            ->dailyAt('09:00')
             ->withoutOverlapping();
 
         // Auto-cancel return/exchange requests past the 3-day delivery window

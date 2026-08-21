@@ -6,16 +6,21 @@ use App\Events\OrderDelivered;
 use App\Events\StockUpdated;
 use App\Listeners\BroadcastAdminNotification;
 use App\Listeners\CheckLowStock;
-use App\Listeners\CreditFirstOrderCashback;
 use App\Listeners\SendDeliveryNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSent;
 
 class EventServiceProvider extends ServiceProvider
 {
+    /**
+     * Event-listener mappings.
+     *
+     * - OrderDelivered: Triggers delivery notification to customer.
+     * - StockUpdated: Checks if stock crossed low-stock threshold, alerts admins.
+     * - NotificationSent: Broadcasts real-time notification to admin dashboard via WebSocket.
+     */
     protected $listen = [
         OrderDelivered::class => [
-            CreditFirstOrderCashback::class,
             SendDeliveryNotification::class,
         ],
         StockUpdated::class => [

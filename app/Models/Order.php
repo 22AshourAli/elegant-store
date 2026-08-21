@@ -5,8 +5,16 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Order model — represents a customer purchase.
+ *
+ * Supports both online orders (customer checkout) and offline orders (POS).
+ * Contains structured address fields for Egyptian delivery (street, building, floor, apartment, landmark).
+ * Tracks shipping status independently from order status for carrier integration.
+ */
 class Order extends Model
 {
+    /** @var list<string> Mass-assignable attributes */
     protected $fillable = [
         'user_id',
         'branch_id',
@@ -37,6 +45,7 @@ class Order extends Model
         'delivered_at',
     ];
 
+    /** @var array<string, string> Field type casts for decimal/currency precision. */
     protected $casts = [
         'delivered_at' => 'datetime',
         'subtotal' => 'decimal:2',
@@ -45,51 +54,64 @@ class Order extends Model
         'total' => 'decimal:2',
     ];
 
+    /** The customer who placed this order. */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /** The cashier who processed this order (POS offline orders only). */
     public function cashier()
     {
         return $this->belongsTo(User::class, 'cashier_id');
     }
 
+    /** The branch this order was assigned to (fulfillment location). */
     public function branch()
     {
         return $this->belongsTo(Branch::class);
     }
 
+    /** Line items in this order (product, quantity, price). */
     public function items()
     {
         return $this->hasMany(OrderItem::class);
     }
 
+    /** The payment record linked to this order (one payment per order). */
     public function payment()
     {
         return $this->hasOne(Payment::class);
     }
 
+    /** Return/exchange requests submitted for this order. */
     public function returnRequests()
     {
         return $this->hasMany(ReturnRequest::class);
     }
 
+    /** Exchange requests submitted for this order. */
     public function exchanges()
     {
         return $this->hasMany(Exchange::class);
     }
 
+    /** The governorate (province) for delivery address. */
     public function governorate()
     {
         return $this->belongsTo(Governorate::class);
     }
 
+    /** The city within the governorate for delivery address. */
     public function city()
     {
         return $this->belongsTo(City::class);
     }
 
+    /**
+     * Check if this order is still within the 3-day return window.
+     * Returns true only if delivered and delivered_at is within the last 3 days.
+     */
     public function isWithinReturnWindow(): bool
     {
         if ($this->status !== OrderStatus::Delivered->value) {

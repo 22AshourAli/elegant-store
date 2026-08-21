@@ -16,12 +16,31 @@ use App\Services\ShippingService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Handles the complete checkout flow: order creation, stock deduction, payment record, and notifications.
+ *
+ * Runs inside a DB transaction to ensure atomicity:
+ * 1. Resolves shipping cost (free for first orders via ShippingService).
+ * 2. Creates order record with all totals.
+ * 3. Deducts stock with pessimistic locking (lockForUpdate) to prevent overselling.
+ * 4. Records payment intent and stock movements.
+ * 5. Dispatches StockUpdated events and sends notifications.
+ */
 class CheckoutService
 {
     public function __construct(
         protected ShippingService $shippingService
     ) {}
 
+    /**
+     * Create a complete order from cart data.
+     *
+     * @param  User   $user      The authenticated customer.
+     * @param  array  $cartItems Enriched cart items keyed by variant_id.
+     * @param  array  $data      Checkout form data (address, payment_method, etc.).
+     * @return Order             The newly created order.
+     * @throws \Exception       If variant is missing or stock is insufficient.
+     */
     public function createOrder($user, $cartItems, $data)
     {
         return DB::transaction(function () use ($user, $cartItems, $data) {
@@ -45,6 +64,10 @@ class CheckoutService
         });
     }
 
+    /**
+     * Determine shipping cost: free for first-time customers, otherwise
+     * delegates to ShippingService for governorate-based calculation.
+     */
     private function resolveShippingCost($user, array $data, float $cartTotal): float
     {
         $previousOrders = $user->orders()->where('status', '!=', OrderStatus::Cancelled->value)->count();
@@ -62,6 +85,7 @@ class CheckoutService
         return $data['shipping_cost'] ?? config('store.default_shipping', 30);
     }
 
+    /** Create the order record with all monetary fields and address data. */
     private function createOrderRecord($user, array $data, float $subtotal, float $discount, float $shipping, float $total): Order
     {
         $orderData = [
@@ -87,6 +111,7 @@ class CheckoutService
         return Order::create($orderData);
     }
 
+    /** Create a payment intent record linked to the order. */
     private function createPaymentRecord(Order $order, float $total, string $paymentMethod): void
     {
         $order->payment()->create([
@@ -96,6 +121,11 @@ class CheckoutService
         ]);
     }
 
+    /**
+     * Process order items: validate stock, create order_items, deduct stock,
+     * record stock movements, and dispatch StockUpdated events.
+     * Uses pessimistic locking (lockForUpdate) to prevent race conditions.
+     */
     private function processOrderItems(Order $order, array $cartItems, int $branchId): void
     {
         // Batch 1: Load all variants with their product in one query
