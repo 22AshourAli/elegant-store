@@ -11,6 +11,7 @@ enum StockMovementType: string
     case TransferIn = 'transfer_in';
     case Adjustment = 'adjustment';
     case Initial = 'initial';
+    case PurchaseReceive = 'purchase_receive';
 
     public static function values(): array
     {

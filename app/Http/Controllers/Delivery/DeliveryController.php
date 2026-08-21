@@ -112,7 +112,17 @@ class DeliveryController extends Controller
         try {
             $fsm->transition($order, $request->status, $request->input('note'));
         } catch (\InvalidArgumentException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
             return back()->with('error', $e->getMessage());
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'تم تحديث حالة الطلب بنجاح',
+                'status' => $request->status,
+            ]);
         }
 
         return back()->with('success', 'تم تحديث حالة الطلب بنجاح');

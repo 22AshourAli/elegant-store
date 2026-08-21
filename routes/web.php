@@ -195,6 +195,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{stockTransfer}', [\App\Http\Controllers\Admin\StockTransferController::class, 'destroy'])->name('destroy');
     });
 
+    // Stock Counts (Inventory Counting)
+    Route::prefix('stock-counts')->name('stock-counts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\StockCountController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\Admin\StockCountController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\Admin\StockCountController::class, 'store'])->name('store');
+        Route::get('/{stockCount}', [\App\Http\Controllers\Admin\StockCountController::class, 'show'])->name('show');
+        Route::patch('/{stockCount}/items/{item}', [\App\Http\Controllers\Admin\StockCountController::class, 'updateItem'])->name('update-item');
+        Route::post('/{stockCount}/complete', [\App\Http\Controllers\Admin\StockCountController::class, 'complete'])->name('complete');
+        Route::post('/{stockCount}/cancel', [\App\Http\Controllers\Admin\StockCountController::class, 'cancel'])->name('cancel');
+        Route::delete('/{stockCount}', [\App\Http\Controllers\Admin\StockCountController::class, 'destroy'])->name('destroy');
+    });
+
     // Shipping Management
     Route::resource('governorates', GovernorateController::class)->except(['show']);
     Route::post('governorates/{governorate}/toggle-active', [GovernorateController::class, 'toggleActive'])->name('governorates.toggle-active');
