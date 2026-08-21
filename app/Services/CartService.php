@@ -9,25 +9,15 @@ use App\Services\AbandonedCartService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 
-/**
- * Shopping cart management service.
- *
- * Handles all cart operations: add/remove/update items, coupon management,
- * cart persistence to database for logged-in users, and session synchronization.
- * The session is the primary cart store; DB persistence provides cross-device sync.
- */
 class CartService
 {
-    /** @var Coupon|null Resolved coupon instance to avoid repeated DB queries */
     private ?Coupon $resolvedCoupon = null;
 
-    /** Get raw cart items from session (variant_id => ['variant_id', 'quantity']). */
     public function getCart(): array
     {
         return Session::get('cart', []);
     }
 
-    /** Add a variant to the cart (increments quantity if already present). */
     public function add(int $variantId, int $quantity = 1): array
     {
         $cart = $this->getCart();
@@ -44,7 +34,6 @@ class CartService
         return $this->getEnrichedCart();
     }
 
-    /** Remove a variant from the cart entirely. */
     public function remove(int $variantId): void
     {
         $cart = $this->getCart();
@@ -53,7 +42,6 @@ class CartService
         $this->persistToDb();
     }
 
-    /** Update quantity for a specific cart item; removes if quantity <= 0. */
     public function updateQuantity(int $variantId, int $quantity): void
     {
         if ($quantity <= 0) {
@@ -68,12 +56,6 @@ class CartService
         }
     }
 
-    /**
-     * Enrich raw cart data with full product/variant details from DB.
-     *
-     * Automatically removes trashed/inactive variants and soft-deleted products.
-     * Returns an array keyed by variant_id with product_name, price, image, etc.
-     */
     public function getEnrichedCart(): array
     {
         $raw = $this->getCart();
@@ -120,7 +102,6 @@ class CartService
         return $enriched;
     }
 
-    /** Sum of (price × quantity) for all items before coupon discount. */
     public function baseTotal(): float
     {
         return array_sum(
@@ -128,7 +109,6 @@ class CartService
         );
     }
 
-    /** Cart total after applying coupon discount (floor: 0). */
     public function total(): float
     {
         $base   = $this->baseTotal();
@@ -142,7 +122,6 @@ class CartService
         return max(0, $base - $this->calculateDiscount($base, $coupon));
     }
 
-    /** Calculate the coupon discount amount to subtract from the cart total. */
     public function getDiscount(): float
     {
         $base   = $this->baseTotal();
@@ -156,12 +135,6 @@ class CartService
         return $this->calculateDiscount($base, $coupon);
     }
 
-    /**
-     * Apply a coupon code to the cart.
-     *
-     * Validates: active status, validity window, usage limit.
-     * Increments usage count on success. Returns null if invalid.
-     */
     public function applyCouponByCode(string $code): ?Coupon
     {
         $now    = Carbon::now();
@@ -189,7 +162,6 @@ class CartService
         return $coupon;
     }
 
-    /** Remove applied coupon from session and resolve cache. */
     public function removeCoupon(): void
     {
         Session::forget('coupon');
@@ -197,7 +169,6 @@ class CartService
         $this->persistToDb();
     }
 
-    /** Clear entire cart and coupon from session and DB. */
     public function clear(): void
     {
         Session::forget('cart');
@@ -206,7 +177,6 @@ class CartService
         $this->persistToDb();
     }
 
-    /** Retrieve the currently applied coupon (lazy-loaded from session). */
     public function getAppliedCoupon(): ?Coupon
     {
         if ($this->resolvedCoupon !== null) {
@@ -308,7 +278,7 @@ class CartService
 
     private function calculateDiscount(float $base, Coupon $coupon): float
     {
-        if ($coupon->type === 'percentage') {
+        if ($coupon->type === 'percent') {
             return ($coupon->value / 100) * $base;
         }
         return (float) $coupon->value;

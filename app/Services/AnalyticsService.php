@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\PaymentStatus;
+use App\Models\CustomerWallet;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
@@ -117,13 +118,15 @@ class AnalyticsService
 
         // If a specific userId is requested, return their personal metrics
         if ($userId) {
+            $customerData = CustomerWallet::where('user_id', $userId)->first();
             $orders = (clone $query)->where('user_id', $userId);
 
             $result['customer'] = [
                 'user_id' => $userId,
-                'lifetime_spent' => (float) $orders->sum('total'),
+                'lifetime_spent' => (float) ($customerData?->lifetime_spent ?? 0),
                 'order_count' => (clone $orders)->count(),
                 'average_order_value' => (float) (clone $orders)->avg('total') ?? 0,
+                'loyalty_points' => (int) ($customerData?->loyalty_points ?? 0),
             ];
         }
 

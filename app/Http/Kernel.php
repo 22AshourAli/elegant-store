@@ -7,31 +7,19 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 class Kernel extends HttpKernel
 {
     /**
-     * Global HTTP middleware stack.
+     * The application's global HTTP middleware stack.
      *
-     * Applied to every incoming request before route matching.
-     * - PreventRequestsDuringMaintenance: Returns 503 when app is in maintenance mode.
-     * - ValidatePostSize: Rejects requests exceeding PHP's post_max_size limit.
-     * - TrimStrings: Strips whitespace from all request inputs to prevent accidental padding.
-     * - ConvertEmptyStringsToNull: Converts empty string inputs to null for cleaner DB storage.
+     * These middleware are run during every request to your application.
      *
      * @var array<int, class-string>
      */
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-        \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
     /**
-     * Route middleware groups.
-     *
-     * 'web' group: Session-based routes (admin panel, shop, checkout).
-     * - VerifyCsrfToken: Validates CSRF tokens on state-changing requests (POST/PUT/PATCH/DELETE).
-     * - HandleMethodOverride: Enables _method hidden field for PUT/PATCH/DELETE via HTML forms.
-     *
-     * 'api' group: Stateless API routes with rate limiting.
+     * The application's route middleware groups.
      *
      * @var array<string, array<int, class-string|string>>
      */
@@ -41,8 +29,6 @@ class Kernel extends HttpKernel
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
-            \Illuminate\Foundation\Http\Middleware\HandleMethodOverride::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SyncUserCart::class,
@@ -55,11 +41,9 @@ class Kernel extends HttpKernel
     ];
 
     /**
-     * Route-level middleware aliases.
+     * The application's route middleware.
      *
-     * - auth: Ensures user is authenticated.
-     * - admin: Custom middleware restricting access to super_admin/manager roles.
-     * - guest: Redirects authenticated users away from guest-only routes (e.g., login page).
+     * These middleware may be assigned to groups or used individually.
      *
      * @var array<string, class-string|string>
      */
