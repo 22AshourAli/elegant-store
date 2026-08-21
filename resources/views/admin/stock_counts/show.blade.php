@@ -117,15 +117,16 @@
                     @foreach($stockCount->items as $item)
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm transition-colors" x-data="stockItem({{ $item->id }}, {{ $item->system_stock }}, {{ $item->counted_stock ?? 'null' }})">
                         <td class="p-3">
-                            <span class="font-semibold text-gray-900 dark:text-white">{{ $item->variant->product->name ?? '—' }}</span>
-                            @if($item->variant->color)
-                                <span class="text-xs text-gray-500">{{ $item->variant->color }}</span>
+                            @php $v = $item->variant; @endphp
+                            <span class="font-semibold text-gray-900 dark:text-white">{{ $v?->product?->name ?? '—' }}</span>
+                            @if($v && $v->color)
+                                <span class="text-xs text-gray-500">{{ $v->color }}</span>
                             @endif
-                            @if($item->variant->size)
-                                <span class="text-xs text-gray-500">— {{ $item->variant->size }}</span>
+                            @if($v && $v->size)
+                                <span class="text-xs text-gray-500">— {{ $v->size }}</span>
                             @endif
                         </td>
-                        <td class="p-3 font-mono text-xs text-gray-500">{{ $item->variant->sku ?? '—' }}</td>
+                        <td class="p-3 font-mono text-xs text-gray-500">{{ $v?->sku ?? '—' }}</td>
                         <td class="p-3 text-center font-bold text-gray-900 dark:text-white">{{ $item->system_stock }}</td>
                         <td class="p-3 text-center">
                             @if($stockCount->status === 'in_progress')
