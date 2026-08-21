@@ -18,6 +18,8 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\LicenseMiddleware::class,
+        \App\Http\Middleware\DomainLockMiddleware::class,
     ];
 
     /**
@@ -63,5 +65,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'delivery' => \App\Http\Middleware\DeliveryMiddleware::class,
+        'license' => \App\Http\Middleware\LicenseMiddleware::class,
+        'domain' => \App\Http\Middleware\DomainLockMiddleware::class,
     ];
 }
