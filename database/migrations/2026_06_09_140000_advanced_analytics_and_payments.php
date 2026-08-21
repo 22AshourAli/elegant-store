@@ -37,19 +37,6 @@ return new class extends Migration
 
         /*
          * ---------------------------------------------------------------
-         * ADVANCED 4: Abandoned Cart Funnel — track checkout abandonment
-         * ---------------------------------------------------------------
-         * We add a column to abandoned_carts so we know at which step the
-         * user dropped off (cart_viewed / shipping_step / payment_step /
-         * review_step).
-         */
-        Schema::table('abandoned_carts', function (Blueprint $table) {
-            $table->string('checkout_step')->nullable()->after('coupon_code')
-                ->comment('cart_viewed|shipping_step|payment_step|review_step');
-        });
-
-        /*
-         * ---------------------------------------------------------------
          * ADVANCED 5: Payment Gateway Reconciliation
          * ---------------------------------------------------------------
          * We augment the payments table with fee / net / settlement fields
@@ -105,7 +92,6 @@ return new class extends Migration
         Schema::dropIfExists('payment_settlements');
 
         Schema::table('return_requests', fn(Blueprint $t) => $t->dropColumn('analytics'));
-        Schema::table('abandoned_carts', fn(Blueprint $t) => $t->dropColumn('checkout_step'));
         Schema::table('payments', fn(Blueprint $t) => $t->dropColumn([
             'gateway_fee', 'net_amount', 'settlement_status', 'settled_at', 'gateway_reference',
         ]));

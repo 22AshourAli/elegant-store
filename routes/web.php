@@ -223,7 +223,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/returns', [\App\Http\Controllers\Admin\AnalyticsController::class, 'returnAnalytics'])->name('returns');
         Route::get('/aov-clv', [\App\Http\Controllers\Admin\AnalyticsController::class, 'aovAndClv'])->name('aov-clv');
         Route::get('/dead-stock', [\App\Http\Controllers\Admin\AnalyticsController::class, 'deadStock'])->name('dead-stock');
-        Route::get('/cart-funnel', [\App\Http\Controllers\Admin\AnalyticsController::class, 'cartFunnel'])->name('cart-funnel');
         Route::get('/payment-reconciliation', [\App\Http\Controllers\Admin\AnalyticsController::class, 'paymentReconciliation'])->name('payment-reconciliation');
         Route::get('/export-csv', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('export-csv');
     });

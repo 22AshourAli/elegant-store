@@ -54,13 +54,19 @@ class DeliveryController extends Controller
             ->whereIn('status', [
                 OrderStatus::Shipped->value,
                 OrderStatus::OutForDelivery->value,
-                OrderStatus::Delivered->value,
             ])
-            ->with('user', 'items')
+            ->with('user')
             ->latest()
             ->paginate(20);
 
-        return view('delivery.orders', compact('orders'));
+        $pendingCount = Order::where('branch_id', $user->branch_id)
+            ->where('status', OrderStatus::Shipped->value)
+            ->count();
+        $activeCount = Order::where('branch_id', $user->branch_id)
+            ->where('status', OrderStatus::OutForDelivery->value)
+            ->count();
+
+        return view('delivery.orders', compact('orders', 'pendingCount', 'activeCount'));
     }
 
     public function show(Order $order)
@@ -74,10 +80,15 @@ class DeliveryController extends Controller
         $order->load('user', 'items.variant', 'payment');
 
         $fsm = app(OrderStateMachine::class);
-        $availableTransitions = $fsm->availableTransitions($order);
-        $statusLabels = [];
 
-        foreach ($availableTransitions as $status) {
+        $deliveryTransitions = match ($order->status) {
+            OrderStatus::Shipped->value => [OrderStatus::OutForDelivery->value],
+            OrderStatus::OutForDelivery->value => [OrderStatus::Delivered->value],
+            default => [],
+        };
+
+        $statusLabels = [];
+        foreach ($deliveryTransitions as $status) {
             $statusLabels[$status] = OrderStateMachine::statusLabel($status, app()->getLocale());
         }
 

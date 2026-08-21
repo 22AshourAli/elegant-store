@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
-use App\Models\AbandonedCart;
 use App\Models\Expense;
 use App\Models\Order;
 use App\Services\AnalyticsService;
@@ -169,20 +168,6 @@ class AnalyticsController extends Controller
             ->limit(5)
             ->get();
 
-        // --- Abandoned carts ---
-        $abandonedQuery = AbandonedCart::where('status', 'abandoned');
-        if ($dates) {
-            $abandonedQuery->whereBetween('first_abandoned_at', [$dates['from'], $dates['to']]);
-        }
-        $totalAbandoned = (clone $abandonedQuery)->count();
-        $totalAbandonedValue = (clone $abandonedQuery)->sum('total');
-
-        $recoveredQuery = AbandonedCart::where('status', 'recovered');
-        if ($dates) {
-            $recoveredQuery->whereBetween('updated_at', [$dates['from'], $dates['to']]);
-        }
-        $recoveredCarts = (clone $recoveredQuery)->count();
-
         $kpi = compact(
             'totalSales', 'netProfit', 'profitMargin',
             'completedOrders', 'totalOrders', 'conversionRate',
@@ -190,17 +175,10 @@ class AnalyticsController extends Controller
             'totalProductRevenue', 'totalShippingCollected', 'totalCosts', 'totalManualExpenses',
         );
 
-        $abandoned = [
-            'total' => $totalAbandoned,
-            'total_value' => $totalAbandonedValue,
-            'recovered' => $recoveredCarts,
-        ];
-
         return view('admin.reports.index', compact(
             'period', 'kpi',
             'chartLabels', 'chartValues',
             'topProducts', 'topColors', 'topSizes',
-            'abandoned',
         ));
     }
 
@@ -306,12 +284,6 @@ class AnalyticsController extends Controller
     {
         $data = $this->analytics->deadStockReport();
         return view('admin.reports.dead-stock', compact('data'));
-    }
-
-    public function cartFunnel()
-    {
-        $data = $this->analytics->abandonedCartFunnel();
-        return view('admin.reports.cart-funnel', compact('data'));
     }
 
     public function paymentReconciliation()

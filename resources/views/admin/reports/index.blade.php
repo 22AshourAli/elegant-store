@@ -167,8 +167,8 @@
         </div>
     </div>
 
-    {{-- Bottom Row: Colors, Sizes, Abandoned Carts --}}
-    <div class="print-grid-3 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+    {{-- Bottom Row: Colors & Sizes --}}
+    <div class="print-grid grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
         <div class="print-card bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-4 sm:p-5">
             <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200 mb-3">{{ __('global.analytics_top_colors') }}</h3>
             @if($topColors->isNotEmpty())
@@ -202,27 +202,6 @@
             @else
             <p class="text-xs text-slate-400 dark:text-slate-500">{{ __('global.analytics_no_data') }}</p>
             @endif
-        </div>
-
-        <div class="print-card bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700 p-4 sm:p-5">
-            <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-200 mb-3">{{ __('global.analytics_abandoned_carts') }}</h3>
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ __('global.analytics_abandoned_total') }}</span>
-                    <span class="text-sm font-extrabold text-slate-900 dark:text-white">{{ Numbers::formatInteger($abandoned['total']) }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ __('global.analytics_abandoned_value') }}</span>
-                    <span class="text-sm font-extrabold text-slate-900 dark:text-white" dir="ltr">{{ Numbers::formatCurrency($abandoned['total_value']) }}</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">{{ __('global.analytics_recovered') }}</span>
-                    <span class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">{{ Numbers::formatInteger($abandoned['recovered']) }}</span>
-                </div>
-            </div>
-            <div class="mt-3 pt-3 border-t border-slate-100 dark:border-gray-700">
-                <a href="{{ route('admin.reports.cart-funnel') }}" class="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline">{{ __('global.admin_report_cart_funnel') }} →</a>
-            </div>
         </div>
     </div>
 
@@ -282,12 +261,6 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                 </div>
                 <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400">{{ __('global.admin_report_payment_reconciliation') }}</span>
-            </a>
-            <a href="{{ route('admin.reports.cart-funnel') }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-3 hover:shadow-md hover:-translate-y-0.5 transition-all group text-center">
-                <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-                <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400">{{ __('global.admin_report_cart_funnel') }}</span>
             </a>
         </div>
     </div>

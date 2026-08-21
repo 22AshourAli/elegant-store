@@ -59,14 +59,4 @@ class AnalyticsController extends Controller
             )
         );
     }
-
-    /**
-     * Advanced 4: Abandoned Cart Funnel Analytics.
-     */
-    public function cartFunnel()
-    {
-        return response()->json(
-            $this->analyticsService->abandonedCartFunnel()
-        );
-    }
 }
