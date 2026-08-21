@@ -1321,4 +1321,12 @@ return [
     'sc_deleted' => 'تم حذف الجرد.',
     'sc_no_products_in_branch' => 'لا توجد منتجات في هذا الفرع.',
     'sc_notes' => 'ملاحظات',
+    'sc_items_lbl' => 'صنف',
+    'sc_system_stock_hint' => 'الكمية المسجلة في النظام',
+    'sc_physical_stock_hint' => 'مجموع ما عدّدته فعلياً',
+    'sc_total_difference_hint' => 'العد الفعلي - النظام (موجب = فائض، سالب = نقص)',
+    'sc_system_hint_short' => 'من النظام',
+    'sc_counted_hint_short' => 'اكتب العد',
+    'sc_search_placeholder' => 'ابحث بالاسم أو الكود...',
+    'sc_must_count_all' => 'عدّد كل الأصناف قبل الإتمام',
 ];

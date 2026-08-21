@@ -1322,4 +1322,12 @@ return [
     'sc_deleted' => 'Stock count deleted.',
     'sc_no_products_in_branch' => 'No products found in this branch.',
     'sc_notes' => 'Notes',
+    'sc_items_lbl' => 'items',
+    'sc_system_stock_hint' => 'What the database says is in stock',
+    'sc_physical_stock_hint' => 'Sum of what you physically counted',
+    'sc_total_difference_hint' => 'Physical - System (positive = surplus, negative = shortage)',
+    'sc_system_hint_short' => 'Database',
+    'sc_counted_hint_short' => 'Enter count',
+    'sc_search_placeholder' => 'Search product name or SKU...',
+    'sc_must_count_all' => 'Count all items before finalizing',
 ];
