@@ -90,14 +90,14 @@ class DashboardController extends Controller
         $dates = $this->parsePeriod($period, $request);
 
         $cacheKey = 'dashboard_' . ($branchId ?? 'all') . '_' . $period . '_' . md5(serialize($dates));
-        $data = \Cache::remember($cacheKey, 60, function () use ($branchId, $dates) {
-            return $this->computeReportData($branchId, $dates);
+        $data = \Cache::remember($cacheKey, 60, function () use ($branchId, $dates, $period) {
+            return $this->computeReportData($branchId, $dates, $period);
         });
         $data['period'] = $period;
         return $data;
     }
 
-    private function computeReportData(?int $branchId, ?array $dates): array
+    private function computeReportData(?int $branchId, ?array $dates, string $period = 'month'): array
     {
         $completedStatuses = [
             OrderStatus::Confirmed->value,
