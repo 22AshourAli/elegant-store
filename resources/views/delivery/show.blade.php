@@ -128,6 +128,7 @@ function deliveryStatus() {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ status: this.selected, note: this.note })
@@ -139,6 +140,7 @@ function deliveryStatus() {
                 window.location.reload();
             } catch(e) {
                 this.error = e.message || 'حدث خطأ';
+            } finally {
                 this.saving = false;
             }
         }
