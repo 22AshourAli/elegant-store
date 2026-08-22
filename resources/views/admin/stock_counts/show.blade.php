@@ -16,8 +16,7 @@
     <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-6 shadow-sm border border-red-200">{{ session('error') }}</div>
 @endif
 
-<div class="grid lg:grid-cols-3 gap-6">
-    <!-- Summary Cards -->
+<div x-data="stockCountApp()" x-init="init()" class="grid lg:grid-cols-3 gap-6">
     <div class="lg:col-span-1 space-y-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
             <div class="flex items-center justify-between mb-3">
@@ -50,12 +49,16 @@
                 @endif
                 <div class="flex justify-between">
                     <span class="text-gray-500">{{ __('global.sc_progress') }}</span>
-                    <span class="font-bold text-gray-900 dark:text-white">{{ $countedItems }} / {{ $totalItems }} {{ __('global.sc_items_lbl') }}</span>
+                    <span class="font-bold text-gray-900 dark:text-white" x-text="countedItems + ' / {{ $totalItems }} {{ __('global.sc_items_lbl') }}'"></span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div class="h-2 rounded-full transition-all duration-500"
+                         :class="progressPercent === 100 ? 'bg-emerald-500' : 'bg-indigo-600'"
+                         :style="'width:' + progressPercent + '%'"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="grid grid-cols-1 gap-3">
             <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
                 <div class="flex items-center justify-between">
@@ -63,7 +66,7 @@
                         <p class="text-xs text-gray-500">{{ __('global.sc_system_stock') }}</p>
                         <p class="text-xs text-gray-400 mt-0.5">{{ __('global.sc_system_stock_hint') }}</p>
                     </div>
-                    <p class="text-2xl font-extrabold text-blue-600 dark:text-blue-400">{{ $totalSystem }}</p>
+                    <p class="text-2xl font-extrabold text-blue-600 dark:text-blue-400" x-text="totalSystem"></p>
                 </div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
@@ -72,7 +75,7 @@
                         <p class="text-xs text-gray-500">{{ __('global.sc_physical_stock') }}</p>
                         <p class="text-xs text-gray-400 mt-0.5">{{ __('global.sc_physical_stock_hint') }}</p>
                     </div>
-                    <p class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">{{ $totalCounted }}</p>
+                    <p class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400" x-text="totalPhysical"></p>
                 </div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm">
@@ -81,45 +84,34 @@
                         <p class="text-xs text-gray-500">{{ __('global.sc_total_difference') }}</p>
                         <p class="text-xs text-gray-400 mt-0.5">{{ __('global.sc_total_difference_hint') }}</p>
                     </div>
-                    <p class="text-2xl font-extrabold {{ $totalDiff > 0 ? 'text-green-600 dark:text-green-400' : ($totalDiff < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400') }}">
-                        {{ $totalDiff > 0 ? '+' : '' }}{{ $totalDiff }}
-                    </p>
+                    <p class="text-2xl font-extrabold" :class="totalDiff > 0 ? 'text-green-600 dark:text-green-400' : (totalDiff < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-400')" x-text="(totalDiff > 0 ? '+' : '') + totalDiff"></p>
                 </div>
             </div>
         </div>
 
-        <!-- Actions -->
         @if($stockCount->status === 'in_progress')
         <div class="space-y-2">
             <form method="POST" action="{{ route('admin.stock-counts.complete', $stockCount) }}" onsubmit="return confirm('{{ __('global.sc_confirm_complete') }}')">
                 @csrf
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" {{ $countedItems < $totalItems ? 'disabled' : '' }}>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" :disabled="countedItems < totalItems" @click="return countedItems >= totalItems && confirm('{{ __('global.sc_confirm_complete') }}')">
                     {{ __('global.sc_finalize_count') }}
                 </button>
             </form>
-            @if($countedItems < $totalItems)
-                <p class="text-xs text-center text-gray-400">{{ __('global.sc_must_count_all') }}</p>
-            @endif
+            <p x-show="countedItems < totalItems" x-cloak class="text-xs text-center text-gray-400">{{ __('global.sc_must_count_all') }}</p>
             <div class="flex gap-2">
-                <form method="POST" action="{{ route('admin.stock-counts.cancel', $stockCount) }}" class="flex-1" onsubmit="return confirm('{{ __('global.admin_confirm_cancel_msg') }}')">
-                    @csrf
-                    <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 rounded-lg text-xs transition-colors">{{ __('global.sc_cancel_count') }}</button>
-                </form>
-                <form method="POST" action="{{ route('admin.stock-counts.destroy', $stockCount) }}" class="flex-1" onsubmit="return confirm('{{ __('global.admin_confirm_delete_msg') }}')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg text-xs transition-colors">{{ __('global.admin_delete') }}</button>
-                </form>
+                <button @click="if(confirm('{{ __('global.admin_confirm_cancel_msg') }}')) { $refs.cancelForm.submit(); }" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 rounded-lg text-xs transition-colors">{{ __('global.sc_cancel_count') }}</button>
+                <button @click="if(confirm('{{ __('global.admin_confirm_delete_msg') }}')) { $refs.deleteForm.submit(); }" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg text-xs transition-colors">{{ __('global.admin_delete') }}</button>
             </div>
+            <form x-ref="cancelForm" method="POST" action="{{ route('admin.stock-counts.cancel', $stockCount) }}" class="hidden">@csrf</form>
+            <form x-ref="deleteForm" method="POST" action="{{ route('admin.stock-counts.destroy', $stockCount) }}" class="hidden">@csrf @method('DELETE')</form>
         </div>
         @endif
     </div>
 
-    <!-- Items Table -->
-    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden" x-data="stockCountSearch()">
+    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
         <div class="p-4 border-b dark:border-gray-700 space-y-3">
             <div class="flex items-center justify-between">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.sc_counted_items') }} ({{ $countedItems }}/{{ $totalItems }})</h2>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">{{ __('global.sc_counted_items') }}</h2>
             </div>
             <div class="flex gap-2">
                 <input type="text" x-model="search" placeholder="{{ __('global.sc_search_placeholder') }}"
@@ -154,8 +146,8 @@
                         $searchText = strtolower($productName . ' ' . ($v?->sku ?? '') . ' ' . $variantLabel);
                     @endphp
                     <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-700/30 text-sm transition-colors"
-                        x-data="stockItem({{ $item->id }}, {{ $item->system_stock }}, {{ $item->counted_stock ?? 'null' }})"
-                        x-show="search === '' || '{{ $searchText }}'.includes(search)"
+                        x-data="stockItem({{ $item->id }}, {{ $item->system_stock }}, {{ $item->counted_stock ?? 'null' }}, {{ $item->difference ?? 'null' }})"
+                        x-show="search === '' || '{{ addslashes($searchText) }}'.toLowerCase().includes(search.toLowerCase())"
                         x-transition>
                         <td class="p-3 text-xs text-gray-400">{{ $index + 1 }}</td>
                         <td class="p-3">
@@ -197,14 +189,14 @@
                             @endif
                         </td>
                         <td class="p-3 text-center">
-                            @if(!is_null($item->difference))
-                            <span class="font-bold px-2 py-0.5 rounded-full text-xs
-                                {{ $item->difference > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : ($item->difference < 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400') }}">
-                                {{ $item->difference > 0 ? '+' : '' }}{{ $item->difference }}
-                            </span>
-                            @else
+                            <template x-if="diff !== null">
+                                <span class="font-bold px-2 py-0.5 rounded-full text-xs"
+                                      :class="diff > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : (diff < 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400')"
+                                      x-text="(diff > 0 ? '+' : '') + diff"></span>
+                            </template>
+                            <template x-if="diff === null">
                                 <span class="text-gray-300 dark:text-gray-600">—</span>
-                            @endif
+                            </template>
                         </td>
                     </tr>
                     @endforeach
@@ -216,19 +208,45 @@
 
 @if($stockCount->status === 'in_progress')
 <script>
-function stockCountSearch() {
+function stockCountApp() {
     return {
         search: '',
-        get filteredCount() {
-            if (this.search === '') return {{ $totalItems }};
-            return document.querySelectorAll('tbody tr[x-show]').length;
+        countedItems: {{ $countedItems }},
+        totalItems: {{ $totalItems }},
+        totalSystem: {{ $totalSystem }},
+        totalPhysical: {{ $totalCounted }},
+        totalDiff: {{ $totalDiff }},
+        get progressPercent() {
+            return this.totalItems > 0 ? Math.round((this.countedItems / this.totalItems) * 100) : 0;
+        },
+        init() {
+            window.addEventListener('stock-item-saved', () => this.recalculate());
+        },
+        recalculate() {
+            const tables = document.querySelectorAll('tbody tr');
+            let counted = 0, system = 0, physical = 0;
+            tables.forEach(tr => {
+                const data = Alpine.$data(tr);
+                if (data && data.saved && data.counted !== null && data.counted !== undefined && data.counted !== '') {
+                    counted++;
+                    physical += Number(data.counted);
+                    system += Number(data.systemStock);
+                }
+            });
+            this.countedItems = counted;
+            this.totalPhysical = physical;
+            this.totalSystem = system;
+            this.totalDiff = physical - system;
         }
     };
 }
 
-function stockItem(itemId, systemStock, initialCounted) {
+function stockItem(itemId, systemStock, initialCounted, initialDiff) {
     return {
+        itemId: itemId,
+        systemStock: systemStock,
         counted: initialCounted,
+        diff: initialDiff,
         saved: initialCounted !== null,
         saving: false,
         async save() {
@@ -236,7 +254,7 @@ function stockItem(itemId, systemStock, initialCounted) {
             this.saving = true;
             this.saved = false;
             try {
-                const res = await fetch('{{ route("admin.stock-counts.update-item", [$stockCount, "__ITEM_ID__"]) }}'.replace('__ITEM_ID__', itemId), {
+                const res = await fetch('{{ route("admin.stock-counts.update-item", [$stockCount, "__ITEM_ID__"]) }}'.replace('__ITEM_ID__', this.itemId), {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -246,15 +264,41 @@ function stockItem(itemId, systemStock, initialCounted) {
                     body: JSON.stringify({ counted_stock: this.counted })
                 });
                 if (!res.ok) throw new Error('Error');
+                this.diff = this.counted - this.systemStock;
                 this.saved = true;
                 this.saving = false;
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __("global.sc_item_updated") }}', type: 'success' } }));
+                window.dispatchEvent(new CustomEvent('stock-item-saved'));
             } catch(e) {
                 this.saving = false;
                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: '{{ __("global.error_occurred") }}', type: 'error' } }));
             }
         }
     };
+}
+
+function stockCountSearch() {
+    return { search: '' };
+}
+</script>
+@else
+<script>
+function stockCountApp() {
+    return {
+        search: '',
+        countedItems: {{ $countedItems }},
+        totalItems: {{ $totalItems }},
+        totalSystem: {{ $totalSystem }},
+        totalPhysical: {{ $totalCounted }},
+        totalDiff: {{ $totalDiff }},
+        get progressPercent() {
+            return this.totalItems > 0 ? Math.round((this.countedItems / this.totalItems) * 100) : 0;
+        },
+        init() {}
+    };
+}
+function stockItem(itemId, systemStock, initialCounted, initialDiff) {
+    return { itemId, systemStock, counted: initialCounted, diff: initialDiff, saved: true, saving: false };
 }
 </script>
 @endif

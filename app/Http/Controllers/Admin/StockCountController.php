@@ -150,6 +150,8 @@ class StockCountController extends Controller
 
         DB::beginTransaction();
         try {
+            $stockCount->load(['items.variant' => fn($q) => $q->withTrashed()]);
+
             foreach ($stockCount->items as $item) {
                 if ($item->difference == 0) continue;
 
