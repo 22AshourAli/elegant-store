@@ -458,6 +458,7 @@ return [
     'order_confirmed_greeting' => 'Hello :name',
     'order_confirmed_line' => 'Your order #:id has been confirmed successfully.',
     'order_placed_success' => 'Order #:id has been placed successfully!',
+    'order_status_updated' => 'Order status updated and customer notified successfully.',
     'order_products' => 'Ordered Products',
     'order_total_label' => 'Order Total',
     'view_order' => 'View Order',
@@ -1256,6 +1257,8 @@ return [
     'review_already_reviewed' => 'You have already reviewed this product.',
     'review_only_purchased' => 'Reviews are only available for customers who have purchased and received this product.',
     'review_submitted_success' => 'Your review has been submitted successfully and will be published after admin approval.',
+    'review_approved' => 'Review approved.',
+    'review_rejected' => 'Review rejected.',
 
     // Product Card
     'save_label' => 'Save',

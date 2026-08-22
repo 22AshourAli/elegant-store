@@ -464,6 +464,7 @@ return [
     'order_confirmed_greeting' => 'مرحباً :name',
     'order_confirmed_line' => 'تم تأكيد طلبك رقم #:id بنجاح.',
     'order_placed_success' => 'تم تسجيل طلبك رقم #:id بنجاح!',
+    'order_status_updated' => 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.',
     'order_products' => 'المنتجات المطلوبة',
     'order_total_label' => 'إجمالي الطلب',
     'view_order' => 'عرض الطلب',
@@ -1255,6 +1256,8 @@ return [
     'review_already_reviewed' => 'لقد قمت بتقييم هذا المنتج مسبقاً.',
     'review_only_purchased' => 'التقييم متاح فقط لأصحاب الطلبات المستلمة للمنتج لضمان المصداقية.',
     'review_submitted_success' => 'تم إرسال تقييمك بنجاح وسيتم نشره بعد مراجعة الإدارة.',
+    'review_approved' => 'تم الموافقة على التقييم.',
+    'review_rejected' => 'تم رفض التقييم.',
 
     // Product Card
     'save_label' => 'وفر',

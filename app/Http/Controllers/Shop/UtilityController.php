@@ -33,6 +33,9 @@ class UtilityController extends Controller
     {
         if (in_array($locale, ['ar', 'en'])) {
             session()->put('locale', $locale);
+            if (auth()->check()) {
+                auth()->user()->update(['locale' => $locale]);
+            }
         }
         return redirect()->back();
     }

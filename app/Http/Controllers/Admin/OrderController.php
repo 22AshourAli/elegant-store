@@ -89,13 +89,13 @@ class OrderController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'message' => 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.',
+                'message' => __('global.order_status_updated'),
                 'status' => $newStatus,
                 'old_status' => $oldStatus,
             ]);
         }
 
-        return back()->with('success', 'تم تحديث حالة الطلب وإرسال إشعار للعميل بنجاح.');
+        return back()->with('success', __('global.order_status_updated'));
     }
 
     private function restoreStockForCancelledReturn(Order $order, string $newStatus, string $oldStatus): void

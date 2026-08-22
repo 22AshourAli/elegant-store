@@ -154,19 +154,19 @@
                             }
                             this.saving = true;
                             fetch('{{ route('admin.orders.update-status', $order) }}', {
-                                method: 'POST',
+                                method: 'PATCH',
                                 headers: {
                                     'Content-Type': 'application/json',
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'X-HTTP-Method-Override': 'PATCH',
                                     'Accept': 'application/json'
                                 },
                                 body: JSON.stringify({ status: this.selectedStatus })
                             })
                             .then(async res => {
-                                const data = await res.json();
-                                if (!res.ok) throw new Error(data.message || 'Error');
-                                var locale = '{{ app()->getLocale() }}';
+                                const text = await res.text();
+                                let data;
+                                try { data = JSON.parse(text); } catch(e) { throw new Error('{{ __("global.error_occurred") }}'); }
+                                if (!res.ok) throw new Error(data.message || '{{ __("global.error_occurred") }}');
                                 var statusLabels = {
                                     pending: '{{ __("orders.status_pending") }}',
                                     confirmed: '{{ __("orders.status_confirmed") }}',
@@ -178,14 +178,14 @@
                                     collected: '{{ __("orders.status_collected") }}',
                                     cancelled: '{{ __("orders.status_cancelled") }}'
                                 };
-                                var label = statusLabels[data.status] || data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                                var label = statusLabels[data.status] || data.status;
                                 this.statusLabel = label;
                                 this.saving = false;
                                 window.dispatchEvent(new CustomEvent('toast', { detail: { message: data.message, type: 'success' } }));
                             })
                             .catch(err => {
                                 this.saving = false;
-                                window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message || '{{ __('global.error_occurred') }}', type: 'error' } }));
+                                window.dispatchEvent(new CustomEvent('toast', { detail: { message: err.message || '{{ __("global.error_occurred") }}', type: 'error' } }));
                             });
                         }
                     };

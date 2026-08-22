@@ -29,17 +29,13 @@ class ReviewController extends Controller
     {
         $review->update(['status' => 'approved']);
 
-        return back()->with('success', app()->getLocale() === 'ar'
-            ? 'تم الموافقة على التقييم.'
-            : 'Review approved.');
+        return back()->with('success', __('global.review_approved'));
     }
 
     public function reject(Review $review)
     {
         $review->update(['status' => 'rejected']);
 
-        return back()->with('success', app()->getLocale() === 'ar'
-            ? 'تم رفض التقييم.'
-            : 'Review rejected.');
+        return back()->with('success', __('global.review_rejected'));
     }
 }

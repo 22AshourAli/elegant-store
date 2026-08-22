@@ -120,11 +120,11 @@ class DeliveryController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'message' => 'تم تحديث حالة الطلب بنجاح',
+                'message' => __('global.order_status_updated'),
                 'status' => $request->status,
             ]);
         }
 
-        return back()->with('success', 'تم تحديث حالة الطلب بنجاح');
+        return back()->with('success', __('global.order_status_updated'));
     }
 }

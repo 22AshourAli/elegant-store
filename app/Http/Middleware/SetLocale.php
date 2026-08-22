@@ -15,6 +15,13 @@ class SetLocale
             $locale = $request->get('lang');
             App::setLocale($locale);
             Session::put('locale', $locale);
+
+            if ($request->user()) {
+                $request->user()->update(['locale' => $locale]);
+            }
+        } elseif ($request->user() && $request->user()->locale) {
+            App::setLocale($request->user()->locale);
+            Session::put('locale', $request->user()->locale);
         } elseif (Session::has('locale')) {
             App::setLocale(Session::get('locale'));
         } else {

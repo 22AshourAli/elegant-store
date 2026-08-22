@@ -124,16 +124,17 @@ function deliveryStatus() {
             this.error = '';
             try {
                 const res = await fetch('{{ route("delivery.orders.update-status", $order) }}', {
-                    method: 'POST',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'X-HTTP-Method-Override': 'PATCH',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ status: this.selected, note: this.note })
                 });
-                const data = await res.json();
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) { throw new Error('حدث خطأ'); }
                 if (!res.ok) throw new Error(data.message || 'خطأ');
                 window.location.reload();
             } catch(e) {
