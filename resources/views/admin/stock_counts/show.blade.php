@@ -181,7 +181,8 @@
                                        x-model.number="counted"
                                        @change="save()"
                                        @keydown.enter.prevent="save()"
-                                       class="w-20 text-center rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border p-1.5 {{ saved ? 'border-green-400 dark:border-green-600' : '' }}">
+                                       class="w-20 text-center rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 border p-1.5 transition-colors"
+                                       :class="saved ? 'border-green-400 dark:border-green-600' : ''">
                                 <span x-show="saving" class="text-gray-400">
                                     <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                                 </span>
